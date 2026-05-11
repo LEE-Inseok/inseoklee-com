@@ -150,11 +150,11 @@
     transform: translateY(-1px);
   }
 
-  /* Chip / tag */
+  /* Chip / tag — softened to match CTA style (medium, sentence case) */
   .chip {
-    @apply inline-block px-3 py-1 text-xs font-mono uppercase tracking-widest;
+    @apply inline-block px-3 py-1 text-sm font-mono;
     color: var(--body);
-    font-weight: 700;
+    font-weight: 500;
     border: 1px solid var(--border);
     background-color: transparent;
   }
