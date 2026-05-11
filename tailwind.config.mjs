@@ -18,8 +18,8 @@ export default {
         critical:    '#DC2626',
       },
       fontFamily: {
-        sans:  ['"Times New Roman"', 'Times', 'Pretendard', 'serif'],
-        mono:  ['Geist', 'system-ui', 'sans-serif'],
+        sans:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
+        mono:  ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       fontWeight: {
         // Override defaults — never use 'thin' or 'extralight'

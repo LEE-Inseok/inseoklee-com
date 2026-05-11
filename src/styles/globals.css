@@ -42,19 +42,19 @@
   html {
     background-color: var(--bg);
     color: var(--body);
-    font-family: 'Times New Roman', Times, 'Pretendard', serif;
+    font-family: 'Inter Tight', 'Pretendard', system-ui, sans-serif;
     font-weight: 400;
-    letter-spacing: 0;
+    letter-spacing: -0.015em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
   }
 
-  /* Geist (sans) — used wherever Tailwind font-mono class is applied (per user choice) */
+  /* JetBrains Mono — used wherever Tailwind font-mono class is applied */
   .font-mono,
   code, pre, kbd, samp {
-    font-family: 'Geist', system-ui, sans-serif;
-    letter-spacing: -0.01em;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0;
   }
 
   body {
@@ -77,12 +77,12 @@
     mix-blend-mode: multiply;
   }
 
-  /* Typography base — Times New Roman classical headings */
+  /* Typography base — Inter Tight headings */
   h1, h2, h3, h4, h5, h6 {
     color: var(--ink);
-    letter-spacing: 0;
+    letter-spacing: -0.025em;
     font-weight: 700;
-    line-height: 1.1;
+    line-height: 1.05;
   }
 
   p {
