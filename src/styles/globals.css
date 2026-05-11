@@ -117,10 +117,9 @@
     background: var(--muted);
   }
 
-  /* mono slot fully unified to body — identical family, weight, spacing */
-  .font-mono,
+  /* code/pre still need a sensible family — inherit body */
   code, pre, kbd, samp {
-    font-family: 'Inter Tight', 'Pretendard', system-ui, sans-serif;
+    font-family: inherit;
     letter-spacing: -0.01em;
     font-weight: 500;
   }
@@ -178,9 +177,9 @@
     border-bottom-color: var(--accent-dk);
   }
 
-  /* Section label — small mono uppercase */
+  /* Section label — small uppercase, body font */
   .section-label {
-    @apply text-xs font-mono uppercase tracking-widest;
+    @apply text-xs uppercase tracking-widest;
     color: var(--muted);
     font-weight: 700;
   }

@@ -20,6 +20,7 @@ export default {
       fontFamily: {
         serif: ['Fraunces', 'Georgia', 'serif'],
         sans:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
+        // mono slot intentionally aliased to sans — site uses single body font
         mono:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
