@@ -150,11 +150,13 @@
     transform: translateY(-1px);
   }
 
-  /* Chip — plain inline text, indistinguishable from body */
+  /* Chip — plain inline text, identical to body */
   .chip {
-    @apply inline-block text-sm font-mono;
+    @apply inline-block text-sm;
+    font-family: inherit;
     color: var(--body);
     font-weight: 500;
+    letter-spacing: -0.01em;
   }
   .chip + .chip::before {
     content: "·";
