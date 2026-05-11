@@ -35,21 +35,37 @@ const statusLabel: Record<string, string> = {
       </p>
     </header>
 
-    <!-- ─── Area ──────────────────────────────────────────────────────── -->
-    <section class="mb-16">
-      <h2 class="text-2xl mb-8" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Area</h2>
+    <!-- ─── Area (with tabs) ──────────────────────────────────────────── -->
+    <section class="mb-20">
+      <h2 class="text-2xl mb-6" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Area</h2>
 
-      <!-- Experimental -->
-      <div class="mb-10">
-        <span class="section-label" style="color: var(--accent-dk);">Experimental</span>
-        <div class="flex flex-col max-w-3xl mt-2">
+      <!-- Tab nav -->
+      <div class="flex flex-wrap gap-x-8 gap-y-2 mb-10 border-b" style="border-color: var(--border);">
+        <button
+          class="area-tab active pb-3 text-sm transition-colors"
+          data-area="all"
+        >All</button>
+        <button
+          class="area-tab pb-3 text-sm transition-colors"
+          data-area="experimental"
+        >Experimental</button>
+        <button
+          class="area-tab pb-3 text-sm transition-colors"
+          data-area="simulation"
+        >Simulation and Optimization</button>
+      </div>
+
+      <!-- Experimental sub-section -->
+      <div class="area-section mb-14" data-area="experimental">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
+          <h3 class="text-xs uppercase tracking-widest" style="color: var(--accent-dk); font-weight: 700;">Experimental</h3>
+        </div>
+        <div class="flex flex-col max-w-3xl">
           {experimental.map((item) => (
             <a href={`/research/${item.slug}`} class="card flex flex-col gap-3 group">
-              <div class="flex items-center justify-between">
-                <span class="section-label">{item.data.date ?? ''}</span>
-                <span class="section-label" style={`color: ${item.data.status === 'published' ? 'var(--accent-dk)' : 'var(--muted)'};`}>{item.data.status}</span>
-              </div>
-              <h3 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h3>
+              {item.data.date && <span class="section-label">{item.data.date}</span>}
+              <h4 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h4>
               <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
               <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
             </a>
@@ -57,17 +73,17 @@ const statusLabel: Record<string, string> = {
         </div>
       </div>
 
-      <!-- Simulation and Optimization -->
-      <div>
-        <span class="section-label" style="color: var(--accent-dk);">Simulation and Optimization</span>
-        <div class="flex flex-col max-w-3xl mt-2">
+      <!-- Simulation and Optimization sub-section -->
+      <div class="area-section" data-area="simulation">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
+          <h3 class="text-xs uppercase tracking-widest" style="color: var(--accent-dk); font-weight: 700;">Simulation and Optimization</h3>
+        </div>
+        <div class="flex flex-col max-w-3xl">
           {simulation.map((item) => (
             <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
-              <div class="flex items-center justify-between">
-                <span class="section-label">{item.data.date ?? ''}</span>
-                <span class="section-label" style={`color: ${item.data.status === 'published' ? 'var(--accent-dk)' : 'var(--muted)'};`}>{item.data.status}</span>
-              </div>
-              <h3 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h3>
+              {item.data.date && <span class="section-label">{item.data.date}</span>}
+              <h4 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h4>
               <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
               <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
             </a>
@@ -97,3 +113,41 @@ const statusLabel: Record<string, string> = {
 
   </div>
 </BaseLayout>
+
+<style>
+  .area-tab {
+    color: var(--muted);
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .area-tab:hover {
+    color: var(--ink);
+  }
+  .area-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+    font-weight: 700;
+  }
+  .area-section.hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.area-tab');
+  const sections = document.querySelectorAll<HTMLElement>('.area-section');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const area = tab.dataset.area;
+      tabs.forEach((t) => t.classList.toggle('active', t === tab));
+      sections.forEach((s) => {
+        const match = area === 'all' || s.dataset.area === area;
+        s.classList.toggle('hidden', !match);
+      });
+    });
+  });
+</script>
