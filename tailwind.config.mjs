@@ -4,29 +4,30 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Light Frame design tokens
-        'bg-base':   '#FAFAFA',
-        'bg-warm':   '#FAF8F4',
-        'bg-cool':   '#F4F7FA',
-        'bg-cyan':   '#F4FAFA',
-        surface:     '#F2F2F2',
-        border:      '#D4D4D4',
-        ink:         '#0A0A0A',
-        body:        '#262626',
-        muted:       '#525252',
-        accent:      '#0891B2',
-        critical:    '#DC2626',
+        // Warm Paper design tokens — adhamdannaway-inspired
+        'bg-base':   '#F0EBE0',   // warm cream
+        'bg-warm':   '#EFE9DC',
+        'bg-cool':   '#ECE8DE',
+        'bg-cyan':   '#EBE6DA',
+        surface:     '#E8E2D4',
+        border:      '#D9D2C5',
+        ink:         '#1A1A1A',
+        body:        '#3D3633',   // warm dark
+        muted:       '#7A7165',   // warm gray
+        accent:      '#E8B547',   // mustard yellow
+        critical:    '#C73E3E',
       },
       fontFamily: {
+        serif: ['Fraunces', 'Georgia', 'serif'],
         sans:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
         mono:  ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       fontWeight: {
-        // Override defaults — never use 'thin' or 'extralight'
         normal:   '400',
         medium:   '500',
         semibold: '600',
         bold:     '700',
+        black:    '900',
       },
       borderRadius: {
         DEFAULT: '0',
@@ -36,10 +37,10 @@ export default {
         tight: '-0.02em',
       },
       fontSize: {
-        'display-xl': ['9rem',  { lineHeight: '1', letterSpacing: '-0.02em' }],
-        'display-lg': ['7.5rem',{ lineHeight: '1', letterSpacing: '-0.02em' }],
-        'display':    ['4.5rem',{ lineHeight: '1.05', letterSpacing: '-0.02em' }],
-        'section':    ['3rem',  { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'display-xl': ['9rem',  { lineHeight: '0.95', letterSpacing: '-0.03em' }],
+        'display-lg': ['7.5rem',{ lineHeight: '0.95', letterSpacing: '-0.03em' }],
+        'display':    ['4.5rem',{ lineHeight: '1.0',  letterSpacing: '-0.025em' }],
+        'section':    ['3rem',  { lineHeight: '1.1',  letterSpacing: '-0.02em' }],
       },
     },
   },

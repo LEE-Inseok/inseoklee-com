@@ -4,31 +4,32 @@
 @tailwind utilities;
 
 /* ============================================================
-   Light Frame design system — CSS custom properties
-   (off-white background + black text, single cyan accent)
+   Warm Paper design system — adhamdannaway-inspired
+   (warm cream bg + dark warm text + mustard accent + serif headings)
    ============================================================ */
 
 :root {
-  /* Background scale — light, subtle tints per stage */
-  --bg:        #FAFAFA;
-  --bg-warm:   #FAF8F4;
-  --bg-cool:   #F4F7FA;
-  --bg-cyan:   #F4FAFA;
+  /* Background scale */
+  --bg:        #F0EBE0;
+  --bg-warm:   #EFE9DC;
+  --bg-cool:   #ECE8DE;
+  --bg-cyan:   #EBE6DA;
 
   /* Surface & border */
-  --surface:   #F2F2F2;
-  --border:    #D4D4D4;
+  --surface:   #E8E2D4;
+  --border:    #D9D2C5;
 
   /* Text */
-  --ink:       #0A0A0A;
-  --body:      #262626;
-  --muted:     #525252;
+  --ink:       #1A1A1A;
+  --body:      #3D3633;
+  --muted:     #7A7165;
 
-  /* Accent — Tailwind cyan-600 (well-contrasted on light bg) */
-  --accent:    #0891B2;
+  /* Accent — mustard yellow */
+  --accent:    #E8B547;
+  --accent-dk: #C9962A;
 
   /* Utility */
-  --critical:  #DC2626;
+  --critical:  #C73E3E;
 
   /* Spacing */
   --nav-h:     64px;
@@ -44,17 +45,10 @@
     color: var(--body);
     font-family: 'Inter Tight', 'Pretendard', system-ui, sans-serif;
     font-weight: 400;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
-  }
-
-  /* JetBrains Mono — used wherever Tailwind font-mono class is applied */
-  .font-mono,
-  code, pre, kbd, samp {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    letter-spacing: 0;
   }
 
   body {
@@ -63,35 +57,37 @@
     position: relative;
   }
 
-  /* Subtle noise overlay — softened on light bg */
+  /* Soft grain — paper texture on warm bg */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.025;
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 300px 300px;
     mix-blend-mode: multiply;
   }
 
-  /* Typography base — Inter Tight headings */
+  /* Headings use Fraunces — distinctive display serif */
   h1, h2, h3, h4, h5, h6 {
     color: var(--ink);
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-variation-settings: 'opsz' 144, 'SOFT' 50;
     letter-spacing: -0.025em;
-    font-weight: 700;
-    line-height: 1.05;
+    line-height: 1.0;
   }
 
+  /* Body text */
   p {
     color: var(--body);
     font-weight: 400;
-    line-height: 1.65;
+    line-height: 1.7;
   }
 
-  /* Body text in general (not just <p>) — guard against thin defaults */
   body, span, li, td, th, dd, dt, blockquote {
     font-weight: 400;
   }
@@ -106,7 +102,7 @@
     border-radius: 0 !important;
   }
 
-  /* Scrollbar — light themed */
+  /* Scrollbar — warm tone */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -119,6 +115,13 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: var(--muted);
+  }
+
+  /* JetBrains Mono — applied wherever font-mono class is used */
+  .font-mono,
+  code, pre, kbd, samp {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0;
   }
 }
 
@@ -142,28 +145,31 @@
     transition: border-color 150ms ease, transform 150ms ease;
   }
   .card:hover {
-    border-color: var(--accent);
+    border-color: var(--accent-dk);
     transform: translateY(-1px);
   }
 
-  /* Chip / tag — readable on light bg */
+  /* Chip / tag */
   .chip {
     @apply inline-block px-3 py-1 text-xs font-mono uppercase tracking-widest;
     color: var(--body);
     font-weight: 500;
     border: 1px solid var(--border);
-    background-color: var(--surface);
+    background-color: transparent;
   }
 
   /* CTA link */
   .cta-link {
     @apply inline-flex items-center gap-2 text-sm;
-    color: var(--accent);
+    color: var(--ink);
     font-weight: 500;
-    transition: gap 150ms ease;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 2px;
+    transition: gap 150ms ease, border-color 150ms ease;
   }
   .cta-link:hover {
     gap: 0.75rem;
+    border-bottom-color: var(--accent-dk);
   }
 
   /* Section label — small mono uppercase */
@@ -173,13 +179,13 @@
     font-weight: 500;
   }
 
-  /* Cyan active indicator above nav item */
+  /* Mustard active indicator above nav item */
   .nav-active-line {
     position: absolute;
-    top: 0;
+    bottom: -4px;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 2px;
     background-color: var(--accent);
   }
 
@@ -195,6 +201,12 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-weight: 500;
+  }
+
+  /* Inline highlight — yellow marker style (adhamdannaway-inspired) */
+  .highlight {
+    background: linear-gradient(180deg, transparent 60%, var(--accent) 60%);
+    padding: 0 0.1em;
   }
 }
 

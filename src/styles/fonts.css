@@ -10,10 +10,13 @@
  * Replace the @import lines with @font-face blocks once .woff2 files are in /public/fonts/.
  */
 
-/* --- Inter Tight (sans-serif) — weights 400/500/600/700 --- */
+/* --- Fraunces (variable serif) — display/heading font, adhamdannaway-inspired tone --- */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&display=swap');
+
+/* --- Inter Tight (sans-serif) — body text --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap');
 
-/* --- JetBrains Mono (monospace) — weights 400/500/700 --- */
+/* --- JetBrains Mono (monospace) — meta/labels --- */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 /* --- Pretendard (Korean fallback) via CDN --- */
