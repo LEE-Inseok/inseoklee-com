@@ -1,38 +1,15 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
-
-const items = (await getCollection('engineering')).sort(
-  (a, b) => (a.data.date ?? '').localeCompare(b.data.date ?? '')
-);
+// Engineering category was merged into Research → redirect.
 ---
-
-<BaseLayout
-  title="Engineering — Inseok Lee"
-  description="Process simulation and multi-objective optimization of hydrogen energy systems."
->
-  <div class="container-site py-16">
-    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
-      <span class="section-label">Engineering</span>
-      <h1 class="text-section mt-3" style="color: var(--ink);">Simulation. Optimization.</h1>
-      <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
-        Process systems engineering — Aspen Plus simulation and multi-objective optimization
-        of hydrogen liquefaction and LOHC carrier systems.
-      </p>
-    </header>
-
-    <div class="flex flex-col max-w-3xl">
-      {items.map((item, idx) => (
-        <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
-          <div class="flex items-center justify-between">
-            <span class="section-label">{String(idx + 1).padStart(2, '0')}</span>
-            <span class="section-label" style={`color: ${item.data.status === 'published' ? 'var(--accent-dk)' : 'var(--muted)'};`}>{item.data.status}</span>
-          </div>
-          <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h2>
-          <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
-          <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
-        </a>
-      ))}
-    </div>
-  </div>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=/research" />
+    <link rel="canonical" href="https://inseoklee.com/research" />
+    <title>Redirecting to /research</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href="/research">/research</a>…</p>
+  </body>
+</html>

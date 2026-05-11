@@ -102,6 +102,18 @@ const news = defineCollection({
   }),
 });
 
+const publications = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title:     z.string(),
+    status:    z.enum(['submitted', 'draft', 'in-preparation', 'under-review', 'published']),
+    target:    z.string().optional(),
+    summary:   z.string(),
+    date:      z.string().optional(),
+    coauthors: z.array(z.string()).optional(),
+  }),
+});
+
 export const collections = {
   'research':                   research,
   'engineering':                engineering,
@@ -111,4 +123,5 @@ export const collections = {
   'recognition-presentations':  recognitionPresentations,
   'recognition-activities':     recognitionActivities,
   'news':                       news,
+  'publications':               publications,
 };
