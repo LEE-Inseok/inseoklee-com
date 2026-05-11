@@ -42,18 +42,19 @@
   html {
     background-color: var(--bg);
     color: var(--body);
-    font-family: 'Geist', 'Pretendard', system-ui, sans-serif;
+    font-family: 'Times New Roman', Times, 'Pretendard', serif;
     font-weight: 400;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
   }
 
-  /* IBM Plex Mono — used wherever Tailwind font-mono class is applied */
+  /* Geist (sans) — used wherever Tailwind font-mono class is applied (per user choice) */
   .font-mono,
   code, pre, kbd, samp {
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-family: 'Geist', system-ui, sans-serif;
+    letter-spacing: -0.01em;
   }
 
   body {
@@ -76,12 +77,12 @@
     mix-blend-mode: multiply;
   }
 
-  /* Typography base — strengthened weights */
+  /* Typography base — Times New Roman classical headings */
   h1, h2, h3, h4, h5, h6 {
     color: var(--ink);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     font-weight: 700;
-    line-height: 1.05;
+    line-height: 1.1;
   }
 
   p {

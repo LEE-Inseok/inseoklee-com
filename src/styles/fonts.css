@@ -10,11 +10,10 @@
  * Replace the @import lines with @font-face blocks once .woff2 files are in /public/fonts/.
  */
 
-/* --- Geist (Latin) via CDN fallback — weights 400/500/700 only (no thin) --- */
+/* --- Geist (sans-serif) via CDN — used in 'font-mono' slot per user choice --- */
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap');
 
-/* --- IBM Plex Mono — academic/engineering tone, weights 400/500/700 --- */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+/* Times New Roman is a system font on Windows/macOS — no import needed. */
 
 /* --- Pretendard (Korean fallback) via CDN --- */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');

@@ -18,8 +18,8 @@ export default {
         critical:    '#DC2626',
       },
       fontFamily: {
-        sans:  ['Geist', 'Pretendard', 'system-ui', 'sans-serif'],
-        mono:  ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        sans:  ['"Times New Roman"', 'Times', 'Pretendard', 'serif'],
+        mono:  ['Geist', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
         // Override defaults — never use 'thin' or 'extralight'
