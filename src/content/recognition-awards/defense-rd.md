@@ -1,5 +1,4 @@
 ---
-slug: defense-rd
 title: Defense R&D Idea Competition
 year: 2024
 prize: Encouragement Prize

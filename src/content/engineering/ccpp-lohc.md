@@ -1,5 +1,4 @@
 ---
-slug: ccpp-lohc
 title: CCPP-LOHC Optimization
 status: draft
 summary: Multi-objective optimization of a combined-cycle power plant integrated with LOHC hydrogen production — Aspen Plus simulation + ML surrogate + NSGA-II / Bayesian optimization.

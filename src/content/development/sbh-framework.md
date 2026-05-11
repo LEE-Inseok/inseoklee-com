@@ -1,5 +1,4 @@
 ---
-slug: sbh-framework
 title: SBH Thermal Reactor Framework
 type: framework
 summary: ODE-based thermal simulation framework for reactor configurations — separates model definition, scenario specification, and execution. Powers the 5-scenario heat recovery comparison study.

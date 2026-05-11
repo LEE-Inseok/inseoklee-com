@@ -1,5 +1,4 @@
 ---
-slug: aspen-automation
 title: Aspen Automation Framework
 type: framework
 summary: Python automation pipeline for Aspen Plus — DOE generation, parallel simulation execution, surrogate model training, and optimization. Enabled a 1,575-case study completed in hours instead of weeks.

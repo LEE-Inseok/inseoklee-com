@@ -1,5 +1,4 @@
 ---
-slug: korea-it-academy
 issuer: Korea IT Academy
 title: 4 Courses · 370 Hours · 100% Attendance
 date: "2022-04 ~ 2024-10"

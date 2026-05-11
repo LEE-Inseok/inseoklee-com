@@ -1,5 +1,4 @@
 ---
-slug: ku-3mt
 title: Korea University 3MT — Presentation Award
 year: 2026
 prize: Presentation Award

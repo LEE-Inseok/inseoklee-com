@@ -1,5 +1,4 @@
 ---
-slug: anthropic-claude-code-in-action
 issuer: Anthropic
 title: Claude Code in Action
 date: "2026-04-13"

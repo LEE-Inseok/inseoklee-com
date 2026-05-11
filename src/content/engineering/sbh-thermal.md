@@ -1,5 +1,4 @@
 ---
-slug: sbh-thermal
 title: SBH Thermal Simulation
 status: published
 summary: Physics-based thermal scenario study across 5 heat-recovery configurations for the SBH hydrogen system — extending experimental observations into systematic design comparison.

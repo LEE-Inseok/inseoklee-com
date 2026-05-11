@@ -1,10 +1,10 @@
 import { defineCollection, z } from 'astro:content';
 
-// ─── Research ──────────────────────────────────────────────────────────────
+// slug is auto-generated from the markdown filename — must NOT be declared in schemas.
+
 const research = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:     z.string(),
     title:    z.string(),
     status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
     summary:  z.string(),
@@ -19,11 +19,9 @@ const research = defineCollection({
   }),
 });
 
-// ─── Engineering ───────────────────────────────────────────────────────────
 const engineering = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:     z.string(),
     title:    z.string(),
     status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
     summary:  z.string(),
@@ -38,11 +36,9 @@ const engineering = defineCollection({
   }),
 });
 
-// ─── Development ───────────────────────────────────────────────────────────
 const development = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:    z.string(),
     title:   z.string(),
     type:    z.enum(['framework', 'productivity', 'dashboard', 'tool']),
     summary: z.string(),
@@ -51,11 +47,9 @@ const development = defineCollection({
   }),
 });
 
-// ─── Recognition: Awards ───────────────────────────────────────────────────
 const recognitionAwards = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:    z.string(),
     title:   z.string(),
     year:    z.number(),
     prize:   z.string(),
@@ -64,11 +58,9 @@ const recognitionAwards = defineCollection({
   }),
 });
 
-// ─── Recognition: Certifications ───────────────────────────────────────────
 const recognitionCertifications = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:      z.string(),
     issuer:    z.string(),
     title:     z.string(),
     date:      z.string(),
@@ -79,11 +71,9 @@ const recognitionCertifications = defineCollection({
   }),
 });
 
-// ─── Recognition: Presentations ────────────────────────────────────────────
 const recognitionPresentations = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:       z.string(),
     conference: z.string(),
     title:      z.string(),
     date:       z.string(),
@@ -92,11 +82,9 @@ const recognitionPresentations = defineCollection({
   }),
 });
 
-// ─── Recognition: Activities ───────────────────────────────────────────────
 const recognitionActivities = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:    z.string(),
     title:   z.string(),
     date:    z.string(),
     summary: z.string(),
@@ -104,11 +92,9 @@ const recognitionActivities = defineCollection({
   }),
 });
 
-// ─── News ──────────────────────────────────────────────────────────────────
 const news = defineCollection({
   type: 'content',
   schema: z.object({
-    slug:    z.string(),
     title:   z.string(),
     date:    z.string(),
     source:  z.string().url().optional(),
@@ -116,7 +102,6 @@ const news = defineCollection({
   }),
 });
 
-// ─── Export ────────────────────────────────────────────────────────────────
 export const collections = {
   'research':                   research,
   'engineering':                engineering,
