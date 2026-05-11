@@ -14,36 +14,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     style="background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%); padding-top: var(--nav-h);"
   >
     <div class="container-site w-full">
-      <div class="flex flex-col lg:flex-row items-center justify-between gap-16 py-24">
-        <!-- Text block -->
-        <div class="flex-1 flex flex-col gap-6">
-          <h1 class="text-display-xl leading-none" style="color: var(--ink);">
+      <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-12 py-16">
+        <!-- Left copy -->
+        <div class="flex-1 lg:text-right">
+          <h1 class="text-4xl lg:text-6xl font-bold leading-tight" style="color: var(--ink);">
             Hi, I'm Inseok.
           </h1>
-          <p class="text-display leading-none" style="color: var(--ink);">
-            <span class="highlight">Hydrogen × AI.</span>
-          </p>
-          <p class="text-base mt-4" style="color: var(--muted);">
-            MSc Chemical Engineering · KIST researcher · hydrogen × AI
-          </p>
-          <div class="flex flex-wrap gap-3 mt-6">
-            <a href="/research" class="cta-link">
-              See research <span>→</span>
-            </a>
-            <a href="/contact" class="cta-link" style="color: var(--muted);">
-              Get in touch <span>→</span>
-            </a>
-          </div>
         </div>
 
-        <!-- Photo placeholder -->
+        <!-- Center photo -->
         <div class="flex-shrink-0">
           <div
-            class="photo-placeholder w-72 lg:w-[420px] h-[520px] lg:h-[580px]"
+            class="photo-placeholder w-64 lg:w-[400px] h-[460px] lg:h-[560px]"
             aria-label="Photo placeholder"
           >
             <span>사진 자리</span>
           </div>
+        </div>
+
+        <!-- Right copy -->
+        <div class="flex-1 lg:text-left">
+          <h2 class="text-4xl lg:text-6xl font-bold leading-tight" style="color: var(--ink);">
+            I am a researcher and also an engineer.
+          </h2>
         </div>
       </div>
     </div>
