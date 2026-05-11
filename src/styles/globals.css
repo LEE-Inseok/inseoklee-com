@@ -4,37 +4,38 @@
 @tailwind utilities;
 
 /* ============================================================
-   Black Frame design system — CSS custom properties
+   Light Frame design system — CSS custom properties
+   (off-white background + black text, single cyan accent)
    ============================================================ */
 
 :root {
-  /* Background scale */
-  --bg:        #0A0A0A;
-  --bg-warm:   #0B0908;
-  --bg-cool:   #08090B;
-  --bg-cyan:   #080A0A;
+  /* Background scale — light, subtle tints per stage */
+  --bg:        #FAFAFA;
+  --bg-warm:   #FAF8F4;
+  --bg-cool:   #F4F7FA;
+  --bg-cyan:   #F4FAFA;
 
   /* Surface & border */
-  --surface:   #111111;
-  --border:    #1F1F1F;
+  --surface:   #F2F2F2;
+  --border:    #D4D4D4;
 
   /* Text */
-  --ink:       #FFFFFF;
-  --body:      #E5E5E5;
-  --muted:     #666666;
+  --ink:       #0A0A0A;
+  --body:      #262626;
+  --muted:     #525252;
 
-  /* Accent */
-  --accent:    #00E5FF;
+  /* Accent — Tailwind cyan-600 (well-contrasted on light bg) */
+  --accent:    #0891B2;
 
   /* Utility */
-  --critical:  #EF4444;
+  --critical:  #DC2626;
 
   /* Spacing */
   --nav-h:     64px;
 }
 
 /* ============================================================
-   SVG noise pattern — 0.5% overlay (baked as data URI)
+   Base typography & background
    ============================================================ */
 
 @layer base {
@@ -42,6 +43,7 @@
     background-color: var(--bg);
     color: var(--body);
     font-family: 'Geist', 'Pretendard', system-ui, sans-serif;
+    font-weight: 400;
     letter-spacing: -0.02em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -54,20 +56,21 @@
     position: relative;
   }
 
-  /* Noise overlay — pseudo-element on body */
+  /* Subtle noise overlay — softened on light bg */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.005;
+    opacity: 0.025;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 300px 300px;
+    mix-blend-mode: multiply;
   }
 
-  /* Typography base */
+  /* Typography base — strengthened weights */
   h1, h2, h3, h4, h5, h6 {
     color: var(--ink);
     letter-spacing: -0.02em;
@@ -77,7 +80,13 @@
 
   p {
     color: var(--body);
+    font-weight: 400;
     line-height: 1.65;
+  }
+
+  /* Body text in general (not just <p>) — guard against thin defaults */
+  body, span, li, td, th, dd, dt, blockquote {
+    font-weight: 400;
   }
 
   a {
@@ -90,7 +99,7 @@
     border-radius: 0 !important;
   }
 
-  /* Scrollbar — dark themed */
+  /* Scrollbar — light themed */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -111,12 +120,10 @@
    ============================================================ */
 
 @layer components {
-  /* Page wrapper — always padded below sticky nav */
   .page-wrapper {
     @apply pt-16 min-h-screen;
   }
 
-  /* Section container */
   .container-site {
     @apply mx-auto px-6 md:px-12 lg:px-16 max-w-7xl;
   }
@@ -132,27 +139,31 @@
     transform: translateY(-1px);
   }
 
-  /* Chip / tag */
+  /* Chip / tag — readable on light bg */
   .chip {
     @apply inline-block px-3 py-1 text-xs font-mono uppercase tracking-widest;
-    color: var(--muted);
+    color: var(--body);
+    font-weight: 500;
     border: 1px solid var(--border);
+    background-color: var(--surface);
   }
 
   /* CTA link */
   .cta-link {
-    @apply inline-flex items-center gap-2 text-sm font-medium;
+    @apply inline-flex items-center gap-2 text-sm;
     color: var(--accent);
+    font-weight: 500;
     transition: gap 150ms ease;
   }
   .cta-link:hover {
     gap: 0.75rem;
   }
 
-  /* Section header */
+  /* Section label — small mono uppercase */
   .section-label {
     @apply text-xs font-mono uppercase tracking-widest;
     color: var(--muted);
+    font-weight: 500;
   }
 
   /* Cyan active indicator above nav item */
@@ -176,6 +187,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    font-weight: 500;
   }
 }
 

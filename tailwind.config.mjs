@@ -4,22 +4,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Black Frame design tokens
-        'bg-base':   '#0A0A0A',
-        'bg-warm':   '#0B0908',
-        'bg-cool':   '#08090B',
-        'bg-cyan':   '#080A0A',
-        surface:     '#111111',
-        border:      '#1F1F1F',
-        ink:         '#FFFFFF',
-        body:        '#E5E5E5',
-        muted:       '#666666',
-        accent:      '#00E5FF',
-        critical:    '#EF4444',
+        // Light Frame design tokens
+        'bg-base':   '#FAFAFA',
+        'bg-warm':   '#FAF8F4',
+        'bg-cool':   '#F4F7FA',
+        'bg-cyan':   '#F4FAFA',
+        surface:     '#F2F2F2',
+        border:      '#D4D4D4',
+        ink:         '#0A0A0A',
+        body:        '#262626',
+        muted:       '#525252',
+        accent:      '#0891B2',
+        critical:    '#DC2626',
       },
       fontFamily: {
         sans:  ['Geist', 'Pretendard', 'system-ui', 'sans-serif'],
         mono:  ['Geist Mono', 'ui-monospace', 'monospace'],
+      },
+      fontWeight: {
+        // Override defaults — never use 'thin' or 'extralight'
+        normal:   '400',
+        medium:   '500',
+        semibold: '600',
+        bold:     '700',
       },
       borderRadius: {
         DEFAULT: '0',
