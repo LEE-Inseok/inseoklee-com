@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://inseoklee.com/sitemap-index.xml
+Sitemap: https://inseoklee.com/sitemap.xml
