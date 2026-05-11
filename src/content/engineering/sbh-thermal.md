@@ -43,11 +43,13 @@ Five reactor configurations compared under identical model equations and operati
 
 | Scenario | Peak Temp (°C) | Heat Recovered (%) | Notes |
 |----------|---------------|--------------------|-------|
-| Baseline | 280 | 0 | Reference |
-| Wrap coil (A) | 240 | 12 % | Simple retrofit |
-| Internal coil (B) | 210 | 22 % | Most effective cooling |
-| Embedded purification (C) | 235 | 18 % | Heat reuse |
-| Hybrid (D) | 195 | 32 % | Best overall |
+| Baseline | *** | 0 | Reference |
+| Wrap coil (A) | *** | *** % | Simple retrofit |
+| Internal coil (B) | *** | *** % | Most effective cooling |
+| Embedded purification (C) | *** | *** % | Heat reuse |
+| Hybrid (D) | *** | *** % | Best overall |
+
+> *Quantitative scenario values withheld pending publication. Relative ranking and qualitative trends are described below.*
 
 **Findings**
 
@@ -55,7 +57,7 @@ Five reactor configurations compared under identical model equations and operati
 - Internal coil provides the most effective peak temperature reduction among individual strategies
 - Embedded purification successfully recovers useful heat while slightly reducing reactor cooling effectiveness
 - Hybrid achieves the best balance of thermal control and heat utilization, but introduces more complex control requirements
-- Temperature rise is most sensitive to hydrogen generation rate in the first 2–3 minutes of operation
+- Temperature rise is most sensitive to hydrogen generation rate during the early phase of operation
 - Embedded purification shows mutually beneficial coupling: reaction heat improves CO catalysis efficiency while reducing reactor temperature
 
 ## Design Implications

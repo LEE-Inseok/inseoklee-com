@@ -61,10 +61,12 @@ The subsystems are coupled through: gas flow path (H2 reactor → purification �
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| H2 generation rate | 80,000 mL/min | At 6.3 wt% SBH |
-| Peak power density | 350 mW/cm² | Clean H2 condition |
-| System efficiency | 50 % | At operating point |
-| Reactor temperature rise | 200 °C | During generation |
+| H2 generation rate | *** mL/min | At *** wt% SBH |
+| Peak power density | *** mW/cm² | Clean H2 condition |
+| System efficiency | *** % | At operating point |
+| Reactor temperature rise | *** °C | During generation |
+
+> *Quantitative results withheld pending publication. Order of magnitude and methodology are described above.*
 
 **Findings**
 

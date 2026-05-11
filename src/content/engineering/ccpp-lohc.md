@@ -44,22 +44,24 @@ The solution: replace expensive Aspen simulations with fast ML surrogate models,
 
 ## Phase 1 — Grid Sweep (Complete)
 
-4-line heat recovery comparison across 450 cases per line (SR 0.85–0.99 × MCH 1–30 ton/hr):
+4-line heat recovery comparison across the design grid (SR × MCH) per line:
 
 | Line | Location | Temp | Success Rate | Penalty | E1 Impact |
 |------|----------|------|-------------|---------|-----------|
-| Line 6 | Post-SH gas | 470 °C | 330/450 (73.3 %) | ~0 kW | None |
-| Line 5 | Post-GT gas | 531 °C | 328/450 (72.9 %) | ~1,500 kW | None |
-| Line 9 | Post-SH steam | 468 °C | 316/450 (70.2 %) | ~7,000 kW | None |
-| Line 4 | Post-combustion | 1,150 °C | 327/450 (72.7 %) | ~50,000 kW | Linear decrease |
+| Line 6 | Post-SH gas | *** °C | *** | ~*** kW | None |
+| Line 5 | Post-GT gas | *** °C | *** | ~*** kW | None |
+| Line 9 | Post-SH steam | *** °C | *** | ~*** kW | None |
+| Line 4 | Post-combustion | *** °C | *** | ~*** kW | Linear decrease |
 
-**Key findings**
+> *Quantitative values withheld pending publication. Penalty rankings and qualitative findings are summarized below.*
+
+**Key findings (qualitative)**
 
 - **Zero-penalty heat recovery zone** discovered at Line 6: LOHC integration causes no measurable reduction in CCPP power output
-- 4-line penalty ranking: Line 6 (~0 kW) < Line 5 (~1,500 kW) < Line 9 (~7,000 kW) < Line 4 (~50,000 kW)
-- LOHC competes with steam turbine efficiency (30–38 %), not full CCPP efficiency (55–62 %) — penalty scope is narrower than initially expected
-- LHHW kinetic model validated: 99.98 % conversion at base case, with physically meaningful heat-limited behavior
-- Maximum H₂ output: 0.461 kg/s (Line 6, MCH 30 ton/hr, SR 0.89)
+- 4-line penalty ranking: **Line 6 < Line 5 < Line 9 < Line 4** (lowest to highest penalty)
+- LOHC competes with steam turbine efficiency, not full CCPP efficiency — penalty scope is narrower than initially expected
+- LHHW kinetic model validated at base case with physically meaningful heat-limited behavior
+- Maximum H₂ output achieved at Line 6 (high MCH, near-maximum SR)
 
 ## Phase 2 — LHS + Surrogate + NSGA-II (Pending)
 
