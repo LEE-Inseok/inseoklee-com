@@ -50,6 +50,12 @@
     scroll-behavior: smooth;
   }
 
+  /* IBM Plex Mono — used wherever Tailwind font-mono class is applied */
+  .font-mono,
+  code, pre, kbd, samp {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+
   body {
     background-color: var(--bg);
     min-height: 100vh;

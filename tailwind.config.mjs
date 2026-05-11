@@ -19,7 +19,7 @@ export default {
       },
       fontFamily: {
         sans:  ['Geist', 'Pretendard', 'system-ui', 'sans-serif'],
-        mono:  ['Geist Mono', 'ui-monospace', 'monospace'],
+        mono:  ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       fontWeight: {
         // Override defaults — never use 'thin' or 'extralight'

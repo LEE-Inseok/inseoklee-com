@@ -13,8 +13,8 @@
 /* --- Geist (Latin) via CDN fallback — weights 400/500/700 only (no thin) --- */
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap');
 
-/* --- Geist Mono via CDN fallback — weights 400/500/700 only --- */
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&display=swap');
+/* --- IBM Plex Mono — academic/engineering tone, weights 400/500/700 --- */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
 
 /* --- Pretendard (Korean fallback) via CDN --- */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
