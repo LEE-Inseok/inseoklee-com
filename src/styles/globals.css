@@ -134,15 +134,16 @@
     @apply mx-auto px-6 md:px-12 lg:px-16 max-w-7xl;
   }
 
-  /* Card base */
+  /* Card — no box, no background, just a 1px top divider for separation */
   .card {
-    background-color: var(--surface);
-    border: 1px solid var(--border);
-    transition: border-color 150ms ease, transform 150ms ease;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--border);
+    padding: 2rem 0 !important;
+    transition: border-color 150ms ease;
   }
   .card:hover {
-    border-color: var(--accent-dk);
-    transform: translateY(-1px);
+    border-top-color: var(--accent);
   }
 
   /* Chip — plain inline text, identical to body */
