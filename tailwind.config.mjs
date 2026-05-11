@@ -4,23 +4,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm Paper design tokens — adhamdannaway-inspired
-        'bg-base':   '#F0EBE0',   // warm cream
-        'bg-warm':   '#EFE9DC',
-        'bg-cool':   '#ECE8DE',
-        'bg-cyan':   '#EBE6DA',
-        surface:     '#E8E2D4',
-        border:      '#D9D2C5',
-        ink:         '#1A1A1A',
-        body:        '#3D3633',   // warm dark
-        muted:       '#7A7165',   // warm gray
-        accent:      '#E8B547',   // mustard yellow
-        critical:    '#C73E3E',
+        // Clean White design tokens — white + black + gray + cyan
+        'bg-base':   '#FFFFFF',
+        'bg-warm':   '#FAFAFA',
+        'bg-cool':   '#F5F7FA',
+        'bg-cyan':   '#F0F8FA',
+        surface:     '#F5F5F5',
+        border:      '#E5E5E5',
+        ink:         '#0A0A0A',
+        body:        '#1F1F1F',
+        muted:       '#6B6B6B',
+        accent:      '#06B6D4',
+        'accent-dk': '#0891B2',
+        critical:    '#DC2626',
       },
       fontFamily: {
         serif: ['Fraunces', 'Georgia', 'serif'],
         sans:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
-        // mono slot intentionally aliased to sans — site uses single body font
         mono:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
       },
       fontWeight: {

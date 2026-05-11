@@ -133,11 +133,11 @@ function isActive(href: string): boolean {
     if (!nav) return;
     if (window.scrollY > 20) {
       nav.style.backdropFilter = 'blur(8px)';
-      nav.style.backgroundColor = 'rgba(240, 235, 224, 0.85)';
-      nav.style.borderBottom = '1px solid #D9D2C5';
+      nav.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+      nav.style.borderBottom = '1px solid #E5E5E5';
     } else {
       nav.style.backdropFilter = 'none';
-      nav.style.backgroundColor = '#F0EBE0';
+      nav.style.backgroundColor = '#FFFFFF';
       nav.style.borderBottom = 'none';
     }
   }, { passive: true });
