@@ -213,6 +213,93 @@
 }
 
 /* ============================================================
+   Article (rendered markdown) — typography for detail pages
+   ============================================================ */
+
+.article h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--ink);
+}
+.article h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+}
+.article p {
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--body);
+}
+.article ul, .article ol {
+  margin: 0 0 1rem 1.25rem;
+  font-weight: 500;
+  line-height: 1.75;
+  color: var(--body);
+}
+.article ul { list-style: disc; }
+.article ol { list-style: decimal; }
+.article li { margin-bottom: 0.25rem; }
+.article a {
+  color: var(--accent-dk);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.article a:hover { color: var(--accent); }
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+}
+.article th, .article td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 500;
+}
+.article th {
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface);
+}
+.article code {
+  background: var(--surface);
+  padding: 0.1em 0.35em;
+  font-size: 0.875em;
+}
+.article pre {
+  background: var(--surface);
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border: 1px solid var(--border);
+}
+.article pre code {
+  background: transparent;
+  padding: 0;
+}
+.article blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--muted);
+  font-style: italic;
+}
+.article hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* ============================================================
    Reduced motion
    ============================================================ */
 

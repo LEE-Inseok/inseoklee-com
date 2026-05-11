@@ -1,5 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const items = (await getCollection('engineering')).sort(
+  (a, b) => (a.data.date ?? '').localeCompare(b.data.date ?? '')
+);
 ---
 
 <BaseLayout
@@ -17,24 +22,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </header>
 
     <div class="flex flex-col max-w-3xl">
-      <a href="/engineering/sbh-thermal" class="card flex flex-col gap-3 group">
-        <span class="section-label">01</span>
-        <h2 class="text-xl font-semibold" style="color: var(--ink);">SBH Thermal Simulation</h2>
-        <p class="text-sm" style="color: var(--body);">
-          Thermal modelling and scenario comparison for the SBH hydrogen generation system.
-        </p>
-        <span class="cta-link text-sm mt-auto">View project →</span>
-      </a>
-
-      <a href="/engineering/ccpp-lohc" class="card flex flex-col gap-3 group">
-        <span class="section-label">02</span>
-        <h2 class="text-xl font-semibold" style="color: var(--ink);">CCPP-LOHC Optimization</h2>
-        <p class="text-sm" style="color: var(--body);">
-          Multi-objective optimization of a combined-cycle power plant integrated with
-          LOHC hydrogen carrier. NSGA-II Pareto-front analysis.
-        </p>
-        <span class="cta-link text-sm mt-auto">View project →</span>
-      </a>
+      {items.map((item, idx) => (
+        <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
+          <div class="flex items-center justify-between">
+            <span class="section-label">{String(idx + 1).padStart(2, '0')}</span>
+            <span class="section-label" style={`color: ${item.data.status === 'published' ? 'var(--accent-dk)' : 'var(--muted)'};`}>{item.data.status}</span>
+          </div>
+          <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h2>
+          <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
+          <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+        </a>
+      ))}
     </div>
   </div>
 </BaseLayout>

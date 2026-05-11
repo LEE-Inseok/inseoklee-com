@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const tools = await getCollection('development');
+const frameworks = tools.filter(t => t.data.type === 'framework');
 ---
 
 <BaseLayout
@@ -18,31 +22,39 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="flex flex-col max-w-3xl">
       <a href="/development/code" class="card flex flex-col gap-3 group">
-        <span class="section-label">01</span>
-        <h2 class="text-xl font-semibold" style="color: var(--ink);">Code & Frameworks</h2>
-        <p class="text-sm" style="color: var(--body);">
-          Aspen Plus automation and SBH thermal simulation framework.
+        <div class="flex items-center justify-between">
+          <span class="section-label">01</span>
+          <span class="section-label" style="color: var(--accent-dk);">{frameworks.length} items</span>
+        </div>
+        <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Code & Frameworks</h2>
+        <p class="text-base" style="color: var(--body);">
+          Aspen Plus automation pipeline and SBH thermal reactor framework — the codebase behind every simulation result.
         </p>
-        <span class="cta-link text-sm mt-auto">View →</span>
+        <span class="text-sm mt-1" style="color: var(--accent-dk);">View →</span>
       </a>
 
       <a href="/development/engineering-productivity" class="card flex flex-col gap-3 group">
-        <span class="section-label">02</span>
-        <h2 class="text-xl font-semibold" style="color: var(--ink);">Engineering Productivity</h2>
-        <p class="text-sm" style="color: var(--body);">
-          Multi-agent AI workflow system designed for engineering research — architecture,
-          automation, and human-authorship boundaries.
+        <div class="flex items-center justify-between">
+          <span class="section-label">02</span>
+          <span class="section-label">coming soon</span>
+        </div>
+        <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Engineering Productivity</h2>
+        <p class="text-base" style="color: var(--body);">
+          Multi-agent AI workflow system designed for engineering research — architecture, automation rules, and human-authorship boundaries.
         </p>
-        <span class="cta-link text-sm mt-auto">View →</span>
+        <span class="text-sm mt-1" style="color: var(--accent-dk);">View →</span>
       </a>
 
       <a href="/development/dashboards" class="card flex flex-col gap-3 group">
-        <span class="section-label">03</span>
-        <h2 class="text-xl font-semibold" style="color: var(--ink);">Dashboards</h2>
-        <p class="text-sm" style="color: var(--body);">
-          Real-time process monitoring and optimization result dashboards.
+        <div class="flex items-center justify-between">
+          <span class="section-label">03</span>
+          <span class="section-label">coming soon</span>
+        </div>
+        <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Dashboards</h2>
+        <p class="text-base" style="color: var(--body);">
+          Real-time process monitoring and optimization-result dashboards built locally.
         </p>
-        <span class="cta-link text-sm mt-auto">View →</span>
+        <span class="text-sm mt-1" style="color: var(--accent-dk);">View →</span>
       </a>
     </div>
   </div>

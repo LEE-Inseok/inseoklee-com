@@ -1,37 +1,63 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const items = (await getCollection('recognition-certifications')).sort(
+  (a, b) => b.data.date.localeCompare(a.data.date)
+);
+
+const rendered = await Promise.all(items.map(async (entry) => {
+  const { Content } = await entry.render();
+  return { entry, Content };
+}));
 ---
 
 <BaseLayout
   title="Certifications — Recognition — Inseok Lee"
-  description="Anthropic certifications and Korea IT Academy course completions."
+  description="Professional certifications and course completions."
 >
   <div class="container-site py-16">
-    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
-      <a href="/recognition" class="section-label transition-colors" style="color: var(--muted);" onmouseover="this.style.color='var(--accent)';" onmouseout="this.style.color='var(--muted)';">← Recognition</a>
-      <h1 class="text-section mt-3" style="color: var(--ink);">Certifications.</h1>
+    <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
+      <a
+        href="/recognition"
+        class="section-label transition-colors"
+        style="color: var(--muted);"
+        onmouseover="this.style.color='var(--accent)';"
+        onmouseout="this.style.color='var(--muted)';"
+      >← Recognition</a>
+      <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Certifications.</h1>
     </header>
 
-    <div class="max-w-3xl">
-      <p class="text-base mb-8" style="color: var(--body);">
-        [Certifications grid coming in Day 5. Will include: Anthropic certification carousel
-        (Claude Code in Action + additional courses) and Korea IT Academy 4-course 370h
-        completion card. All with verify URL + PDF download.]
-      </p>
+    <div class="flex flex-col max-w-2xl">
+      {rendered.map(({ entry, Content }) => (
+        <section class="card flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="section-label">{entry.data.issuer}</span>
+            <span class="section-label">{entry.data.date}</span>
+          </div>
+          <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{entry.data.title}</h2>
+          <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
 
-      <div class="flex flex-col">
-        <div class="card">
-          <span class="section-label">Anthropic</span>
-          <h2 class="text-lg font-semibold mt-2" style="color: var(--ink);">Claude Code in Action</h2>
-          <p class="text-sm mt-2" style="color: var(--muted);">[Placeholder — verify URL + PDF coming]</p>
-        </div>
+          {(entry.data.verifyUrl || entry.data.pdf) && (
+            <div class="flex flex-wrap gap-4 mt-2">
+              {entry.data.verifyUrl && (
+                <a href={entry.data.verifyUrl} target="_blank" rel="noopener noreferrer" class="text-sm" style="color: var(--accent-dk); text-decoration: underline;">
+                  Verify →
+                </a>
+              )}
+              {entry.data.pdf && (
+                <a href={entry.data.pdf} target="_blank" rel="noopener noreferrer" class="text-sm" style="color: var(--accent-dk); text-decoration: underline;">
+                  PDF ↓
+                </a>
+              )}
+            </div>
+          )}
 
-        <div class="card">
-          <span class="section-label">Korea IT Academy</span>
-          <h2 class="text-lg font-semibold mt-2" style="color: var(--ink);">4 Courses · 370 Hours · 100% Attendance</h2>
-          <p class="text-sm mt-2" style="color: var(--muted);">Python AI · Web Development · R Data Analysis · [4th course]</p>
-        </div>
-      </div>
+          <article class="article">
+            <Content />
+          </article>
+        </section>
+      ))}
     </div>
   </div>
 </BaseLayout>
