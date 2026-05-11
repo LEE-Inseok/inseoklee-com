@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Awards — Recognition — Inseok Lee"
+  description="Defense R&D Idea Competition and Korea University 3MT Presentation Award."
+>
+  <div class="container-site py-16">
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <a href="/recognition" class="section-label transition-colors" style="color: var(--muted);" onmouseover="this.style.color='var(--accent)';" onmouseout="this.style.color='var(--muted)';">← Recognition</a>
+      <h1 class="text-section mt-3" style="color: var(--ink);">Awards.</h1>
+    </header>
+
+    <div class="max-w-3xl grid grid-cols-1 gap-6">
+      <div class="card p-6 flex flex-col gap-3">
+        <span class="section-label">Defense R&D Idea Competition</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">Encouragement Prize</h2>
+        <p class="text-sm" style="color: var(--body);">
+          [Year and topic — to be filled by user]
+        </p>
+      </div>
+
+      <div class="card p-6 flex flex-col gap-3">
+        <span class="section-label">Korea University 3MT</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">Presentation Award</h2>
+        <p class="text-sm" style="color: var(--body);">
+          [Year and topic — to be filled by user]
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Certifications — Recognition — Inseok Lee"
+  description="Anthropic certifications and Korea IT Academy course completions."
+>
+  <div class="container-site py-16">
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <a href="/recognition" class="section-label transition-colors" style="color: var(--muted);" onmouseover="this.style.color='var(--accent)';" onmouseout="this.style.color='var(--muted)';">← Recognition</a>
+      <h1 class="text-section mt-3" style="color: var(--ink);">Certifications.</h1>
+    </header>
+
+    <div class="max-w-4xl">
+      <p class="text-base mb-8" style="color: var(--body);">
+        [Certifications grid coming in Day 5. Will include: Anthropic certification carousel
+        (Claude Code in Action + additional courses) and Korea IT Academy 4-course 370h
+        completion card. All with verify URL + PDF download.]
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-6">
+          <span class="section-label">Anthropic</span>
+          <h2 class="text-lg font-semibold mt-2" style="color: var(--ink);">Claude Code in Action</h2>
+          <p class="text-sm mt-2" style="color: var(--muted);">[Placeholder — verify URL + PDF coming]</p>
+        </div>
+
+        <div class="card p-6">
+          <span class="section-label">Korea IT Academy</span>
+          <h2 class="text-lg font-semibold mt-2" style="color: var(--ink);">4 Courses · 370 Hours · 100% Attendance</h2>
+          <p class="text-sm mt-2" style="color: var(--muted);">Python AI · Web Development · R Data Analysis · [4th course]</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

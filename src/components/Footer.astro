@@ -1,0 +1,61 @@
+---
+const year = new Date().getFullYear();
+// Build date injected at build time via environment variable or fallback to today
+const buildDate = new Date().toISOString().slice(0, 10);
+// Build hash — Cloudflare Pages injects CF_PAGES_COMMIT_SHA; fallback to 'dev'
+const buildHash = (import.meta.env.CF_PAGES_COMMIT_SHA ?? 'dev').slice(0, 7);
+---
+
+<footer
+  class="mt-24 border-t"
+  style="border-color: var(--border); background-color: var(--bg);"
+>
+  <div class="container-site py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <!-- Left: identity + links -->
+    <div class="flex flex-col gap-4">
+      <span class="text-sm font-mono" style="color: var(--ink);">
+        <span style="color: var(--accent);">╳</span> inseok lee
+      </span>
+
+      <div class="flex items-center gap-5">
+        <a
+          href="mailto:inseok888@gmail.com"
+          class="text-xs font-mono transition-colors duration-150"
+          style="color: var(--muted);"
+          onmouseover="this.style.color='var(--accent)';"
+          onmouseout="this.style.color='var(--muted)';"
+        >
+          Email
+        </a>
+        <a
+          href="https://linkedin.com/in/inseoklee"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-xs font-mono transition-colors duration-150"
+          style="color: var(--muted);"
+          onmouseover="this.style.color='var(--accent)';"
+          onmouseout="this.style.color='var(--muted)';"
+        >
+          LinkedIn
+        </a>
+        <a
+          href="https://github.com/LEE-Inseok"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-xs font-mono transition-colors duration-150"
+          style="color: var(--muted);"
+          onmouseover="this.style.color='var(--accent)';"
+          onmouseout="this.style.color='var(--muted)';"
+        >
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: meta -->
+    <div class="text-xs font-mono text-right" style="color: var(--muted);">
+      <p>Last updated {buildDate} · build {buildHash}</p>
+      <p class="mt-1">© {year} Inseok Lee</p>
+    </div>
+  </div>
+</footer>

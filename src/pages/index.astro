@@ -1,0 +1,244 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Inseok Lee — Hydrogen × AI"
+  description="MSc Chemical Engineering · KIST researcher · hydrogen × AI"
+>
+  <!-- ============================================================
+       Stage 00 — Hero
+       ============================================================ -->
+  <section
+    class="relative flex items-center justify-center min-h-screen"
+    style="background-color: var(--bg); padding-top: var(--nav-h);"
+  >
+    <div class="container-site w-full">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-16 py-24">
+        <!-- Text block -->
+        <div class="flex-1 flex flex-col gap-6">
+          <span class="section-label">00</span>
+          <h1 class="text-display-xl leading-none" style="color: var(--ink);">
+            Hi, I'm Inseok.
+          </h1>
+          <p class="text-display leading-none" style="color: var(--accent);">
+            Hydrogen × AI.
+          </p>
+          <p class="text-base mt-4 font-mono" style="color: var(--muted);">
+            MSc Chemical Engineering · KIST researcher · hydrogen × AI
+          </p>
+          <div class="flex flex-wrap gap-3 mt-6">
+            <a href="/research" class="cta-link">
+              See research <span>→</span>
+            </a>
+            <a href="/contact" class="cta-link" style="color: var(--muted);">
+              Get in touch <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Photo placeholder -->
+        <div class="flex-shrink-0">
+          <div
+            class="photo-placeholder w-72 lg:w-[420px] h-[520px] lg:h-[580px]"
+            aria-label="Photo placeholder"
+          >
+            <span>사진 자리</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div
+      class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      style="color: var(--muted);"
+      aria-hidden="true"
+    >
+      <span class="text-xs font-mono uppercase tracking-widest">Scroll</span>
+      <span class="block w-px h-8" style="background: var(--border);"></span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Stage 01 — Researcher (photo left)
+       ============================================================ -->
+  <section
+    class="relative min-h-screen flex items-center"
+    style="background-color: var(--bg-warm);"
+  >
+    <div class="container-site w-full">
+      <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
+        <!-- Photo — LEFT -->
+        <div class="flex-shrink-0 order-2 lg:order-1">
+          <div
+            class="photo-placeholder w-64 lg:w-[380px] h-[460px] lg:h-[520px]"
+            aria-label="Photo placeholder — Researcher"
+          >
+            <span>사진 자리</span>
+          </div>
+        </div>
+
+        <!-- Text block — RIGHT -->
+        <div class="flex-1 order-1 lg:order-2 flex flex-col gap-6">
+          <span class="section-label">01 — Researcher</span>
+          <h2 class="text-section" style="color: var(--ink);">
+            Experiments.
+          </h2>
+          <p class="text-base max-w-lg" style="color: var(--body); line-height: 1.7;">
+            Bench-scale experiments on sodium borohydride (SBH) hydrolysis for on-demand
+            hydrogen generation. Investigating catalyst performance, thermal behaviour,
+            and process scalability for portable energy systems.
+          </p>
+          <div class="flex flex-wrap gap-2 mt-2">
+            {['SBH Hydrolysis', 'Catalyst', 'Hydrogen', 'Bench-scale'].map(chip => (
+              <span class="chip">{chip}</span>
+            ))}
+          </div>
+          <a href="/research" class="cta-link mt-4">
+            See research <span>→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Stage 02 — Engineer (photo right)
+       ============================================================ -->
+  <section
+    class="relative min-h-screen flex items-center"
+    style="background-color: var(--bg-cool);"
+  >
+    <div class="container-site w-full">
+      <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
+        <!-- Text block — LEFT -->
+        <div class="flex-1 flex flex-col gap-6">
+          <span class="section-label">02 — Engineer</span>
+          <h2 class="text-section" style="color: var(--ink);">
+            Simulation. Optimization.
+          </h2>
+          <p class="text-base max-w-lg" style="color: var(--body); line-height: 1.7;">
+            Process simulation and multi-objective optimization (MOO) for hydrogen
+            liquefaction and LOHC carrier systems. NSGA-II Pareto-front analysis across
+            efficiency, cost, and carbon metrics using Aspen Plus + Python.
+          </p>
+          <div class="flex flex-wrap gap-2 mt-2">
+            {['CCPP-LOHC', 'Aspen Plus', 'NSGA-II', 'MOO'].map(chip => (
+              <span class="chip">{chip}</span>
+            ))}
+          </div>
+          <a href="/engineering" class="cta-link mt-4">
+            See engineering <span>→</span>
+          </a>
+        </div>
+
+        <!-- Photo — RIGHT -->
+        <div class="flex-shrink-0">
+          <div
+            class="photo-placeholder w-64 lg:w-[380px] h-[460px] lg:h-[520px]"
+            aria-label="Photo placeholder — Engineer"
+          >
+            <span>사진 자리</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Stage 03 — Developer (photo left)
+       ============================================================ -->
+  <section
+    class="relative min-h-screen flex items-center"
+    style="background-color: var(--bg-cyan);"
+  >
+    <div class="container-site w-full">
+      <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
+        <!-- Photo — LEFT -->
+        <div class="flex-shrink-0 order-2 lg:order-1">
+          <div
+            class="photo-placeholder w-64 lg:w-[380px] h-[460px] lg:h-[520px]"
+            aria-label="Photo placeholder — Developer"
+          >
+            <span>사진 자리</span>
+          </div>
+        </div>
+
+        <!-- Text block — RIGHT -->
+        <div class="flex-1 order-1 lg:order-2 flex flex-col gap-6">
+          <span class="section-label">03 — Developer</span>
+          <h2 class="text-section" style="color: var(--ink);">
+            Tools. Automation. AI.
+          </h2>
+          <p class="text-base max-w-lg" style="color: var(--body); line-height: 1.7;">
+            Aspen Plus automation frameworks, SBH thermal solvers, and engineering
+            productivity systems built on multi-agent AI. Custom dashboards for
+            real-time process monitoring and optimization result visualization.
+          </p>
+          <div class="flex flex-wrap gap-2 mt-2">
+            {['Python', 'Aspen Automation', 'AI Agents', 'Dashboards'].map(chip => (
+              <span class="chip">{chip}</span>
+            ))}
+          </div>
+          <a href="/development" class="cta-link mt-4">
+            See development <span>→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Stage 04 — Closing CTA
+       ============================================================ -->
+  <section
+    class="relative min-h-[60vh] flex items-center"
+    style="background-color: var(--bg);"
+  >
+    <div class="container-site w-full py-24">
+      <div class="flex flex-col items-start gap-8 max-w-2xl">
+        <span class="section-label">04</span>
+        <h2 class="text-section" style="color: var(--ink);">
+          Want to talk?
+        </h2>
+        <p class="text-base" style="color: var(--body);">
+          Open to research collaborations, engineering roles, and conversations
+          about hydrogen energy systems and AI tooling.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 mt-2">
+          <a
+            href="mailto:inseok888@gmail.com"
+            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-mono uppercase tracking-widest transition-colors duration-150"
+            style="background-color: var(--accent); color: var(--bg);"
+          >
+            Email <span>→</span>
+          </a>
+          <a
+            href="https://linkedin.com/in/inseoklee"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-mono uppercase tracking-widest transition-colors duration-150"
+            style="border: 1px solid var(--border); color: var(--body);"
+            onmouseover="this.style.borderColor='var(--accent)';"
+            onmouseout="this.style.borderColor='var(--border)';"
+          >
+            LinkedIn <span>→</span>
+          </a>
+          <a
+            href="https://github.com/LEE-Inseok"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-mono uppercase tracking-widest transition-colors duration-150"
+            style="border: 1px solid var(--border); color: var(--body);"
+            onmouseover="this.style.borderColor='var(--accent)';"
+            onmouseout="this.style.borderColor='var(--border)';"
+          >
+            GitHub <span>→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

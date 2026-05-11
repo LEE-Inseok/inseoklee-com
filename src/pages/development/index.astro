@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Development — Inseok Lee"
+  description="Code, automation frameworks, engineering productivity systems, and dashboards."
+>
+  <div class="container-site py-16">
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <span class="section-label">Development</span>
+      <h1 class="text-section mt-3" style="color: var(--ink);">Code. Automation. AI.</h1>
+      <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
+        Engineering tools, automation frameworks, and productivity systems built to
+        accelerate research and simulation workflows.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
+      <a href="/development/code" class="card p-6 flex flex-col gap-4">
+        <span class="section-label">01</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">Code & Frameworks</h2>
+        <p class="text-sm" style="color: var(--body);">
+          Aspen Plus automation and SBH thermal simulation framework.
+        </p>
+        <span class="cta-link text-sm mt-auto">View →</span>
+      </a>
+
+      <a href="/development/engineering-productivity" class="card p-6 flex flex-col gap-4">
+        <span class="section-label">02</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">Engineering Productivity</h2>
+        <p class="text-sm" style="color: var(--body);">
+          Multi-agent AI workflow system designed for engineering research — architecture,
+          automation, and human-authorship boundaries.
+        </p>
+        <span class="cta-link text-sm mt-auto">View →</span>
+      </a>
+
+      <a href="/development/dashboards" class="card p-6 flex flex-col gap-4">
+        <span class="section-label">03</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">Dashboards</h2>
+        <p class="text-sm" style="color: var(--body);">
+          Real-time process monitoring and optimization result dashboards.
+        </p>
+        <span class="cta-link text-sm mt-auto">View →</span>
+      </a>
+    </div>
+  </div>
+</BaseLayout>

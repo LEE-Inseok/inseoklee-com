@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Engineering — Inseok Lee"
+  description="Process simulation and multi-objective optimization of hydrogen energy systems."
+>
+  <div class="container-site py-16">
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <span class="section-label">Engineering</span>
+      <h1 class="text-section mt-3" style="color: var(--ink);">Simulation. Optimization.</h1>
+      <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
+        Process systems engineering — Aspen Plus simulation and multi-objective optimization
+        of hydrogen liquefaction and LOHC carrier systems.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+      <a href="/engineering/sbh-thermal" class="card p-6 flex flex-col gap-4">
+        <span class="section-label">01</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">SBH Thermal Simulation</h2>
+        <p class="text-sm" style="color: var(--body);">
+          Thermal modelling and scenario comparison for the SBH hydrogen generation system.
+        </p>
+        <span class="cta-link text-sm mt-auto">View project →</span>
+      </a>
+
+      <a href="/engineering/ccpp-lohc" class="card p-6 flex flex-col gap-4">
+        <span class="section-label">02</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">CCPP-LOHC Optimization</h2>
+        <p class="text-sm" style="color: var(--body);">
+          Multi-objective optimization of a combined-cycle power plant integrated with
+          LOHC hydrogen carrier. NSGA-II Pareto-front analysis.
+        </p>
+        <span class="cta-link text-sm mt-auto">View project →</span>
+      </a>
+    </div>
+  </div>
+</BaseLayout>

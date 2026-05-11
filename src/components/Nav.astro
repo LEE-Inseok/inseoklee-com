@@ -1,0 +1,149 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { label: 'About',       href: '/about' },
+  { label: 'Research',    href: '/research' },
+  { label: 'Engineering', href: '/engineering' },
+  { label: 'Development', href: '/development' },
+  { label: 'Recognition', href: '/recognition' },
+  { label: 'News',        href: '/news' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return currentPath === '/';
+  return currentPath === href || currentPath.startsWith(href + '/');
+}
+---
+
+<nav
+  id="main-nav"
+  class="fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-200"
+  style="background-color: var(--bg);"
+>
+  <div class="container-site h-full flex items-center justify-between">
+    <!-- Logo -->
+    <a
+      href="/"
+      class="flex items-center gap-2 text-sm font-mono font-medium tracking-tight"
+      style="color: var(--ink);"
+      aria-label="Inseok Lee — Home"
+    >
+      <span style="color: var(--accent);">╳</span>
+      <span>inseok lee</span>
+    </a>
+
+    <!-- Center nav links -->
+    <ul class="hidden md:flex items-center gap-8">
+      {navLinks.map(({ label, href }) => {
+        const active = isActive(href);
+        return (
+          <li class="relative">
+            {active && <span class="nav-active-line" />}
+            <a
+              href={href}
+              class="relative pt-1 pb-1 text-sm font-medium tracking-tight transition-colors duration-150"
+              style={active ? 'color: var(--ink);' : 'color: var(--muted);'}
+              aria-current={active ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+
+    <!-- Right utility buttons -->
+    <div class="flex items-center gap-4">
+      <!-- Dark-mode toggle — P2, wired up in future sprint -->
+      <button
+        aria-label="Toggle colour mode (coming soon)"
+        class="hidden md:flex items-center justify-center w-8 h-8 text-sm transition-colors duration-150"
+        style="color: var(--muted);"
+        disabled
+      >
+        ☾
+      </button>
+
+      <a
+        href="/contact"
+        class="hidden md:inline-flex items-center px-4 h-8 text-xs font-mono uppercase tracking-widest transition-colors duration-150"
+        style="border: 1px solid var(--border); color: var(--ink);"
+        onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+        onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--ink)';"
+      >
+        Contact
+      </a>
+
+      <!-- Mobile hamburger placeholder -->
+      <button
+        id="mobile-menu-btn"
+        aria-label="Open menu"
+        class="md:hidden flex flex-col gap-1 w-6"
+        style="color: var(--ink);"
+      >
+        <span class="block w-full h-px" style="background: var(--ink);"></span>
+        <span class="block w-full h-px" style="background: var(--ink);"></span>
+        <span class="block w-3 h-px" style="background: var(--ink);"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden absolute top-16 left-0 right-0 border-t"
+    style="background-color: var(--bg); border-color: var(--border);"
+  >
+    <ul class="container-site py-6 flex flex-col gap-4">
+      {navLinks.map(({ label, href }) => {
+        const active = isActive(href);
+        return (
+          <li>
+            <a
+              href={href}
+              class="block text-sm font-medium py-1"
+              style={active ? 'color: var(--accent);' : 'color: var(--body);'}
+            >
+              {label}
+            </a>
+          </li>
+        );
+      })}
+      <li>
+        <a
+          href="/contact"
+          class="inline-block mt-2 px-4 py-2 text-xs font-mono uppercase tracking-widest"
+          style="border: 1px solid var(--accent); color: var(--accent);"
+        >
+          Contact
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<script>
+  // Scroll effect: add backdrop-blur + border-bottom
+  const nav = document.getElementById('main-nav');
+  const mobileBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  window.addEventListener('scroll', () => {
+    if (!nav) return;
+    if (window.scrollY > 20) {
+      nav.style.backdropFilter = 'blur(8px)';
+      nav.style.backgroundColor = 'rgba(10, 10, 10, 0.85)';
+      nav.style.borderBottom = '1px solid #1F1F1F';
+    } else {
+      nav.style.backdropFilter = 'none';
+      nav.style.backgroundColor = '#0A0A0A';
+      nav.style.borderBottom = 'none';
+    }
+  }, { passive: true });
+
+  // Mobile menu toggle
+  mobileBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>

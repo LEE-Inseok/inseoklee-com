@@ -1,0 +1,71 @@
+---
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/globals.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = 'Inseok Lee — MSc Chemical Engineering · KIST researcher · hydrogen × AI',
+  ogImage = '/og-default.png',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://inseoklee.com');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- OG / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>{title}</title>
+
+    <!-- JSON-LD Person schema (home page) -->
+    {Astro.url.pathname === '/' && (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Inseok Lee",
+        "url": "https://inseoklee.com",
+        "jobTitle": "Graduate Researcher",
+        "affiliation": [
+          { "@type": "Organization", "name": "Korea University" },
+          { "@type": "Organization", "name": "Korea Institute of Science and Technology (KIST)" }
+        ],
+        "email": "inseok888@gmail.com",
+        "sameAs": []
+      })} />
+    )}
+  </head>
+  <body>
+    <Nav />
+    <main class="page-wrapper">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

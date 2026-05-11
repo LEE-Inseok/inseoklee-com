@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Research — Inseok Lee"
+  description="Bench-scale experiments on sodium borohydride hydrolysis for hydrogen generation."
+>
+  <div class="container-site py-16">
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <span class="section-label">Research</span>
+      <h1 class="text-section mt-3" style="color: var(--ink);">Research.</h1>
+      <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
+        Bench-scale experimental research on hydrogen generation systems.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+      <a href="/research/sbh-experiment" class="card p-6 flex flex-col gap-4">
+        <span class="section-label">01</span>
+        <h2 class="text-xl font-semibold" style="color: var(--ink);">SBH Experiment</h2>
+        <p class="text-sm" style="color: var(--body);">
+          Sodium borohydride hydrolysis — catalyst screening, thermal characterisation,
+          and bench-scale hydrogen yield analysis.
+        </p>
+        <span class="cta-link text-sm mt-auto">View project →</span>
+      </a>
+    </div>
+  </div>
+</BaseLayout>

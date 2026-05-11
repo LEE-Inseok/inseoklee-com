@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="About — Inseok Lee"
+  description="MSc Chemical Engineering at Korea University · KIST student researcher · hydrogen × AI"
+>
+  <div class="container-site py-16">
+    <!-- Page header -->
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <span class="section-label">About</span>
+      <h1 class="text-section mt-3" style="color: var(--ink);">Hi, I'm Inseok.</h1>
+    </header>
+
+    <!-- Placeholder content -->
+    <div class="max-w-2xl">
+      <p class="text-base mb-8" style="color: var(--body);">
+        [About page — content coming in Day 3. Will include: intro paragraph (~150 words),
+        affiliations, research focus chips, Skills tier grid, and Vertical Timeline.]
+      </p>
+
+      <div class="card p-6 mb-6">
+        <p class="text-xs font-mono uppercase tracking-widest mb-2" style="color: var(--accent);">Affiliation</p>
+        <p style="color: var(--body);">Korea University · MSc Chemical Engineering</p>
+        <p style="color: var(--body);">Korea Institute of Science and Technology (KIST) · Student Researcher</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-8">
+        {['Hydrogen', 'Energy Systems', 'Process Systems', 'Optimization', 'AI for Engineering'].map(chip => (
+          <span class="chip">{chip}</span>
+        ))}
+      </div>
+
+      <div class="flex gap-6">
+        <a href="/research" class="cta-link">See research →</a>
+        <a href="/contact" class="cta-link" style="color: var(--muted);">Get in touch →</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

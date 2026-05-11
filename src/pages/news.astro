@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="News — Inseok Lee"
+  description="Curated LinkedIn posts and research updates."
+>
+  <div class="container-site py-16">
+    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+      <span class="section-label">News</span>
+      <h1 class="text-section mt-3" style="color: var(--ink);">News.</h1>
+      <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
+        Curated posts and research updates. Selected from LinkedIn.
+      </p>
+    </header>
+
+    <div class="max-w-3xl">
+      <p class="text-base" style="color: var(--body);">
+        [News grid coming in Day 6. Will display curated LinkedIn posts as cards with
+        date, title, 1-line summary, and link to original. Add a new post by creating
+        <code class="font-mono text-sm px-1" style="color: var(--accent); background: var(--surface);">src/content/news/&#123;slug&#125;.md</code>.]
+      </p>
+    </div>
+  </div>
+</BaseLayout>
