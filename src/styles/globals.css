@@ -154,7 +154,7 @@
   .chip {
     @apply inline-block px-3 py-1 text-xs font-mono uppercase tracking-widest;
     color: var(--body);
-    font-weight: 500;
+    font-weight: 700;
     border: 1px solid var(--border);
     background-color: transparent;
   }
@@ -177,7 +177,7 @@
   .section-label {
     @apply text-xs font-mono uppercase tracking-widest;
     color: var(--muted);
-    font-weight: 500;
+    font-weight: 700;
   }
 
   /* Mustard active indicator above nav item */
