@@ -20,7 +20,7 @@ export default {
       fontFamily: {
         serif: ['Fraunces', 'Georgia', 'serif'],
         sans:  ['"Inter Tight"', 'Pretendard', 'system-ui', 'sans-serif'],
-        mono:  ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        mono:  ['"Space Mono"', 'ui-monospace', 'monospace'],
       },
       fontWeight: {
         normal:   '400',
