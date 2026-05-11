@@ -35,54 +35,38 @@ const statusLabel: Record<string, string> = {
       </p>
     </header>
 
-    <!-- ─── Split layout: left side-nav + right content ─────────────────── -->
     <div class="flex flex-col lg:flex-row lg:gap-12">
 
-      <!-- LEFT: side category nav -->
-      <aside class="lg:w-48 flex-shrink-0 mb-8 lg:mb-0">
-        <nav class="lg:sticky lg:top-24">
-          <div class="flex lg:flex-col gap-2 lg:gap-1">
-            <button
-              class="side-tab active text-left text-sm py-2 px-3 transition-colors"
-              data-view="area"
-            >
-              Area
-            </button>
-            <button
-              class="side-tab text-left text-sm py-2 px-3 transition-colors"
-              data-view="publication"
-            >
-              Publication
-            </button>
-          </div>
+      <!-- LEFT: nested category nav -->
+      <aside class="lg:w-56 flex-shrink-0 mb-8 lg:mb-0">
+        <nav class="lg:sticky lg:top-24 flex lg:flex-col gap-1 flex-wrap">
+          <span class="nav-group-label">Area</span>
+          <button class="side-tab active" data-view="all">All</button>
+          <button class="side-tab" data-view="experimental">Experimental</button>
+          <button class="side-tab" data-view="simulation">Simulation and Optimization</button>
+
+          <span class="nav-group-label mt-4 lg:mt-6">Publication</span>
+          <button class="side-tab" data-view="publication">All Manuscripts</button>
         </nav>
       </aside>
 
-      <!-- RIGHT: content -->
+      <!-- RIGHT: content views -->
       <div class="flex-1 min-w-0">
 
-        <!-- ─ Area view ─ -->
-        <section class="view-section" data-view="area">
-          <h2 class="text-2xl mb-6" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Area</h2>
+        <!-- All Area view -->
+        <section class="view-section" data-view="all">
+          <h2 class="view-title">Area · All</h2>
 
-          <!-- Area sub-tabs -->
-          <div class="flex flex-wrap gap-x-8 gap-y-2 mb-10 border-b" style="border-color: var(--border);">
-            <button class="area-tab active pb-3 text-sm transition-colors" data-area="all">All</button>
-            <button class="area-tab pb-3 text-sm transition-colors" data-area="experimental">Experimental</button>
-            <button class="area-tab pb-3 text-sm transition-colors" data-area="simulation">Simulation and Optimization</button>
-          </div>
-
-          <!-- Experimental -->
-          <div class="area-section mb-14" data-area="experimental">
+          <div class="mb-12">
             <div class="flex items-center gap-3 mb-4">
               <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="text-xs uppercase tracking-widest" style="color: var(--accent-dk); font-weight: 700;">Experimental</h3>
+              <h3 class="sub-label">Experimental</h3>
             </div>
             <div class="flex flex-col max-w-2xl">
               {experimental.map((item) => (
                 <a href={`/research/${item.slug}`} class="card flex flex-col gap-3 group">
                   {item.data.date && <span class="section-label">{item.data.date}</span>}
-                  <h4 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h4>
+                  <h4 class="card-title">{item.data.title}</h4>
                   <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
                   <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
                 </a>
@@ -90,17 +74,16 @@ const statusLabel: Record<string, string> = {
             </div>
           </div>
 
-          <!-- Simulation and Optimization -->
-          <div class="area-section" data-area="simulation">
+          <div>
             <div class="flex items-center gap-3 mb-4">
               <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="text-xs uppercase tracking-widest" style="color: var(--accent-dk); font-weight: 700;">Simulation and Optimization</h3>
+              <h3 class="sub-label">Simulation and Optimization</h3>
             </div>
             <div class="flex flex-col max-w-2xl">
               {simulation.map((item) => (
                 <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
                   {item.data.date && <span class="section-label">{item.data.date}</span>}
-                  <h4 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{item.data.title}</h4>
+                  <h4 class="card-title">{item.data.title}</h4>
                   <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
                   <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
                 </a>
@@ -109,10 +92,39 @@ const statusLabel: Record<string, string> = {
           </div>
         </section>
 
-        <!-- ─ Publication view ─ -->
-        <section class="view-section hidden" data-view="publication">
-          <h2 class="text-2xl mb-8" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">Publication</h2>
+        <!-- Experimental only -->
+        <section class="view-section hidden" data-view="experimental">
+          <h2 class="view-title">Area · Experimental</h2>
+          <div class="flex flex-col max-w-2xl">
+            {experimental.map((item) => (
+              <a href={`/research/${item.slug}`} class="card flex flex-col gap-3 group">
+                {item.data.date && <span class="section-label">{item.data.date}</span>}
+                <h4 class="card-title">{item.data.title}</h4>
+                <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
+                <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+              </a>
+            ))}
+          </div>
+        </section>
 
+        <!-- Simulation only -->
+        <section class="view-section hidden" data-view="simulation">
+          <h2 class="view-title">Area · Simulation and Optimization</h2>
+          <div class="flex flex-col max-w-2xl">
+            {simulation.map((item) => (
+              <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
+                {item.data.date && <span class="section-label">{item.data.date}</span>}
+                <h4 class="card-title">{item.data.title}</h4>
+                <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
+                <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <!-- Publication view -->
+        <section class="view-section hidden" data-view="publication">
+          <h2 class="view-title">Publication</h2>
           <div class="flex flex-col max-w-2xl">
             {publications.map((pub) => (
               <div class="card flex flex-col gap-3">
@@ -120,7 +132,7 @@ const statusLabel: Record<string, string> = {
                   <span class="section-label" style="color: var(--accent-dk);">{statusLabel[pub.data.status] ?? pub.data.status}</span>
                   {pub.data.date && <span class="section-label">{pub.data.date}</span>}
                 </div>
-                <h3 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{pub.data.title}</h3>
+                <h3 class="card-title">{pub.data.title}</h3>
                 <p class="text-base" style="color: var(--body);">{pub.data.summary}</p>
                 {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
               </div>
@@ -134,60 +146,66 @@ const statusLabel: Record<string, string> = {
 </BaseLayout>
 
 <style>
-  /* Side category tabs (Area / Publication) */
+  .nav-group-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.25rem 0;
+    margin-top: 0.5rem;
+  }
   .side-tab {
+    text-align: left;
+    font-size: 0.875rem;
+    padding: 0.4rem 0.75rem;
     color: var(--muted);
     font-weight: 500;
     background: transparent;
     cursor: pointer;
     border-left: 2px solid transparent;
+    transition: color 150ms ease, border-color 150ms ease;
   }
-  .side-tab:hover {
-    color: var(--ink);
-  }
+  .side-tab:hover { color: var(--ink); }
   .side-tab.active {
     color: var(--ink);
     font-weight: 700;
     border-left-color: var(--accent);
   }
-  /* Mobile: side-tabs become horizontal pill-ish */
   @media (max-width: 1023px) {
     .side-tab {
       border-left: none;
       border-bottom: 2px solid transparent;
     }
-    .side-tab.active {
-      border-bottom-color: var(--accent);
-    }
-  }
-  .view-section.hidden {
-    display: none;
+    .side-tab.active { border-bottom-color: var(--accent); }
+    .nav-group-label { width: 100%; }
   }
 
-  /* Area sub-tabs */
-  .area-tab {
-    color: var(--muted);
-    font-weight: 500;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    background: transparent;
-    cursor: pointer;
-  }
-  .area-tab:hover {
+  .view-section.hidden { display: none; }
+  .view-title {
+    font-size: 1.75rem;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
     color: var(--ink);
+    margin-bottom: 1.5rem;
   }
-  .area-tab.active {
-    color: var(--ink);
-    border-bottom-color: var(--accent);
+  .sub-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-dk);
     font-weight: 700;
   }
-  .area-section.hidden {
-    display: none;
+  .card-title {
+    font-size: 1.25rem;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    color: var(--ink);
   }
 </style>
 
 <script>
-  // Outer: Area / Publication
   const sideTabs = document.querySelectorAll<HTMLButtonElement>('.side-tab');
   const views = document.querySelectorAll<HTMLElement>('.view-section');
   sideTabs.forEach((tab) => {
@@ -195,20 +213,6 @@ const statusLabel: Record<string, string> = {
       const view = tab.dataset.view;
       sideTabs.forEach((t) => t.classList.toggle('active', t === tab));
       views.forEach((v) => v.classList.toggle('hidden', v.dataset.view !== view));
-    });
-  });
-
-  // Inner (Area): All / Experimental / Simulation
-  const areaTabs = document.querySelectorAll<HTMLButtonElement>('.area-tab');
-  const areaSections = document.querySelectorAll<HTMLElement>('.area-section');
-  areaTabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const area = tab.dataset.area;
-      areaTabs.forEach((t) => t.classList.toggle('active', t === tab));
-      areaSections.forEach((s) => {
-        const match = area === 'all' || s.dataset.area === area;
-        s.classList.toggle('hidden', !match);
-      });
     });
   });
 </script>
