@@ -117,12 +117,12 @@
     background: var(--muted);
   }
 
-  /* Space Mono — substantial retro typewriter (weight 400/700) */
+  /* mono slot unified to Inter Tight (per user choice) — keep weight medium for visual rhythm */
   .font-mono,
   code, pre, kbd, samp {
-    font-family: 'Space Mono', ui-monospace, monospace;
+    font-family: 'Inter Tight', 'Pretendard', system-ui, sans-serif;
     letter-spacing: -0.01em;
-    font-weight: 700;
+    font-weight: 500;
   }
 }
 
