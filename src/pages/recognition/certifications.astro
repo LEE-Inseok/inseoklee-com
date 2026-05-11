@@ -1,63 +1,15 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
-
-const items = (await getCollection('recognition-certifications')).sort(
-  (a, b) => b.data.date.localeCompare(a.data.date)
-);
-
-const rendered = await Promise.all(items.map(async (entry) => {
-  const { Content } = await entry.render();
-  return { entry, Content };
-}));
+// Recognition sub-pages were merged into /recognition with a left toggle nav.
 ---
-
-<BaseLayout
-  title="Certifications — Recognition — Inseok Lee"
-  description="Professional certifications and course completions."
->
-  <div class="container-site py-16">
-    <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
-      <a
-        href="/recognition"
-        class="section-label transition-colors"
-        style="color: var(--muted);"
-        onmouseover="this.style.color='var(--accent)';"
-        onmouseout="this.style.color='var(--muted)';"
-      >← Recognition</a>
-      <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Certifications.</h1>
-    </header>
-
-    <div class="flex flex-col max-w-2xl">
-      {rendered.map(({ entry, Content }) => (
-        <section class="card flex flex-col gap-3">
-          <div class="flex items-center justify-between">
-            <span class="section-label">{entry.data.issuer}</span>
-            <span class="section-label">{entry.data.date}</span>
-          </div>
-          <h2 class="text-2xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{entry.data.title}</h2>
-          <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
-
-          {(entry.data.verifyUrl || entry.data.pdf) && (
-            <div class="flex flex-wrap gap-4 mt-2">
-              {entry.data.verifyUrl && (
-                <a href={entry.data.verifyUrl} target="_blank" rel="noopener noreferrer" class="text-sm" style="color: var(--accent-dk); text-decoration: underline;">
-                  Verify →
-                </a>
-              )}
-              {entry.data.pdf && (
-                <a href={entry.data.pdf} target="_blank" rel="noopener noreferrer" class="text-sm" style="color: var(--accent-dk); text-decoration: underline;">
-                  PDF ↓
-                </a>
-              )}
-            </div>
-          )}
-
-          <article class="article">
-            <Content />
-          </article>
-        </section>
-      ))}
-    </div>
-  </div>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=/recognition" />
+    <link rel="canonical" href="https://inseoklee.com/recognition" />
+    <title>Redirecting to /recognition</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href="/recognition">/recognition</a>…</p>
+  </body>
+</html>
