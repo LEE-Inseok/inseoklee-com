@@ -4,8 +4,6 @@ import { getCollection } from 'astro:content';
 
 const allTools = await getCollection('development');
 const frameworks = allTools.filter(t => t.data.type === 'framework');
-const productivity = allTools.filter(t => t.data.type === 'productivity');
-const dashboards = allTools.filter(t => t.data.type === 'dashboard');
 
 const renderEntries = async (entries: typeof allTools) =>
   await Promise.all(entries.map(async (entry) => {
@@ -31,16 +29,26 @@ const frameworksRendered = await renderEntries(frameworks);
 
     <div class="flex flex-col lg:flex-row lg:gap-12">
 
-      <!-- LEFT: nav -->
+      <!-- LEFT: dropdown nav -->
       <aside class="lg:w-56 flex-shrink-0 mb-8 lg:mb-0">
-        <nav class="lg:sticky lg:top-24 flex lg:flex-col gap-1 flex-wrap">
-          <span class="nav-group-label">Tools</span>
-          <button class="side-tab active" data-view="all">All</button>
-          <button class="side-tab" data-view="frameworks">Code &amp; Frameworks</button>
-          <button class="side-tab" data-view="dashboards">Dashboards</button>
+        <nav class="lg:sticky lg:top-24 flex flex-col gap-2">
 
-          <span class="nav-group-label mt-4 lg:mt-6">AI</span>
-          <button class="side-tab" data-view="productivity">Engineering Productivity</button>
+          <div class="nav-group" data-group="tools">
+            <button class="group-trigger active" data-view="all">Tools</button>
+            <ul class="submenu">
+              <li><button class="sub-item active" data-view="all">All</button></li>
+              <li><button class="sub-item" data-view="frameworks">Code &amp; Frameworks</button></li>
+              <li><button class="sub-item" data-view="dashboards">Dashboards</button></li>
+            </ul>
+          </div>
+
+          <div class="nav-group" data-group="ai">
+            <button class="group-trigger" data-view="productivity">AI</button>
+            <ul class="submenu">
+              <li><button class="sub-item" data-view="productivity">Engineering Productivity</button></li>
+            </ul>
+          </div>
+
         </nav>
       </aside>
 
@@ -96,7 +104,6 @@ const frameworksRendered = await renderEntries(frameworks);
           </div>
         </section>
 
-        <!-- Frameworks only -->
         <section class="view-section hidden" data-view="frameworks">
           <h2 class="view-title">Code &amp; Frameworks</h2>
           <div class="flex flex-col max-w-2xl">
@@ -118,7 +125,6 @@ const frameworksRendered = await renderEntries(frameworks);
           </div>
         </section>
 
-        <!-- Dashboards only -->
         <section class="view-section hidden" data-view="dashboards">
           <h2 class="view-title">Dashboards</h2>
           <div class="max-w-2xl">
@@ -133,7 +139,6 @@ const frameworksRendered = await renderEntries(frameworks);
           </div>
         </section>
 
-        <!-- Engineering Productivity only -->
         <section class="view-section hidden" data-view="productivity">
           <h2 class="view-title">Engineering Productivity (AI)</h2>
           <div class="max-w-2xl">
@@ -153,41 +158,63 @@ const frameworksRendered = await renderEntries(frameworks);
 </BaseLayout>
 
 <style>
-  .nav-group-label {
+  .nav-group { position: relative; }
+  .group-trigger {
     display: block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 0.25rem 0;
-    margin-top: 0.5rem;
-  }
-  .side-tab {
     text-align: left;
-    font-size: 0.875rem;
-    padding: 0.4rem 0.75rem;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
     color: var(--muted);
-    font-weight: 500;
-    background: transparent;
     cursor: pointer;
+    background: transparent;
+    border: none;
     border-left: 2px solid transparent;
     transition: color 150ms ease, border-color 150ms ease;
   }
-  .side-tab:hover { color: var(--ink); }
-  .side-tab.active {
+  .group-trigger:hover { color: var(--ink); }
+  .group-trigger.active {
+    color: var(--ink);
+    border-left-color: var(--accent);
+  }
+  .submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 200ms ease;
+    margin: 0;
+    padding-left: 0.75rem;
+    list-style: none;
+  }
+  .nav-group:hover .submenu,
+  .nav-group:focus-within .submenu,
+  .nav-group.open .submenu {
+    max-height: 240px;
+  }
+  .sub-item {
+    display: block;
+    text-align: left;
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+    color: var(--muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-left: 2px solid transparent;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+  .sub-item:hover { color: var(--ink); }
+  .sub-item.active {
     color: var(--ink);
     font-weight: 700;
     border-left-color: var(--accent);
   }
   @media (max-width: 1023px) {
-    .side-tab {
-      border-left: none;
-      border-bottom: 2px solid transparent;
-    }
-    .side-tab.active { border-bottom-color: var(--accent); }
-    .nav-group-label { width: 100%; }
+    .submenu { max-height: 240px; padding-left: 0.5rem; }
+    .nav-group { margin-bottom: 0.5rem; }
   }
+
   .view-section.hidden { display: none; }
   .view-title {
     font-size: 1.75rem;
@@ -212,13 +239,42 @@ const frameworksRendered = await renderEntries(frameworks);
 </style>
 
 <script>
-  const sideTabs = document.querySelectorAll<HTMLButtonElement>('.side-tab');
+  const groupTriggers = document.querySelectorAll<HTMLButtonElement>('.group-trigger');
+  const subItems = document.querySelectorAll<HTMLButtonElement>('.sub-item');
   const views = document.querySelectorAll<HTMLElement>('.view-section');
-  sideTabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const view = tab.dataset.view;
-      sideTabs.forEach((t) => t.classList.toggle('active', t === tab));
-      views.forEach((v) => v.classList.toggle('hidden', v.dataset.view !== view));
+  const groupNodes = document.querySelectorAll<HTMLElement>('.nav-group');
+
+  const viewToGroup: Record<string, string> = {
+    'all': 'tools',
+    'frameworks': 'tools',
+    'dashboards': 'tools',
+    'productivity': 'ai',
+  };
+
+  function activateView(view: string) {
+    views.forEach((v) => v.classList.toggle('hidden', v.dataset.view !== view));
+    subItems.forEach((s) => s.classList.toggle('active', s.dataset.view === view));
+    const targetGroup = viewToGroup[view] ?? '';
+    groupTriggers.forEach((t) => {
+      const g = (t.closest('.nav-group') as HTMLElement | null)?.dataset.group ?? '';
+      t.classList.toggle('active', g === targetGroup);
+    });
+  }
+
+  groupTriggers.forEach((t) => {
+    t.addEventListener('click', () => {
+      const view = t.dataset.view;
+      if (view) activateView(view);
     });
   });
+  subItems.forEach((s) => {
+    s.addEventListener('click', () => {
+      const view = s.dataset.view;
+      if (view) activateView(view);
+    });
+  });
+
+  if (window.matchMedia('(max-width: 1023px)').matches) {
+    groupNodes.forEach((g) => g.classList.add('open'));
+  }
 </script>
