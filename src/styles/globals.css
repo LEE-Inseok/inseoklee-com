@@ -117,12 +117,12 @@
     background: var(--muted);
   }
 
-  /* mono slot unified to Inter Tight (per user choice) — keep weight medium for visual rhythm */
+  /* mono slot fully unified to body — identical family, weight, spacing */
   .font-mono,
   code, pre, kbd, samp {
     font-family: 'Inter Tight', 'Pretendard', system-ui, sans-serif;
     letter-spacing: -0.01em;
-    font-weight: 500;
+    font-weight: 400;
   }
 }
 
