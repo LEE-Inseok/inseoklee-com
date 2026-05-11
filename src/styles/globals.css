@@ -150,13 +150,16 @@
     transform: translateY(-1px);
   }
 
-  /* Chip / tag — softened to match CTA style (medium, sentence case) */
+  /* Chip — plain inline text, indistinguishable from body */
   .chip {
-    @apply inline-block px-3 py-1 text-sm font-mono;
+    @apply inline-block text-sm font-mono;
     color: var(--body);
     font-weight: 500;
-    border: 1px solid var(--border);
-    background-color: transparent;
+  }
+  .chip + .chip::before {
+    content: "·";
+    color: var(--muted);
+    margin: 0 0.4rem 0 0;
   }
 
   /* CTA link */
