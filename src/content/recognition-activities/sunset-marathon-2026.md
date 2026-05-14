@@ -1,6 +1,6 @@
 ---
 title: Sunset Marathon 2026 — Half Course
-date: "2026-04-11"
+date: "2026-04"
 summary: Half marathon completion at the 2026 Sunset Marathon (Incheon Airport 25th Anniversary). Finish time 02:06:46 over 21.0975 km. Bib 22138.
 images:
   - /recognition/marathon/finish-certificate.jpg

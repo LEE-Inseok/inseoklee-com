@@ -1,7 +1,7 @@
 ---
 issuer: Anthropic
 title: Introduction to Claude Cowork
-date: "2026-04-16"
+date: "2026-04"
 summary: Anthropic official course on Claude Cowork — collaborative agent workflows, role-based plugin setup, shared task coordination, and team-style human-AI cooperation patterns.
 ---
 

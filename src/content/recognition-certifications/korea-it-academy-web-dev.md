@@ -1,7 +1,7 @@
 ---
 issuer: Korea IT Academy
 title: Web Development
-date: "2024-01"
+date: "2023"
 summary: 160-hour weekend course on full-stack web development — HTML / CSS / JavaScript front-end, Flask back-end, REST API design, and SQL persistence.
 ---
 

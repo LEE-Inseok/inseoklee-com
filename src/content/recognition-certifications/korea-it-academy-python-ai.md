@@ -1,7 +1,7 @@
 ---
 issuer: Korea IT Academy
 title: Python-based AI
-date: "2023-03"
+date: "2022"
 summary: 180-hour course series on Python AI fundamentals — NumPy / Pandas data handling, scikit-learn classical ML, and PyTorch / Keras deep learning across CNN and RNN architectures.
 ---
 

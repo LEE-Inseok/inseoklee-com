@@ -1,6 +1,6 @@
 ---
 title: Korea University 3MT — Presentation Award
-year: 2026
+year: 2025
 prize: Presentation Award
 summary: Three Minute Thesis Competition — single slide, 3-minute oral presentation of integrated hydrogen energy systems research to a non-specialist audience.
 ---

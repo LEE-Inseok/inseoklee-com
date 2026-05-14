@@ -1,7 +1,7 @@
 ---
 issuer: Anthropic
 title: Claude 101
-date: "2026-04-14"
+date: "2026-04"
 summary: Anthropic official introductory course on Claude — capabilities, prompting fundamentals, conversation patterns, and the practical foundations of working with Claude across web, desktop, and API.
 ---
 

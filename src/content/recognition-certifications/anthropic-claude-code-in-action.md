@@ -1,7 +1,7 @@
 ---
 issuer: Anthropic
 title: Claude Code in Action
-date: "2026-04-13"
+date: "2026-04"
 certId: diwe3unygkd7
 verifyUrl: https://verify.skilljar.com/c/diwe3unygkd7
 summary: Anthropic official certification on agentic AI coding workflows — tool-use patterns, hooks, skills, and AI-assisted software engineering applied in real projects.
