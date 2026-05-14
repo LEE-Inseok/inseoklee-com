@@ -10,30 +10,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        Stage 00 — Hero
        ============================================================ -->
   <section
-    class="relative flex items-center justify-center min-h-screen"
+    class="snap-section relative flex items-center justify-center"
     style="background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%); padding-top: var(--nav-h);"
   >
     <div class="container-site w-full">
-      <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-12 py-16">
-        <!-- Left copy -->
-        <div class="flex-1 lg:text-right">
+      <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-0 py-16">
+        <!-- Left copy (overlaps photo from the left) -->
+        <div class="flex-1 lg:text-right lg:relative lg:z-10 lg:-mr-20 xl:-mr-24">
           <h1 class="text-6xl lg:text-9xl font-bold leading-none" style="color: var(--ink);">
             Hi, I'm Inseok.
           </h1>
         </div>
 
-        <!-- Center photo -->
-        <div class="flex-shrink-0">
-          <div
-            class="photo-placeholder w-64 lg:w-[400px] h-[460px] lg:h-[560px]"
-            aria-label="Photo placeholder"
-          >
-            <span>사진 자리</span>
-          </div>
+        <!-- Center photo (sits behind text edges) -->
+        <div class="flex-shrink-0 lg:relative lg:z-0">
+          <img
+            src="/images/home/me.png"
+            alt="Inseok Lee"
+            class="home-photo w-96 lg:w-[600px] h-[690px] lg:h-[840px] object-cover"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
         </div>
 
-        <!-- Right copy -->
-        <div class="flex-1 lg:text-left">
+        <!-- Right copy (overlaps photo from the right) -->
+        <div class="flex-1 lg:text-left lg:relative lg:z-10 lg:-ml-20 xl:-ml-24">
           <h2 class="text-4xl lg:text-6xl font-bold leading-tight" style="color: var(--ink);">
             I am a researcher and also an engineer.
           </h2>
@@ -47,19 +49,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        Stage 01 — Researcher (photo left)
        ============================================================ -->
   <section
-    class="relative min-h-screen flex items-center"
+    class="snap-section relative flex items-center"
     style="background: linear-gradient(180deg, #FAFAFA 0%, #F5F7FA 100%);"
   >
     <div class="container-site w-full">
       <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
         <!-- Photo — LEFT -->
         <div class="flex-shrink-0 order-2 lg:order-1">
-          <div
-            class="photo-placeholder w-64 lg:w-[380px] h-[460px] lg:h-[520px]"
-            aria-label="Photo placeholder — Researcher"
-          >
-            <span>사진 자리</span>
-          </div>
+          <img
+            src="/images/home/01-researcher.png"
+            alt="Inseok Lee as researcher"
+            class="home-photo w-96 lg:w-[570px] h-[690px] lg:h-[780px] object-cover"
+            loading="eager"
+            decoding="async"
+          />
         </div>
 
         <!-- Text block — RIGHT -->
@@ -87,7 +90,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        Stage 02 — Engineer (photo right)
        ============================================================ -->
   <section
-    class="relative min-h-screen flex items-center"
+    class="snap-section relative flex items-center"
     style="background: linear-gradient(180deg, #F5F7FA 0%, #F0F8FA 100%);"
   >
     <div class="container-site w-full">
@@ -112,12 +115,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <!-- Photo — RIGHT -->
         <div class="flex-shrink-0">
-          <div
-            class="photo-placeholder w-64 lg:w-[380px] h-[460px] lg:h-[520px]"
-            aria-label="Photo placeholder — Engineer"
-          >
-            <span>사진 자리</span>
-          </div>
+          <img
+            src="/images/home/02-engineer.png"
+            alt="Inseok Lee as engineer"
+            class="home-photo w-96 lg:w-[570px] h-[690px] lg:h-[780px] object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </div>
     </div>
@@ -127,19 +131,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        Stage 03 — Developer (photo left)
        ============================================================ -->
   <section
-    class="relative min-h-screen flex items-center"
+    class="snap-section relative flex items-center"
     style="background: linear-gradient(180deg, #F0F8FA 0%, #F5FAFC 100%);"
   >
     <div class="container-site w-full">
       <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
         <!-- Photo — LEFT -->
         <div class="flex-shrink-0 order-2 lg:order-1">
-          <div
-            class="photo-placeholder w-64 lg:w-[380px] h-[460px] lg:h-[520px]"
-            aria-label="Photo placeholder — Developer"
-          >
-            <span>사진 자리</span>
-          </div>
+          <img
+            src="/images/home/03-developer.png"
+            alt="Inseok Lee as developer"
+            class="home-photo w-96 lg:w-[570px] h-[690px] lg:h-[780px] object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
 
         <!-- Text block — RIGHT -->
@@ -167,7 +172,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        Stage 04 — Closing CTA
        ============================================================ -->
   <section
-    class="relative min-h-[60vh] flex items-center"
+    class="snap-section relative flex items-center"
     style="background: linear-gradient(180deg, #F5FAFC 0%, #FFFFFF 100%);"
   >
     <div class="container-site w-full py-24">
@@ -215,3 +220,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 </BaseLayout>
+
+<!--
+  Global snap-scroll — applied only on the home page render.
+  Astro's <style is:global> ships these rules in the HTML for / only;
+  navigating to another page renders that page's CSS without these rules,
+  so snap-scroll never leaks to research/code/recognition/etc.
+-->
+<style is:global>
+  /* Home page photos — transparent PNG, blends into section gradient */
+  .home-photo {
+    display: block;
+    background-color: transparent;
+    border: none;
+    /* Black & white treatment — comment out if you want original colors */
+    /* filter: grayscale(100%); */
+  }
+
+  html {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--nav-h);
+    /* override globals.css scroll-behavior: smooth for crisp section-to-section snap */
+    scroll-behavior: auto;
+  }
+
+  /* Each home-page section is exactly one viewport tall and snaps to its top */
+  main > .snap-section {
+    height: 100vh;
+    height: 100dvh; /* dynamic viewport for mobile browser chrome */
+    min-height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Footer sits naturally at the end — also a snap point so it doesn't get cut off */
+  body > footer {
+    scroll-snap-align: end;
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-snap-type: none; }
+    main > .snap-section { height: auto; min-height: 100vh; }
+  }
+</style>

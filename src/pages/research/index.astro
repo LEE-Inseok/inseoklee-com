@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 
 const experimental = (await getCollection('research')).sort(
@@ -20,6 +21,46 @@ const statusLabel: Record<string, string> = {
   'in-preparation': 'In preparation',
   'published':      'Published',
 };
+
+const navGroups = [
+  {
+    key: 'area',
+    label: 'Area',
+    trigger: 'expand' as const,
+    items: [
+      { view: 'experimental', label: 'Experimental' },
+      { view: 'simulation',   label: 'Simulation' },
+    ],
+  },
+  {
+    key: 'publication',
+    label: 'Publication',
+    trigger: 'activate' as const,
+    activateView: 'publication',
+  },
+];
+
+const experimentalPlaceholders = [
+  { title: 'SBH Hydrogen Energy System — Small scale', summary: 'Bench-scale integrated testbed converting sodium borohydride hydrolysis into electricity via PEM fuel cell.', existingSlug: 'sbh-experiment' },
+  { title: 'SBH Hydrogen Energy System — Large scale', summary: 'Scale-up study toward armoured-vehicle-class SBH system with full coolant loop redesign.', existingSlug: null },
+  { title: 'SBH Hydrogen Energy System — Regulatory Approval', summary: 'Certification and safety review track for portable SBH-based power systems.', existingSlug: null },
+  { title: 'PEMFC', summary: 'Proton-exchange-membrane fuel cell characterization — IV curves, EIS, and CO sensitivity.', existingSlug: null },
+];
+
+const simulationPlaceholders = [
+  { title: 'SBH Thermal Simulation', summary: 'Physics-based thermal scenario study across 5 heat-recovery configurations for the SBH hydrogen system.', existingSlug: 'sbh-thermal' },
+  { title: 'LOHC-CCPP Thermal Coupling System Optimization', summary: 'Multi-objective optimization of CCPP integrated with LOHC hydrogen production — Aspen + ML surrogate + NSGA-II.', existingSlug: 'ccpp-lohc' },
+  { title: 'Dynamic System Modeling', summary: 'Time-resolved system dynamics for transient and start-up scenarios in hydrogen energy systems.', existingSlug: null },
+];
+
+function experimentalEntry(slug: string | null) {
+  if (!slug) return null;
+  return experimental.find((e) => e.slug === slug) ?? null;
+}
+function simulationEntry(slug: string | null) {
+  if (!slug) return null;
+  return simulation.find((e) => e.slug === slug) ?? null;
+}
 ---
 
 <BaseLayout
@@ -37,100 +78,71 @@ const statusLabel: Record<string, string> = {
 
     <div class="flex flex-col lg:flex-row lg:gap-12">
 
-      <!-- LEFT: dropdown nav -->
       <aside class="lg:w-56 flex-shrink-0 mb-8 lg:mb-0">
-        <nav class="lg:sticky lg:top-24 flex flex-col gap-2">
-
-          <!-- Group: Area -->
-          <div class="nav-group" data-group="area">
-            <button class="group-trigger active" data-view="all">Area</button>
-            <ul class="submenu">
-              <li><button class="sub-item active" data-view="all">All</button></li>
-              <li><button class="sub-item" data-view="experimental">Experimental</button></li>
-              <li><button class="sub-item" data-view="simulation">Simulation and Optimization</button></li>
-            </ul>
-          </div>
-
-          <!-- Group: Publication -->
-          <div class="nav-group" data-group="publication">
-            <button class="group-trigger" data-view="publication">Publication</button>
-            <ul class="submenu">
-              <li><button class="sub-item" data-view="publication">All Manuscripts</button></li>
-            </ul>
-          </div>
-
-        </nav>
+        <div class="lg:sticky lg:top-24">
+          <CategoryNav
+            groups={navGroups}
+            defaultView="publication"
+            ariaLabel="Research categories"
+          />
+        </div>
       </aside>
 
-      <!-- RIGHT: content views -->
       <div class="flex-1 min-w-0">
 
-        <!-- All Area -->
-        <section class="view-section" data-view="all">
-          <h2 class="view-title">Area · All</h2>
-          <div class="mb-12">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Experimental</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {experimental.map((item) => (
-                <a href={`/research/${item.slug}`} class="card flex flex-col gap-3 group">
-                  {item.data.date && <span class="section-label">{item.data.date}</span>}
-                  <h4 class="card-title">{item.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
-                  <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Simulation and Optimization</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {simulation.map((item) => (
-                <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
-                  {item.data.date && <span class="section-label">{item.data.date}</span>}
-                  <h4 class="card-title">{item.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
-                  <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section class="view-section hidden" data-view="experimental">
+        <!-- Experimental -->
+        <section data-view-panel="experimental" hidden aria-labelledby="cn-area-trigger">
           <h2 class="view-title">Area · Experimental</h2>
           <div class="flex flex-col max-w-2xl">
-            {experimental.map((item) => (
-              <a href={`/research/${item.slug}`} class="card flex flex-col gap-3 group">
-                {item.data.date && <span class="section-label">{item.data.date}</span>}
-                <h4 class="card-title">{item.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
-                <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
-              </a>
-            ))}
+            {experimentalPlaceholders.map((p) => {
+              const real = experimentalEntry(p.existingSlug);
+              if (real) {
+                return (
+                  <a href={`/research/${real.slug}`} class="card flex flex-col gap-3 group">
+                    <h4 class="card-title">{real.data.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  </a>
+                );
+              }
+              return (
+                <div class="card flex flex-col gap-3" data-stub="true">
+                  <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
+                  <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        <section class="view-section hidden" data-view="simulation">
-          <h2 class="view-title">Area · Simulation and Optimization</h2>
+        <!-- Simulation -->
+        <section data-view-panel="simulation" hidden aria-labelledby="cn-area-trigger">
+          <h2 class="view-title">Area · Simulation</h2>
           <div class="flex flex-col max-w-2xl">
-            {simulation.map((item) => (
-              <a href={`/engineering/${item.slug}`} class="card flex flex-col gap-3 group">
-                {item.data.date && <span class="section-label">{item.data.date}</span>}
-                <h4 class="card-title">{item.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{item.data.summary}</p>
-                <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
-              </a>
-            ))}
+            {simulationPlaceholders.map((p) => {
+              const real = simulationEntry(p.existingSlug);
+              if (real) {
+                return (
+                  <a href={`/engineering/${real.slug}`} class="card flex flex-col gap-3 group">
+                    <h4 class="card-title">{real.data.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  </a>
+                );
+              }
+              return (
+                <div class="card flex flex-col gap-3" data-stub="true">
+                  <span class="section-label" style="color: var(--muted);">In preparation</span>
+                  <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
+                  <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        <section class="view-section hidden" data-view="publication">
+        <!-- Publication -->
+        <section data-view-panel="publication" hidden aria-labelledby="cn-publication-trigger">
           <h2 class="view-title">Publication</h2>
           <div class="flex flex-col max-w-2xl">
             {publications.map((pub) => (
@@ -153,72 +165,6 @@ const statusLabel: Record<string, string> = {
 </BaseLayout>
 
 <style>
-  .nav-group {
-    position: relative;
-  }
-
-  .group-trigger {
-    display: block;
-    text-align: left;
-    width: 100%;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    color: var(--muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-left: 2px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-  .group-trigger:hover { color: var(--ink); }
-  .group-trigger.active {
-    color: var(--ink);
-    border-left-color: var(--accent);
-  }
-
-  /* Submenu collapses by default */
-  .submenu {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 200ms ease;
-    margin: 0;
-    padding-left: 0.75rem;
-    list-style: none;
-  }
-  .nav-group:hover .submenu,
-  .nav-group:focus-within .submenu,
-  .nav-group.open .submenu {
-    max-height: 240px;
-  }
-
-  .sub-item {
-    display: block;
-    text-align: left;
-    width: 100%;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.75rem;
-    color: var(--muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-left: 2px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-  .sub-item:hover { color: var(--ink); }
-  .sub-item.active {
-    color: var(--ink);
-    font-weight: 700;
-    border-left-color: var(--accent);
-  }
-
-  /* Mobile: always show submenu (no hover) */
-  @media (max-width: 1023px) {
-    .submenu { max-height: 240px; padding-left: 0.5rem; }
-    .nav-group { margin-bottom: 0.5rem; }
-  }
-
-  .view-section.hidden { display: none; }
   .view-title {
     font-size: 1.75rem;
     font-family: 'Fraunces', Georgia, serif;
@@ -226,60 +172,19 @@ const statusLabel: Record<string, string> = {
     color: var(--ink);
     margin-bottom: 1.5rem;
   }
-  .sub-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent-dk);
-    font-weight: 700;
-  }
   .card-title {
     font-size: 1.25rem;
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 600;
     color: var(--ink);
   }
+  [data-view-panel] {
+    transition: opacity 150ms ease;
+  }
+  [data-view-panel][hidden] {
+    display: none;
+  }
+  [data-stub="true"] {
+    opacity: 0.65;
+  }
 </style>
-
-<script>
-  const groupTriggers = document.querySelectorAll<HTMLButtonElement>('.group-trigger');
-  const subItems = document.querySelectorAll<HTMLButtonElement>('.sub-item');
-  const views = document.querySelectorAll<HTMLElement>('.view-section');
-  const groupNodes = document.querySelectorAll<HTMLElement>('.nav-group');
-
-  // Maps view name -> group it belongs to
-  const viewToGroup: Record<string, string> = {
-    'all': 'area',
-    'experimental': 'area',
-    'simulation': 'area',
-    'publication': 'publication',
-  };
-
-  function activateView(view: string) {
-    views.forEach((v) => v.classList.toggle('hidden', v.dataset.view !== view));
-    subItems.forEach((s) => s.classList.toggle('active', s.dataset.view === view));
-    const targetGroup = viewToGroup[view] ?? '';
-    groupTriggers.forEach((t) => {
-      const g = (t.closest('.nav-group') as HTMLElement | null)?.dataset.group ?? '';
-      t.classList.toggle('active', g === targetGroup);
-    });
-  }
-
-  groupTriggers.forEach((t) => {
-    t.addEventListener('click', () => {
-      const view = t.dataset.view;
-      if (view) activateView(view);
-    });
-  });
-  subItems.forEach((s) => {
-    s.addEventListener('click', () => {
-      const view = s.dataset.view;
-      if (view) activateView(view);
-    });
-  });
-
-  // Mobile: tap group-trigger to toggle submenu open state
-  if (window.matchMedia('(max-width: 1023px)').matches) {
-    groupNodes.forEach((g) => g.classList.add('open'));
-  }
-</script>

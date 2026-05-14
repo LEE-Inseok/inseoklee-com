@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 
 const awards = (await getCollection('recognition-awards')).sort((a, b) => b.data.year - a.data.year);
@@ -12,6 +13,13 @@ const presentations = (await getCollection('recognition-presentations')).sort(
 const activities = (await getCollection('recognition-activities')).sort(
   (a, b) => b.data.date.localeCompare(a.data.date)
 );
+
+const navGroups = [
+  { key: 'awards',         label: 'Awards',         trigger: 'activate' as const, activateView: 'awards' },
+  { key: 'certifications', label: 'Certifications', trigger: 'activate' as const, activateView: 'certifications' },
+  { key: 'presentations',  label: 'Presentations',  trigger: 'activate' as const, activateView: 'presentations' },
+  { key: 'activities',     label: 'Activities',     trigger: 'activate' as const, activateView: 'activities' },
+];
 ---
 
 <BaseLayout
@@ -29,118 +37,25 @@ const activities = (await getCollection('recognition-activities')).sort(
 
     <div class="flex flex-col lg:flex-row lg:gap-12">
 
-      <!-- LEFT: dropdown nav -->
       <aside class="lg:w-56 flex-shrink-0 mb-8 lg:mb-0">
-        <nav class="lg:sticky lg:top-24 flex flex-col gap-2">
-
-          <div class="nav-group" data-group="recognition">
-            <button class="group-trigger active" data-view="all">Recognition</button>
-            <ul class="submenu">
-              <li><button class="sub-item active" data-view="all">All</button></li>
-              <li><button class="sub-item" data-view="awards">Awards</button></li>
-              <li><button class="sub-item" data-view="certifications">Certifications</button></li>
-              <li><button class="sub-item" data-view="presentations">Presentations</button></li>
-              <li><button class="sub-item" data-view="activities">Activities</button></li>
-            </ul>
-          </div>
-
-        </nav>
+        <div class="lg:sticky lg:top-24">
+          <CategoryNav
+            groups={navGroups}
+            defaultView="awards"
+            ariaLabel="Recognition categories"
+          />
+        </div>
       </aside>
 
-      <!-- RIGHT: content -->
       <div class="flex-1 min-w-0">
 
-        <!-- All view -->
-        <section class="view-section" data-view="all">
-          <h2 class="view-title">All</h2>
-
-          <div class="mb-12">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Awards</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {awards.map((a) => (
-                <div class="card flex flex-col gap-2">
-                  <div class="flex items-center justify-between">
-                    <span class="section-label">{a.data.year}</span>
-                    <span class="section-label" style="color: var(--accent-dk);">{a.data.prize}</span>
-                  </div>
-                  <h4 class="card-title">{a.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{a.data.summary}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div class="mb-12">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Certifications</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {certifications.map((c) => (
-                <div class="card flex flex-col gap-2">
-                  <div class="flex items-center justify-between">
-                    <span class="section-label">{c.data.issuer}</span>
-                    <span class="section-label">{c.data.date}</span>
-                  </div>
-                  <h4 class="card-title">{c.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{c.data.summary}</p>
-                  {(c.data.verifyUrl || c.data.pdf) && (
-                    <div class="flex flex-wrap gap-4 mt-1 text-sm">
-                      {c.data.verifyUrl && <a href={c.data.verifyUrl} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Verify →</a>}
-                      {c.data.pdf && <a href={c.data.pdf} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">PDF ↓</a>}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div class="mb-12">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Presentations</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {presentations.length === 0 && (
-                <p class="text-base" style="color: var(--muted);">No conference presentations recorded yet.</p>
-              )}
-              {presentations.map((p) => (
-                <div class="card flex flex-col gap-2">
-                  <div class="flex items-center justify-between">
-                    <span class="section-label">{p.data.conference}</span>
-                    <span class="section-label">{p.data.date}</span>
-                  </div>
-                  <h4 class="card-title">{p.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{p.data.summary}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Activities</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {activities.map((act) => (
-                <div class="card flex flex-col gap-2">
-                  <span class="section-label">{act.data.date}</span>
-                  <h4 class="card-title">{act.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{act.data.summary}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <!-- Awards only -->
-        <section class="view-section hidden" data-view="awards">
+        <!-- Awards -->
+        <section data-view-panel="awards" hidden aria-labelledby="cn-awards-trigger">
           <h2 class="view-title">Awards</h2>
           <div class="flex flex-col max-w-2xl">
+            {awards.length === 0 && (
+              <p class="text-base" style="color: var(--muted);">No awards recorded yet.</p>
+            )}
             {awards.map((a) => (
               <div class="card flex flex-col gap-2">
                 <div class="flex items-center justify-between">
@@ -154,10 +69,13 @@ const activities = (await getCollection('recognition-activities')).sort(
           </div>
         </section>
 
-        <!-- Certifications only -->
-        <section class="view-section hidden" data-view="certifications">
+        <!-- Certifications -->
+        <section data-view-panel="certifications" hidden aria-labelledby="cn-certifications-trigger">
           <h2 class="view-title">Certifications</h2>
           <div class="flex flex-col max-w-2xl">
+            {certifications.length === 0 && (
+              <p class="text-base" style="color: var(--muted);">No certifications recorded yet.</p>
+            )}
             {certifications.map((c) => (
               <div class="card flex flex-col gap-2">
                 <div class="flex items-center justify-between">
@@ -177,8 +95,8 @@ const activities = (await getCollection('recognition-activities')).sort(
           </div>
         </section>
 
-        <!-- Presentations only -->
-        <section class="view-section hidden" data-view="presentations">
+        <!-- Presentations -->
+        <section data-view-panel="presentations" hidden aria-labelledby="cn-presentations-trigger">
           <h2 class="view-title">Presentations</h2>
           <div class="flex flex-col max-w-2xl">
             {presentations.length === 0 && (
@@ -197,10 +115,13 @@ const activities = (await getCollection('recognition-activities')).sort(
           </div>
         </section>
 
-        <!-- Activities only -->
-        <section class="view-section hidden" data-view="activities">
+        <!-- Activities -->
+        <section data-view-panel="activities" hidden aria-labelledby="cn-activities-trigger">
           <h2 class="view-title">Activities</h2>
           <div class="flex flex-col max-w-2xl">
+            {activities.length === 0 && (
+              <p class="text-base" style="color: var(--muted);">No activities recorded yet.</p>
+            )}
             {activities.map((act) => (
               <div class="card flex flex-col gap-2">
                 <span class="section-label">{act.data.date}</span>
@@ -217,64 +138,6 @@ const activities = (await getCollection('recognition-activities')).sort(
 </BaseLayout>
 
 <style>
-  .nav-group { position: relative; }
-  .group-trigger {
-    display: block;
-    text-align: left;
-    width: 100%;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    color: var(--muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-left: 2px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-  .group-trigger:hover { color: var(--ink); }
-  .group-trigger.active {
-    color: var(--ink);
-    border-left-color: var(--accent);
-  }
-  .submenu {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 200ms ease;
-    margin: 0;
-    padding-left: 0.75rem;
-    list-style: none;
-  }
-  .nav-group:hover .submenu,
-  .nav-group:focus-within .submenu,
-  .nav-group.open .submenu {
-    max-height: 320px;
-  }
-  .sub-item {
-    display: block;
-    text-align: left;
-    width: 100%;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.75rem;
-    color: var(--muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-left: 2px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-  .sub-item:hover { color: var(--ink); }
-  .sub-item.active {
-    color: var(--ink);
-    font-weight: 700;
-    border-left-color: var(--accent);
-  }
-  @media (max-width: 1023px) {
-    .submenu { max-height: 320px; padding-left: 0.5rem; }
-    .nav-group { margin-bottom: 0.5rem; }
-  }
-
-  .view-section.hidden { display: none; }
   .view-title {
     font-size: 1.75rem;
     font-family: 'Fraunces', Georgia, serif;
@@ -282,43 +145,16 @@ const activities = (await getCollection('recognition-activities')).sort(
     color: var(--ink);
     margin-bottom: 1.5rem;
   }
-  .sub-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent-dk);
-    font-weight: 700;
-  }
   .card-title {
     font-size: 1.25rem;
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 600;
     color: var(--ink);
   }
+  [data-view-panel] {
+    transition: opacity 150ms ease;
+  }
+  [data-view-panel][hidden] {
+    display: none;
+  }
 </style>
-
-<script>
-  const groupTriggers = document.querySelectorAll<HTMLButtonElement>('.group-trigger');
-  const subItems = document.querySelectorAll<HTMLButtonElement>('.sub-item');
-  const views = document.querySelectorAll<HTMLElement>('.view-section');
-  const groupNodes = document.querySelectorAll<HTMLElement>('.nav-group');
-
-  function activateView(view: string) {
-    views.forEach((v) => v.classList.toggle('hidden', v.dataset.view !== view));
-    subItems.forEach((s) => s.classList.toggle('active', s.dataset.view === view));
-    groupTriggers.forEach((t) => t.classList.add('active'));
-  }
-
-  groupTriggers.forEach((t) => t.addEventListener('click', () => {
-    const view = t.dataset.view;
-    if (view) activateView(view);
-  }));
-  subItems.forEach((s) => s.addEventListener('click', () => {
-    const view = s.dataset.view;
-    if (view) activateView(view);
-  }));
-
-  if (window.matchMedia('(max-width: 1023px)').matches) {
-    groupNodes.forEach((g) => g.classList.add('open'));
-  }
-</script>

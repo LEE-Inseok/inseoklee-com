@@ -1,11 +1,36 @@
 ---
 const currentPath = Astro.url.pathname;
 
-const navLinks = [
-  { label: 'About',       href: '/about' },
-  { label: 'Research',    href: '/research' },
-  { label: 'Code',        href: '/development' },
-  { label: 'Recognition', href: '/recognition' },
+interface SubLink { label: string; href: string; }
+interface NavLink { label: string; href: string; sub?: SubLink[]; }
+
+const navLinks: NavLink[] = [
+  { label: 'About',    href: '/about' },
+  {
+    label: 'Research', href: '/research',
+    sub: [
+      { label: 'Experimental', href: '/research#experimental' },
+      { label: 'Simulation',   href: '/research#simulation' },
+      { label: 'Publication',  href: '/research#publication' },
+    ],
+  },
+  {
+    label: 'Code',     href: '/development',
+    sub: [
+      { label: 'Workflow',            href: '/development#workflow' },
+      { label: 'Harness Engineering', href: '/development#harness' },
+      { label: 'Project',             href: '/development#project' },
+    ],
+  },
+  {
+    label: 'Recognition', href: '/recognition',
+    sub: [
+      { label: 'Awards',         href: '/recognition#awards' },
+      { label: 'Certifications', href: '/recognition#certifications' },
+      { label: 'Presentations',  href: '/recognition#presentations' },
+      { label: 'Activities',     href: '/recognition#activities' },
+    ],
+  },
   { label: 'News',        href: '/news' },
 ];
 
@@ -34,19 +59,41 @@ function isActive(href: string): boolean {
 
     <!-- Center nav links -->
     <ul class="hidden md:flex items-center gap-8">
-      {navLinks.map(({ label, href }) => {
+      {navLinks.map(({ label, href, sub }) => {
         const active = isActive(href);
+        const hasSub = !!sub && sub.length > 0;
         return (
-          <li class="relative">
+          <li class={`relative top-nav-item ${hasSub ? 'has-sub' : ''}`}>
             {active && <span class="nav-active-line" />}
             <a
               href={href}
-              class="relative pt-1 pb-1 text-sm font-medium tracking-tight transition-colors duration-150"
+              class="top-nav-link relative pt-1 pb-1 text-sm font-medium tracking-tight transition-colors duration-150 inline-flex items-center gap-1"
               style={active ? 'color: var(--ink);' : 'color: var(--muted);'}
               aria-current={active ? 'page' : undefined}
+              aria-haspopup={hasSub ? 'menu' : undefined}
+              aria-expanded={hasSub ? 'false' : undefined}
             >
-              {label}
+              <span>{label}</span>
+              {hasSub && <span class="top-nav-chevron" aria-hidden="true">▾</span>}
             </a>
+            {hasSub && (
+              <div class="top-nav-dropdown" role="menu" aria-label={`${label} subcategories`}>
+                <ul>
+                  {sub!.map(({ label: sLabel, href: sHref }) => (
+                    <li>
+                      <a
+                        href={sHref}
+                        role="menuitem"
+                        class="top-nav-sub-link"
+                        data-sub-href={sHref}
+                      >
+                        {sLabel}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </li>
         );
       })}
@@ -122,6 +169,108 @@ function isActive(href: string): boolean {
   </div>
 </nav>
 
+<style>
+  /* Top nav link hover (works whether item has sub-menu or not) */
+  .top-nav-link {
+    position: relative;
+  }
+  .top-nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 2px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 180ms ease;
+  }
+  .top-nav-item:hover .top-nav-link::after {
+    transform: scaleX(1);
+  }
+  .top-nav-item:hover .top-nav-link {
+    color: var(--ink) !important;
+  }
+
+  /* Dropdown panel — hidden by default, opens on hover */
+  .top-nav-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 8px);
+    min-width: 220px;
+    padding: 0.5rem 0;
+    margin-top: 8px;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .top-nav-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .top-nav-item.has-sub:hover .top-nav-dropdown,
+  .top-nav-item.has-sub:focus-within .top-nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+  }
+
+  /* Bridge the 8px gap so cursor can travel without closing */
+  .top-nav-item.has-sub::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 16px;
+  }
+
+  .top-nav-sub-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .top-nav-sub-link:hover {
+    background-color: rgba(6, 182, 212, 0.10);
+    color: var(--ink);
+  }
+  .top-nav-sub-link[aria-current="true"] {
+    background-color: var(--accent);
+    color: #FFFFFF;
+    font-weight: 700;
+  }
+  .top-nav-sub-link[aria-current="true"]:hover {
+    background-color: var(--accent-dk);
+    color: #FFFFFF;
+  }
+
+  /* Chevron next to has-sub triggers */
+  .top-nav-chevron {
+    display: inline-block;
+    font-size: 0.6rem;
+    line-height: 1;
+    transform: translateY(1px);
+    transition: transform 180ms ease;
+  }
+  .top-nav-item.has-sub:hover .top-nav-chevron,
+  .top-nav-item.has-sub:focus-within .top-nav-chevron {
+    transform: translateY(1px) rotate(180deg);
+  }
+</style>
+
 <script>
   // Scroll effect: add backdrop-blur + border-bottom
   const nav = document.getElementById('main-nav');
@@ -144,5 +293,39 @@ function isActive(href: string): boolean {
   // Mobile menu toggle
   mobileBtn?.addEventListener('click', () => {
     mobileMenu?.classList.toggle('hidden');
+  });
+
+  // Highlight the dropdown sub-link that matches the current URL (path + hash)
+  function markCurrentSubLink() {
+    const current = window.location.pathname + window.location.hash;
+    const currentNormalized = current.replace(/\/$/, '');
+    document.querySelectorAll<HTMLAnchorElement>('.top-nav-sub-link[data-sub-href]').forEach((a) => {
+      const target = (a.dataset.subHref ?? '').replace(/\/$/, '');
+      if (target && target === currentNormalized) {
+        a.setAttribute('aria-current', 'true');
+      } else {
+        a.removeAttribute('aria-current');
+      }
+    });
+  }
+  markCurrentSubLink();
+  window.addEventListener('hashchange', markCurrentSubLink);
+  window.addEventListener('popstate', markCurrentSubLink);
+
+  // Dynamic aria-expanded on hover/focus for top-nav triggers with sub-menu
+  document.querySelectorAll<HTMLElement>('.top-nav-item.has-sub').forEach((item) => {
+    const trigger = item.querySelector<HTMLElement>('.top-nav-link');
+    if (!trigger) return;
+
+    const open = () => trigger.setAttribute('aria-expanded', 'true');
+    const close = () => trigger.setAttribute('aria-expanded', 'false');
+
+    item.addEventListener('mouseenter', open);
+    item.addEventListener('mouseleave', close);
+    item.addEventListener('focusin', open);
+    item.addEventListener('focusout', (e) => {
+      const related = (e as FocusEvent).relatedTarget as Node | null;
+      if (!related || !item.contains(related)) close();
+    });
   });
 </script>

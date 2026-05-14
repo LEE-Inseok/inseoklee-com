@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 
 const allTools = await getCollection('development');
@@ -12,6 +13,50 @@ const renderEntries = async (entries: typeof allTools) =>
   }));
 
 const frameworksRendered = await renderEntries(frameworks);
+
+const navGroups = [
+  {
+    key: 'ai',
+    label: 'AI',
+    trigger: 'expand' as const,
+    items: [
+      { view: 'workflow', label: 'Workflow' },
+      { view: 'harness',  label: 'Harness Engineering' },
+    ],
+  },
+  {
+    key: 'project',
+    label: 'Project',
+    trigger: 'activate' as const,
+    activateView: 'project',
+  },
+];
+
+const workflowPlaceholders = [
+  { title: 'Claude Desktop App', summary: 'Daily workflow patterns — task planning, research, writing, and review with the Claude desktop client.' },
+  { title: 'Claude Code in VS Code', summary: 'Editor-integrated AI coding — slash commands, hooks, scoped permissions, and inline review loops.' },
+  { title: 'Multi-Agent Orchestration', summary: 'Specialist subagents (developer / debugger / analyst / verifier) coordinated under an orchestrator pattern.' },
+];
+
+const harnessPlaceholders = [
+  { title: 'MCP Servers', summary: 'Model Context Protocol — local and remote tool servers for filesystem, browser, EndNote, Notion, and scheduling.' },
+  { title: 'Skills', summary: 'Reusable capability bundles for PDF, DOCX, XLSX, PPTX, design review, and research synthesis.' },
+  { title: 'Hooks', summary: 'Event-driven automations — pre/post tool, session start/stop, and prompt submission gates.' },
+  { title: 'Harness Dashboard', summary: 'Local HTML dashboard summarising the active MCP roster, enabled skills, and hook chain — ported view in progress.' },
+];
+
+const projectPlaceholders = [
+  { title: 'Aspen Automation Framework', summary: 'Python pipeline for Aspen Plus — DOE, parallel simulation, surrogate training, NSGA-II / Bayesian optimization.', existingSlug: 'aspen-automation' },
+  { title: 'SBH Thermal Simulation Framework', summary: 'ODE-based thermal framework — model / scenario / execution layers across 5 reactor configurations.', existingSlug: 'sbh-framework' },
+  { title: 'Dashboard', summary: 'Local HTML dashboards for Pareto front, grid sweep, and weekly research updates — porting to the site in progress.', existingSlug: null },
+  { title: 'Presentation', summary: 'Slide-format research updates and conference materials — annotated figures and methodology walkthroughs.', existingSlug: null },
+  { title: 'Portfolio Site', summary: 'This very site — Astro + Tailwind + Cloudflare Pages. Source of truth for research, code, and recognition.', existingSlug: null },
+];
+
+function projectEntry(slug: string | null) {
+  if (!slug) return null;
+  return allTools.find((t) => t.slug === slug) ?? null;
+}
 ---
 
 <BaseLayout
@@ -29,126 +74,74 @@ const frameworksRendered = await renderEntries(frameworks);
 
     <div class="flex flex-col lg:flex-row lg:gap-12">
 
-      <!-- LEFT: dropdown nav -->
       <aside class="lg:w-56 flex-shrink-0 mb-8 lg:mb-0">
-        <nav class="lg:sticky lg:top-24 flex flex-col gap-2">
-
-          <div class="nav-group" data-group="tools">
-            <button class="group-trigger active" data-view="all">Tools</button>
-            <ul class="submenu">
-              <li><button class="sub-item active" data-view="all">All</button></li>
-              <li><button class="sub-item" data-view="frameworks">Code &amp; Frameworks</button></li>
-              <li><button class="sub-item" data-view="dashboards">Dashboards</button></li>
-            </ul>
-          </div>
-
-          <div class="nav-group" data-group="ai">
-            <button class="group-trigger" data-view="productivity">AI</button>
-            <ul class="submenu">
-              <li><button class="sub-item" data-view="productivity">Engineering Productivity</button></li>
-            </ul>
-          </div>
-
-        </nav>
+        <div class="lg:sticky lg:top-24">
+          <CategoryNav
+            groups={navGroups}
+            defaultView="project"
+            ariaLabel="Code categories"
+          />
+        </div>
       </aside>
 
-      <!-- RIGHT: content -->
       <div class="flex-1 min-w-0">
 
-        <!-- All view -->
-        <section class="view-section" data-view="all">
-          <h2 class="view-title">All</h2>
-
-          <div class="mb-12">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Code &amp; Frameworks</h3>
-            </div>
-            <div class="flex flex-col max-w-2xl">
-              {frameworksRendered.map(({ entry, Content }) => (
-                <section class="card flex flex-col gap-3">
-                  {entry.data.date && <span class="section-label">{entry.data.date}</span>}
-                  <h4 class="card-title">{entry.data.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
-                  <article class="article">
-                    <Content />
-                  </article>
-                  {entry.data.tags && (
-                    <div class="flex flex-wrap mt-3">
-                      {entry.data.tags.map(tag => <span class="chip">{tag}</span>)}
-                    </div>
-                  )}
-                </section>
-              ))}
-            </div>
-          </div>
-
-          <div class="mb-12">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Dashboards</h3>
-            </div>
-            <p class="text-base max-w-2xl" style="color: var(--muted);">
-              Local HTML dashboards (lohc-ccpp-dashboard, ccpp-lohc-presentation, weekly_web) — porting in progress.
-            </p>
-          </div>
-
-          <div>
-            <div class="flex items-center gap-3 mb-4">
-              <span class="block w-8 h-px" style="background-color: var(--accent);"></span>
-              <h3 class="sub-label">Engineering Productivity (AI)</h3>
-            </div>
-            <p class="text-base max-w-2xl" style="color: var(--muted);">
-              Multi-agent AI workflow system designed for engineering research — architecture, automation rules, and explicit human-authorship boundaries. Documentation in progress.
-            </p>
-          </div>
-        </section>
-
-        <section class="view-section hidden" data-view="frameworks">
-          <h2 class="view-title">Code &amp; Frameworks</h2>
+        <!-- Workflow -->
+        <section data-view-panel="workflow" hidden aria-labelledby="cn-ai-trigger">
+          <h2 class="view-title">AI · Workflow</h2>
           <div class="flex flex-col max-w-2xl">
-            {frameworksRendered.map(({ entry, Content }) => (
-              <section class="card flex flex-col gap-3">
-                {entry.data.date && <span class="section-label">{entry.data.date}</span>}
-                <h4 class="card-title">{entry.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
-                <article class="article">
-                  <Content />
-                </article>
-                {entry.data.tags && (
-                  <div class="flex flex-wrap mt-3">
-                    {entry.data.tags.map(tag => <span class="chip">{tag}</span>)}
-                  </div>
-                )}
-              </section>
+            {workflowPlaceholders.map((p) => (
+              <div class="card flex flex-col gap-3" data-stub="true">
+                <span class="section-label" style="color: var(--muted);">In preparation</span>
+                <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
+                <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        <section class="view-section hidden" data-view="dashboards">
-          <h2 class="view-title">Dashboards</h2>
-          <div class="max-w-2xl">
-            <p class="text-base mb-6" style="color: var(--body);">
-              Local HTML dashboards for live process monitoring and optimization-result visualization. Porting in progress.
-            </p>
-            <ul class="space-y-2 text-base" style="color: var(--body);">
-              <li>· <span style="color: var(--ink); font-weight: 600;">lohc-ccpp-dashboard</span> — Pareto-front + grid-sweep results</li>
-              <li>· <span style="color: var(--ink); font-weight: 600;">ccpp-lohc-presentation</span> — Annotated figures (parity plots, LHS distribution, convergence)</li>
-              <li>· <span style="color: var(--ink); font-weight: 600;">weekly_web</span> — Slide-format research updates</li>
-            </ul>
+        <!-- Harness Engineering -->
+        <section data-view-panel="harness" hidden aria-labelledby="cn-ai-trigger">
+          <h2 class="view-title">AI · Harness Engineering</h2>
+          <div class="flex flex-col max-w-2xl">
+            {harnessPlaceholders.map((p) => (
+              <div class="card flex flex-col gap-3" data-stub="true">
+                <span class="section-label" style="color: var(--muted);">In preparation</span>
+                <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
+                <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+              </div>
+            ))}
           </div>
         </section>
 
-        <section class="view-section hidden" data-view="productivity">
-          <h2 class="view-title">Engineering Productivity (AI)</h2>
-          <div class="max-w-2xl">
-            <p class="text-base mb-4" style="color: var(--body);">
-              Multi-agent AI workflow system designed for engineering research. The role of AI in this workflow is bounded and documented — every output traces back to a human decision, and the system is configured to support, not replace, research authorship.
-            </p>
-            <p class="text-base mb-4" style="color: var(--body);">
-              Architecture diagram, MCP server roster, and human-authorship boundaries documentation are in preparation.
-            </p>
-            <p class="text-sm" style="color: var(--muted);">Coming soon.</p>
+        <!-- Project -->
+        <section data-view-panel="project" hidden aria-labelledby="cn-project-trigger">
+          <h2 class="view-title">Project</h2>
+          <div class="flex flex-col max-w-2xl">
+            {projectPlaceholders.map((p) => {
+              const real = projectEntry(p.existingSlug);
+              if (real) {
+                return (
+                  <section class="card flex flex-col gap-3">
+                    {real.data.date && <span class="section-label">{real.data.date}</span>}
+                    <h4 class="card-title">{real.data.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                    {real.data.tags && (
+                      <div class="flex flex-wrap mt-3">
+                        {real.data.tags.map(tag => <span class="chip">{tag}</span>)}
+                      </div>
+                    )}
+                  </section>
+                );
+              }
+              return (
+                <div class="card flex flex-col gap-3" data-stub="true">
+                  <span class="section-label" style="color: var(--muted);">In preparation</span>
+                  <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
+                  <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -158,64 +151,6 @@ const frameworksRendered = await renderEntries(frameworks);
 </BaseLayout>
 
 <style>
-  .nav-group { position: relative; }
-  .group-trigger {
-    display: block;
-    text-align: left;
-    width: 100%;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    color: var(--muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-left: 2px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-  .group-trigger:hover { color: var(--ink); }
-  .group-trigger.active {
-    color: var(--ink);
-    border-left-color: var(--accent);
-  }
-  .submenu {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 200ms ease;
-    margin: 0;
-    padding-left: 0.75rem;
-    list-style: none;
-  }
-  .nav-group:hover .submenu,
-  .nav-group:focus-within .submenu,
-  .nav-group.open .submenu {
-    max-height: 240px;
-  }
-  .sub-item {
-    display: block;
-    text-align: left;
-    width: 100%;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.75rem;
-    color: var(--muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-left: 2px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-  .sub-item:hover { color: var(--ink); }
-  .sub-item.active {
-    color: var(--ink);
-    font-weight: 700;
-    border-left-color: var(--accent);
-  }
-  @media (max-width: 1023px) {
-    .submenu { max-height: 240px; padding-left: 0.5rem; }
-    .nav-group { margin-bottom: 0.5rem; }
-  }
-
-  .view-section.hidden { display: none; }
   .view-title {
     font-size: 1.75rem;
     font-family: 'Fraunces', Georgia, serif;
@@ -223,58 +158,19 @@ const frameworksRendered = await renderEntries(frameworks);
     color: var(--ink);
     margin-bottom: 1.5rem;
   }
-  .sub-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent-dk);
-    font-weight: 700;
-  }
   .card-title {
     font-size: 1.25rem;
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 600;
     color: var(--ink);
   }
+  [data-view-panel] {
+    transition: opacity 150ms ease;
+  }
+  [data-view-panel][hidden] {
+    display: none;
+  }
+  [data-stub="true"] {
+    opacity: 0.65;
+  }
 </style>
-
-<script>
-  const groupTriggers = document.querySelectorAll<HTMLButtonElement>('.group-trigger');
-  const subItems = document.querySelectorAll<HTMLButtonElement>('.sub-item');
-  const views = document.querySelectorAll<HTMLElement>('.view-section');
-  const groupNodes = document.querySelectorAll<HTMLElement>('.nav-group');
-
-  const viewToGroup: Record<string, string> = {
-    'all': 'tools',
-    'frameworks': 'tools',
-    'dashboards': 'tools',
-    'productivity': 'ai',
-  };
-
-  function activateView(view: string) {
-    views.forEach((v) => v.classList.toggle('hidden', v.dataset.view !== view));
-    subItems.forEach((s) => s.classList.toggle('active', s.dataset.view === view));
-    const targetGroup = viewToGroup[view] ?? '';
-    groupTriggers.forEach((t) => {
-      const g = (t.closest('.nav-group') as HTMLElement | null)?.dataset.group ?? '';
-      t.classList.toggle('active', g === targetGroup);
-    });
-  }
-
-  groupTriggers.forEach((t) => {
-    t.addEventListener('click', () => {
-      const view = t.dataset.view;
-      if (view) activateView(view);
-    });
-  });
-  subItems.forEach((s) => {
-    s.addEventListener('click', () => {
-      const view = s.dataset.view;
-      if (view) activateView(view);
-    });
-  });
-
-  if (window.matchMedia('(max-width: 1023px)').matches) {
-    groupNodes.forEach((g) => g.classList.add('open'));
-  }
-</script>

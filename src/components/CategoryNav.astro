@@ -1,0 +1,253 @@
+---
+export interface NavItem {
+  view: string;
+  label: string;
+}
+
+export interface NavGroup {
+  key: string;
+  label: string;
+  trigger: 'expand' | 'activate';
+  activateView?: string;
+  items?: NavItem[];
+}
+
+export interface Props {
+  groups: NavGroup[];
+  defaultView: string;
+  ariaLabel?: string;
+}
+
+const { groups, defaultView, ariaLabel = 'Category navigation' } = Astro.props;
+
+const allViews = groups.flatMap((g) =>
+  g.trigger === 'activate' && g.activateView
+    ? [g.activateView]
+    : (g.items ?? []).map((i) => i.view)
+);
+---
+
+<nav
+  class="category-nav"
+  aria-label={ariaLabel}
+  data-default-view={defaultView}
+  data-views={allViews.join(',')}
+>
+  {groups.map((group) => {
+    const groupId = `cn-${group.key}`;
+    const submenuId = `${groupId}-submenu`;
+
+    if (group.trigger === 'activate' && group.activateView) {
+      return (
+        <div class="category-nav__group" data-group={group.key} data-state="closed">
+          <a
+            id={`${groupId}-trigger`}
+            class="category-nav__trigger"
+            href={`#${group.activateView}`}
+            data-view={group.activateView}
+            data-activate
+            role="link"
+          >
+            <span>{group.label}</span>
+          </a>
+        </div>
+      );
+    }
+
+    return (
+      <div class="category-nav__group" data-group={group.key} data-state="closed">
+        <button
+          type="button"
+          id={`${groupId}-trigger`}
+          class="category-nav__trigger"
+          aria-expanded="false"
+          aria-controls={submenuId}
+          data-expand
+        >
+          <span>{group.label}</span>
+          <span class="category-nav__chevron" aria-hidden="true">▾</span>
+        </button>
+        <ul id={submenuId} class="category-nav__submenu">
+          {(group.items ?? []).map((item) => (
+            <li>
+              <a
+                class="category-nav__item"
+                href={`#${item.view}`}
+                data-view={item.view}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  })}
+</nav>
+
+<script>
+  type Group = HTMLElement;
+
+  const navs = document.querySelectorAll<HTMLElement>('nav.category-nav');
+
+  navs.forEach((nav) => {
+    const defaultView = nav.dataset.defaultView ?? '';
+    const valid = new Set((nav.dataset.views ?? '').split(',').filter(Boolean));
+
+    const groups = Array.from(nav.querySelectorAll<Group>('.category-nav__group'));
+    const triggers = Array.from(
+      nav.querySelectorAll<HTMLElement>('.category-nav__trigger')
+    );
+    const items = Array.from(
+      nav.querySelectorAll<HTMLAnchorElement>('a[data-view]')
+    );
+
+    function groupOf(view: string): Group | null {
+      const el = nav.querySelector<HTMLElement>(`a[data-view="${view}"]`);
+      if (!el) return null;
+      return el.closest<Group>('.category-nav__group');
+    }
+
+    function setState(group: Group, state: 'closed' | 'hover' | 'open') {
+      group.dataset.state = state;
+      const trigger = group.querySelector<HTMLElement>('[data-expand]');
+      if (trigger) trigger.setAttribute('aria-expanded', state === 'closed' ? 'false' : 'true');
+    }
+
+    function closeUnpinnedOthers(keepGroup: Group | null) {
+      groups.forEach((g) => {
+        if (g === keepGroup) return;
+        if (g.dataset.hasActive === 'true') return;
+        setState(g, 'closed');
+      });
+    }
+
+    function activateView(view: string, opts: { writeHash?: boolean } = { writeHash: true }) {
+      if (!valid.has(view)) view = defaultView;
+
+      items.forEach((a) => {
+        const isActive = a.dataset.view === view;
+        if (isActive) a.setAttribute('aria-current', 'page');
+        else a.removeAttribute('aria-current');
+      });
+
+      groups.forEach((g) => {
+        const hasActive = !!g.querySelector('a[aria-current="page"]');
+        if (hasActive) {
+          g.dataset.hasActive = 'true';
+          setState(g, 'open');
+        } else {
+          delete g.dataset.hasActive;
+          if (g.dataset.state === 'open') setState(g, 'closed');
+        }
+      });
+
+      const panels = document.querySelectorAll<HTMLElement>('[data-view-panel]');
+      panels.forEach((panel) => {
+        const isActive = panel.dataset.viewPanel === view;
+        panel.toggleAttribute('hidden', !isActive);
+      });
+
+      if (opts.writeHash !== false) {
+        const target = `#${view}`;
+        if (location.hash !== target) {
+          history.replaceState(null, '', target);
+        }
+      }
+    }
+
+    function readHash(): string {
+      const h = location.hash.replace(/^#/, '');
+      return valid.has(h) ? h : defaultView;
+    }
+
+    // Expand-trigger click: toggle pinned-open (single-pin policy)
+    groups.forEach((group) => {
+      const trigger = group.querySelector<HTMLElement>('[data-expand]');
+      if (!trigger) return;
+
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (group.dataset.hasActive === 'true') return;
+        const current = group.dataset.state ?? 'closed';
+        if (current === 'open') {
+          setState(group, 'closed');
+        } else {
+          closeUnpinnedOthers(group);
+          setState(group, 'open');
+        }
+      });
+
+      // Hover behavior — JS-driven (single source of truth)
+      group.addEventListener('mouseenter', () => {
+        if (group.dataset.hasActive === 'true') return;
+        if (group.dataset.state === 'open') return;
+        closeUnpinnedOthers(group);
+        setState(group, 'hover');
+      });
+      group.addEventListener('mouseleave', () => {
+        if (group.dataset.hasActive === 'true') return;
+        if (group.dataset.state === 'hover') setState(group, 'closed');
+      });
+    });
+
+    // Sub-item / standalone-activate click → activate view (anchor href handles hash)
+    items.forEach((a) => {
+      a.addEventListener('click', (e) => {
+        const view = a.dataset.view;
+        if (!view) return;
+        e.preventDefault();
+        activateView(view);
+        a.focus();
+      });
+    });
+
+    // Keyboard: Esc closes hovered/non-active groups, arrows move focus
+    nav.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      if (e.key === 'Escape') {
+        const group = target.closest<HTMLElement>('.category-nav__group');
+        if (group && group.dataset.hasActive !== 'true') {
+          setState(group, 'closed');
+          const trigger = group.querySelector<HTMLElement>('[data-expand]');
+          trigger?.focus();
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const focusables = Array.from(
+          nav.querySelectorAll<HTMLElement>('.category-nav__trigger, .category-nav__item')
+        ).filter((el) => {
+          // Skip items inside closed groups
+          const group = el.closest<HTMLElement>('.category-nav__group');
+          if (!group) return true;
+          if (el.classList.contains('category-nav__trigger')) return true;
+          return group.dataset.state !== 'closed' || group.dataset.hasActive === 'true';
+        });
+        const idx = focusables.indexOf(target);
+        if (idx === -1) return;
+        e.preventDefault();
+        const next =
+          e.key === 'ArrowDown'
+            ? focusables[(idx + 1) % focusables.length]
+            : focusables[(idx - 1 + focusables.length) % focusables.length];
+        next?.focus();
+      }
+    });
+
+    // Hash change (external nav, back/forward)
+    window.addEventListener('hashchange', () => {
+      activateView(readHash(), { writeHash: false });
+    });
+
+    // Mobile: on initial render, only the active-ancestor group is open
+    // (handled implicitly by activateView setting data-state="open" only on ancestors)
+
+    // Initial render
+    activateView(readHash(), { writeHash: false });
+  });
+</script>
