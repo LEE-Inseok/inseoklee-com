@@ -77,6 +77,8 @@ const recognitionPresentations = defineCollection({
     conference: z.string(),
     title:      z.string(),
     date:       z.string(),
+    type:       z.enum(['poster', 'oral', 'invited']).optional(),
+    status:     z.enum(['scheduled', 'presented']).optional(),
     summary:    z.string(),
     image:      z.string().optional(),
   }),

@@ -103,9 +103,13 @@ const navGroups = [
             )}
             {presentations.map((p) => (
               <div class="card flex flex-col gap-2">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
                   <span class="section-label">{p.data.conference}</span>
-                  <span class="section-label">{p.data.date}</span>
+                  <div class="flex items-center gap-2">
+                    {p.data.type && <span class="presentation-badge presentation-badge--type">{p.data.type}</span>}
+                    {p.data.status === 'scheduled' && <span class="presentation-badge presentation-badge--scheduled">Scheduled</span>}
+                    <span class="section-label">{p.data.date}</span>
+                  </div>
                 </div>
                 <h4 class="card-title">{p.data.title}</h4>
                 <p class="text-base" style="color: var(--body);">{p.data.summary}</p>
@@ -185,6 +189,26 @@ const navGroups = [
   }
   [data-view-panel][hidden] {
     display: none;
+  }
+
+  /* Presentation badges */
+  .presentation-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    line-height: 1.4;
+  }
+  .presentation-badge--type {
+    background-color: var(--accent);
+    color: #FFFFFF;
+  }
+  .presentation-badge--scheduled {
+    background-color: transparent;
+    border: 1px solid var(--muted);
+    color: var(--muted);
   }
 
   /* Activity photo grid */
