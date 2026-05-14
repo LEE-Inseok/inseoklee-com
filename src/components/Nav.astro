@@ -193,7 +193,7 @@ function isActive(href: string): boolean {
     color: var(--ink) !important;
   }
 
-  /* Dropdown panel — hidden by default, opens on hover */
+  /* Dropdown panel — hidden by default, opens via JS-driven data-state="open" */
   .top-nav-dropdown {
     position: absolute;
     top: 100%;
@@ -215,23 +215,23 @@ function isActive(href: string): boolean {
     margin: 0;
     padding: 0;
   }
-  .top-nav-item.has-sub:hover .top-nav-dropdown,
-  .top-nav-item.has-sub:focus-within .top-nav-dropdown {
+  .top-nav-item.has-sub[data-state="open"] .top-nav-dropdown {
     opacity: 1;
     visibility: visible;
     transform: translate(-50%, 0);
     pointer-events: auto;
   }
 
-  /* Bridge the 8px gap so cursor can travel without closing */
+  /* Bridge — covers the 8px gap below the trigger so cursor can travel down
+     to the dropdown without firing mouseleave. Width = trigger only,
+     so adjacent items' bridges never overlap. */
   .top-nav-item.has-sub::after {
     content: '';
     position: absolute;
     top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 220px;
-    height: 16px;
+    left: 0;
+    right: 0;
+    height: 12px;
   }
 
   .top-nav-sub-link {
@@ -257,7 +257,7 @@ function isActive(href: string): boolean {
     color: #FFFFFF;
   }
 
-  /* Chevron next to has-sub triggers */
+  /* Chevron next to has-sub triggers — rotates with dropdown state, not hover */
   .top-nav-chevron {
     display: inline-block;
     font-size: 0.6rem;
@@ -265,8 +265,7 @@ function isActive(href: string): boolean {
     transform: translateY(1px);
     transition: transform 180ms ease;
   }
-  .top-nav-item.has-sub:hover .top-nav-chevron,
-  .top-nav-item.has-sub:focus-within .top-nav-chevron {
+  .top-nav-item.has-sub[data-state="open"] .top-nav-chevron {
     transform: translateY(1px) rotate(180deg);
   }
 </style>
@@ -312,20 +311,53 @@ function isActive(href: string): boolean {
   window.addEventListener('hashchange', markCurrentSubLink);
   window.addEventListener('popstate', markCurrentSubLink);
 
-  // Dynamic aria-expanded on hover/focus for top-nav triggers with sub-menu
-  document.querySelectorAll<HTMLElement>('.top-nav-item.has-sub').forEach((item) => {
+  // Top-nav dropdown — single-open policy, JS owns the state
+  // (CSS reads [data-state="open"] only; no :hover dependency so overlapping
+  //  pseudo-elements between adjacent items can't open two dropdowns at once.)
+  const subItems = document.querySelectorAll<HTMLElement>('.top-nav-item.has-sub');
+
+  subItems.forEach((item) => {
     const trigger = item.querySelector<HTMLElement>('.top-nav-link');
     if (!trigger) return;
 
-    const open = () => trigger.setAttribute('aria-expanded', 'true');
-    const close = () => trigger.setAttribute('aria-expanded', 'false');
+    let closeTimer: number | null = null;
 
-    item.addEventListener('mouseenter', open);
-    item.addEventListener('mouseleave', close);
-    item.addEventListener('focusin', open);
+    function clearTimer() {
+      if (closeTimer !== null) {
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+    }
+
+    function openThis() {
+      clearTimer();
+      // Close any other open dropdown (single-pin policy)
+      subItems.forEach((other) => {
+        if (other !== item && other.dataset.state === 'open') {
+          other.dataset.state = 'closed';
+          other.querySelector<HTMLElement>('.top-nav-link')
+            ?.setAttribute('aria-expanded', 'false');
+        }
+      });
+      item.dataset.state = 'open';
+      trigger!.setAttribute('aria-expanded', 'true');
+    }
+
+    function scheduleClose() {
+      clearTimer();
+      closeTimer = window.setTimeout(() => {
+        item.dataset.state = 'closed';
+        trigger!.setAttribute('aria-expanded', 'false');
+        closeTimer = null;
+      }, 120);  // grace period for cursor re-entry
+    }
+
+    item.addEventListener('mouseenter', openThis);
+    item.addEventListener('mouseleave', scheduleClose);
+    item.addEventListener('focusin', openThis);
     item.addEventListener('focusout', (e) => {
       const related = (e as FocusEvent).relatedTarget as Node | null;
-      if (!related || !item.contains(related)) close();
+      if (!related || !item.contains(related)) scheduleClose();
     });
   });
 </script>
