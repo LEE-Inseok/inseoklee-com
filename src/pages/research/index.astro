@@ -90,7 +90,7 @@ function simulationEntry(slug: string | null) {
 
       <div class="flex-1 min-w-0">
 
-        <!-- Experimental -->
+        <!-- Experimental — all items are active/in-progress, rendered in full color -->
         <section data-view-panel="experimental" hidden aria-labelledby="cn-area-trigger">
           <h2 class="view-title">Area · Experimental</h2>
           <div class="flex flex-col max-w-2xl">
@@ -106,9 +106,9 @@ function simulationEntry(slug: string | null) {
                 );
               }
               return (
-                <div class="card flex flex-col gap-3" data-stub="true">
-                  <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
-                  <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+                <div class="card flex flex-col gap-3">
+                  <h4 class="card-title">{p.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
                 </div>
               );
             })}
@@ -145,17 +145,20 @@ function simulationEntry(slug: string | null) {
         <section data-view-panel="publication" hidden aria-labelledby="cn-publication-trigger">
           <h2 class="view-title">Publication</h2>
           <div class="flex flex-col max-w-2xl">
-            {publications.map((pub) => (
-              <div class="card flex flex-col gap-3">
-                <div class="flex items-center justify-between">
-                  <span class="section-label" style="color: var(--accent-dk);">{statusLabel[pub.data.status] ?? pub.data.status}</span>
-                  {pub.data.date && <span class="section-label">{pub.data.date}</span>}
+            {publications.map((pub) => {
+              const isPending = pub.data.status === 'in-preparation' || pub.data.status === 'draft';
+              return (
+                <div class="card flex flex-col gap-3" data-pending={isPending ? 'true' : undefined}>
+                  <div class="flex items-center justify-between">
+                    <span class="section-label" style={isPending ? 'color: var(--muted);' : 'color: var(--accent-dk);'}>{statusLabel[pub.data.status] ?? pub.data.status}</span>
+                    {pub.data.date && <span class="section-label">{pub.data.date}</span>}
+                  </div>
+                  <h3 class="card-title" style={isPending ? 'color: var(--muted);' : undefined}>{pub.data.title}</h3>
+                  <p class="text-base" style={isPending ? 'color: var(--muted);' : 'color: var(--body);'}>{pub.data.summary}</p>
+                  {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
                 </div>
-                <h3 class="card-title">{pub.data.title}</h3>
-                <p class="text-base" style="color: var(--body);">{pub.data.summary}</p>
-                {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 

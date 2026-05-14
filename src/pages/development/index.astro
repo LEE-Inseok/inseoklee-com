@@ -4,15 +4,6 @@ import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 
 const allTools = await getCollection('development');
-const frameworks = allTools.filter(t => t.data.type === 'framework');
-
-const renderEntries = async (entries: typeof allTools) =>
-  await Promise.all(entries.map(async (entry) => {
-    const { Content } = await entry.render();
-    return { entry, Content };
-  }));
-
-const frameworksRendered = await renderEntries(frameworks);
 
 const navGroups = [
   {
@@ -32,25 +23,78 @@ const navGroups = [
   },
 ];
 
-const workflowPlaceholders = [
-  { title: 'Claude Desktop App', summary: 'Daily workflow patterns — task planning, research, writing, and review with the Claude desktop client.' },
-  { title: 'Claude Code in VS Code', summary: 'Editor-integrated AI coding — slash commands, hooks, scoped permissions, and inline review loops.' },
-  { title: 'Multi-Agent Orchestration', summary: 'Specialist subagents (developer / debugger / analyst / verifier) coordinated under an orchestrator pattern.' },
+// AI · Workflow — three tiers of AI usage
+const workflowItems = [
+  {
+    title: 'Claude',
+    summary: 'General chat for ideation, quick research questions, drafting, and lightweight summarisation — no codebase context, no tool-use.',
+  },
+  {
+    title: 'Claude Code',
+    summary: 'Coding work in VS Code extension or the desktop app — file edits, repo-aware refactoring, terminal-integrated debugging, and review loops.',
+  },
+  {
+    title: 'Multi-Agent Orchestration',
+    summary: 'Three-stage execution: Plan Mode → Codex cross-validation → specialist subagents (developer / debugger / analyst / tester / verifier) running the implementation.',
+  },
 ];
 
-const harnessPlaceholders = [
-  { title: 'MCP Servers', summary: 'Model Context Protocol — local and remote tool servers for filesystem, browser, EndNote, Notion, and scheduling.' },
-  { title: 'Skills', summary: 'Reusable capability bundles for PDF, DOCX, XLSX, PPTX, design review, and research synthesis.' },
-  { title: 'Hooks', summary: 'Event-driven automations — pre/post tool, session start/stop, and prompt submission gates.' },
-  { title: 'Harness Dashboard', summary: 'Local HTML dashboard summarising the active MCP roster, enabled skills, and hook chain — ported view in progress.' },
+// AI · Harness Engineering — tooling that customises the Claude harness
+const harnessItems = [
+  {
+    title: 'MCP Servers',
+    summary: 'Model Context Protocol servers connecting Claude to external systems — filesystem, browser, EndNote, Notion, Google Drive, and scheduled tasks.',
+  },
+  {
+    title: 'Skills',
+    summary: 'Reusable capability bundles auto-loaded per task — PDF, DOCX, XLSX, PPTX, design review, research synthesis, and project-specific helpers.',
+  },
+  {
+    title: 'Hooks',
+    summary: 'Event-driven automations along the agent lifecycle — pre/post tool, session start/stop, prompt submission gates, and stop-time review hooks.',
+  },
+  {
+    title: 'Subagents',
+    summary: 'Specialist Claude agents (developer / debugger / architect / researcher / analyst / tester / tech-writer / verifier) coordinated by an orchestrator.',
+  },
+  {
+    title: 'Slash Commands',
+    summary: 'Project-scoped commands that wrap recurring workflows — /codex:rescue, /codex:review, /research-toolkit, /sync-papers, /portfolio-update, etc.',
+  },
 ];
 
-const projectPlaceholders = [
-  { title: 'Aspen Automation Framework', summary: 'Python pipeline for Aspen Plus — DOE, parallel simulation, surrogate training, NSGA-II / Bayesian optimization.', existingSlug: 'aspen-automation' },
-  { title: 'SBH Thermal Simulation Framework', summary: 'ODE-based thermal framework — model / scenario / execution layers across 5 reactor configurations.', existingSlug: 'sbh-framework' },
-  { title: 'Dashboard', summary: 'Local HTML dashboards for Pareto front, grid sweep, and weekly research updates — porting to the site in progress.', existingSlug: null },
-  { title: 'Presentation', summary: 'Slide-format research updates and conference materials — annotated figures and methodology walkthroughs.', existingSlug: null },
-  { title: 'Portfolio Site', summary: 'This very site — Astro + Tailwind + Cloudflare Pages. Source of truth for research, code, and recognition.', existingSlug: null },
+// Project — concrete deliverables built with AI-assisted coding
+const projectItems = [
+  {
+    title: 'Aspen Automation Framework',
+    summary: 'Python pipeline for Aspen Plus — DOE, parallel simulation, surrogate training, NSGA-II / Bayesian optimization.',
+    existingSlug: 'aspen-automation',
+    externalHref: null,
+  },
+  {
+    title: 'SBH Thermal Simulation Framework',
+    summary: 'ODE-based thermal framework — model / scenario / execution layers across 5 reactor configurations.',
+    existingSlug: 'sbh-framework',
+    externalHref: null,
+  },
+  {
+    title: 'Dashboard',
+    summary: 'Local HTML dashboards for Pareto front, grid sweep, weekly research updates — annotated figures and convergence views.',
+    existingSlug: null,
+    externalHref: '/development/dashboards',
+  },
+  {
+    title: 'Presentation',
+    summary: 'Slide-format research updates and conference materials — methodology walkthroughs and annotated figures.',
+    existingSlug: null,
+    externalHref: '/development/engineering-productivity',
+  },
+  {
+    title: 'Portfolio Site',
+    summary: 'This very site — Astro + Tailwind + Cloudflare Pages. Source of truth for research, code, and recognition.',
+    existingSlug: null,
+    externalHref: 'https://github.com/LEE-Inseok/inseoklee-com',
+  },
 ];
 
 function projectEntry(slug: string | null) {
@@ -86,60 +130,66 @@ function projectEntry(slug: string | null) {
 
       <div class="flex-1 min-w-0">
 
-        <!-- Workflow -->
+        <!-- AI · Workflow -->
         <section data-view-panel="workflow" hidden aria-labelledby="cn-ai-trigger">
           <h2 class="view-title">AI · Workflow</h2>
           <div class="flex flex-col max-w-2xl">
-            {workflowPlaceholders.map((p) => (
-              <div class="card flex flex-col gap-3" data-stub="true">
-                <span class="section-label" style="color: var(--muted);">In preparation</span>
-                <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
-                <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+            {workflowItems.map((p) => (
+              <div class="card flex flex-col gap-3">
+                <h4 class="card-title">{p.title}</h4>
+                <p class="text-base" style="color: var(--body);">{p.summary}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <!-- Harness Engineering -->
+        <!-- AI · Harness Engineering -->
         <section data-view-panel="harness" hidden aria-labelledby="cn-ai-trigger">
           <h2 class="view-title">AI · Harness Engineering</h2>
           <div class="flex flex-col max-w-2xl">
-            {harnessPlaceholders.map((p) => (
-              <div class="card flex flex-col gap-3" data-stub="true">
-                <span class="section-label" style="color: var(--muted);">In preparation</span>
-                <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
-                <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+            {harnessItems.map((p) => (
+              <div class="card flex flex-col gap-3">
+                <h4 class="card-title">{p.title}</h4>
+                <p class="text-base" style="color: var(--body);">{p.summary}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <!-- Project -->
+        <!-- Project — all in black, all clickable -->
         <section data-view-panel="project" hidden aria-labelledby="cn-project-trigger">
           <h2 class="view-title">Project</h2>
           <div class="flex flex-col max-w-2xl">
-            {projectPlaceholders.map((p) => {
+            {projectItems.map((p) => {
               const real = projectEntry(p.existingSlug);
+
               if (real) {
                 return (
-                  <section class="card flex flex-col gap-3">
-                    {real.data.date && <span class="section-label">{real.data.date}</span>}
+                  <a href={`/development/${real.slug}`} class="card flex flex-col gap-3 group">
                     <h4 class="card-title">{real.data.title}</h4>
                     <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
                     {real.data.tags && (
-                      <div class="flex flex-wrap mt-3">
+                      <div class="flex flex-wrap mt-1">
                         {real.data.tags.map(tag => <span class="chip">{tag}</span>)}
                       </div>
                     )}
-                  </section>
+                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  </a>
                 );
               }
+
+              const href = p.externalHref ?? '#';
+              const isExternal = !!p.externalHref && p.externalHref.startsWith('http');
               return (
-                <div class="card flex flex-col gap-3" data-stub="true">
-                  <span class="section-label" style="color: var(--muted);">In preparation</span>
-                  <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
-                  <p class="text-base" style="color: var(--muted);">{p.summary}</p>
-                </div>
+                <a
+                  href={href}
+                  class="card flex flex-col gap-3 group"
+                  {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  <h4 class="card-title">{p.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                  <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                </a>
               );
             })}
           </div>
@@ -169,8 +219,5 @@ function projectEntry(slug: string | null) {
   }
   [data-view-panel][hidden] {
     display: none;
-  }
-  [data-stub="true"] {
-    opacity: 0.65;
   }
 </style>
