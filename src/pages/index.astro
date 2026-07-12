@@ -175,7 +175,7 @@ const runwayVh = 480;
               class="helix-card helix-head absolute flex flex-col items-center justify-center"
               style="width: 340px; height: 210px; left: -170px; top: -105px;"
             >
-              <span class="helix-head__count">{card.count} items ↓</span>
+              <span class="helix-head__count">Drag or click the arrows</span>
               <span class="helix-head__label" style={`color: ${card.color};`}>{card.label}</span>
             </a>
           ) : card.kind === 'photo' ? (
@@ -227,9 +227,6 @@ const runwayVh = 480;
         </h1>
         <p class="hero-line mt-6 text-lg lg:text-2xl" style="color: var(--muted);">
           <span class="hero-line__inner">System Engineering · Simulation &amp; Optimization · ALD <span style="color: var(--accent); font-weight: 600; white-space: nowrap;">× AI</span></span>
-        </p>
-        <p id="helix-hint" class="hero-line mt-12 text-xs uppercase tracking-widest" style="color: var(--muted);">
-          <span class="hero-line__inner">Drag to rotate · Scroll ↓</span>
         </p>
       </div>
 
@@ -288,14 +285,10 @@ const runwayVh = 480;
   #helix-title.is-in .hero-line__inner { transform: translateY(0); }
   #helix-title.is-in .hero-line:nth-child(1) .hero-line__inner { transition-delay: 60ms; }
   #helix-title.is-in .hero-line:nth-child(2) .hero-line__inner { transition-delay: 180ms; }
-  #helix-title.is-in .hero-line:nth-child(3) .hero-line__inner { transition-delay: 320ms; }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-line__inner { transform: none !important; transition: none !important; }
   }
-
-  /* The scroll hint fades instead of blinking off. */
-  #helix-hint { transition: opacity 300ms ease; }
 
   /* Strand header — big typographic label with a mirrored reflection below.
      No box/border: the type itself is the object. Color is driven by JS
@@ -506,7 +499,6 @@ const runwayVh = 480;
   // rise out of view, cards below wind up from underneath on all 3 strands.
   const wrap = document.getElementById('helix-hero');
   const ring = document.getElementById('helix-ring');
-  const hint = document.getElementById('helix-hint');
   const title = document.getElementById('helix-title');
   const svg = document.getElementById('helix-links');
   const reflectEl = document.getElementById('helix-reflect') as HTMLElement | null;
@@ -1018,7 +1010,6 @@ const runwayVh = 480;
       title.style.transform = `translateY(${(-40 * (1 - tFade)).toFixed(1)}px)`;
       title.style.visibility = tFade <= 0.01 ? 'hidden' : 'visible';
     }
-    if (hint) hint.style.opacity = p > 0.03 ? '0' : '1';
     if (activeBox) activeBox.style.opacity = spiralP > 0.02 ? '1' : '0';
 
     // Carousel arrows live with the keyword ring: in through Act 2, gone the
@@ -1173,10 +1164,11 @@ const runwayVh = 480;
   }
 
   if (stage && !reduced) {
-    // Tell touch users to tap (there's no cursor to "drag").
-    if (coarse && hint) {
-      const hintInner = hint.querySelector('.hero-line__inner');
-      if (hintInner) hintInner.textContent = 'Tap a keyword · Scroll ↓';
+    // Touch copy for the selection prompt above the keywords (no cursor to drag).
+    if (coarse) {
+      document.querySelectorAll<HTMLElement>('.helix-head__count').forEach((el) => {
+        el.textContent = 'Swipe or tap the arrows';
+      });
     }
     let active = false;   // a pointer is down, direction not yet decided
     let dragging = false; // committed to a horizontal rotate
@@ -1339,7 +1331,6 @@ const runwayVh = 480;
       // Static composition, no scroll listener — land in the formed helix
       // (past the keyword title screen) so content is visible at rest.
       render(0.55);
-      if (hint) hint.style.opacity = '0';
     } else {
       // Start from the CURRENT scroll position — the browser restores it on
       // back-navigation, and starting blindly at 0 showed the hero instead
