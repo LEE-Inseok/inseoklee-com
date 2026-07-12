@@ -91,19 +91,18 @@ const navGroups = [
               )}
               {area.entries.map((entry, i) => {
                 const num = String(i + 1).padStart(2, '0');
-                const soon = entry.data.status === 'coming-soon';
                 return (
-                  <a href={`/research/${entry.slug}`} class="card flex gap-5 group" data-stub={soon ? 'true' : undefined} data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <a href={`/research/${entry.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
                     <span class="row-num" aria-hidden="true">{num}</span>
                     <div class="flex flex-col gap-3 min-w-0">
-                      {soon && (
+                      {entry.data.status === 'coming-soon' && (
                         <span class="section-label" style="color: var(--muted);">Coming soon</span>
                       )}
                       {entry.data.status === 'draft' && (
                         <span class="section-label" style="color: var(--accent-dk);">In progress</span>
                       )}
-                      <h4 class="card-title" style={soon ? 'color: var(--muted);' : undefined}>{entry.data.title}</h4>
-                      <p class="text-base" style={soon ? 'color: var(--muted);' : 'color: var(--body);'}>{entry.data.summary}</p>
+                      <h4 class="card-title">{entry.data.title}</h4>
+                      <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
                       <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
                     </div>
                   </a>
@@ -121,15 +120,15 @@ const navGroups = [
               const isPending = pub.data.status === 'in-preparation' || pub.data.status === 'draft';
               const num = String(i + 1).padStart(2, '0');
               return (
-                <div class="card flex gap-5" data-pending={isPending ? 'true' : undefined} data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
                   <span class="row-num" aria-hidden="true">{num}</span>
                   <div class="flex flex-col gap-3 min-w-0 flex-1">
                     <div class="flex items-center justify-between">
                       <span class="section-label" style={isPending ? 'color: var(--muted);' : 'color: var(--accent-dk);'}>{statusLabel[pub.data.status] ?? pub.data.status}</span>
                       {pub.data.date && <span class="section-label">{pub.data.date}</span>}
                     </div>
-                    <h3 class="card-title" style={isPending ? 'color: var(--muted);' : undefined}>{pub.data.title}</h3>
-                    <p class="text-base" style={isPending ? 'color: var(--muted);' : 'color: var(--body);'}>{pub.data.summary}</p>
+                    <h3 class="card-title">{pub.data.title}</h3>
+                    <p class="text-base" style="color: var(--body);">{pub.data.summary}</p>
                     {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
                   </div>
                 </div>
@@ -162,8 +161,5 @@ const navGroups = [
   }
   [data-view-panel][hidden] {
     display: none;
-  }
-  [data-stub="true"] {
-    opacity: 0.65;
   }
 </style>

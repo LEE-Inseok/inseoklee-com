@@ -71,6 +71,14 @@
 [data-sec="development"] { --sec: var(--c-development); --sec-dk: var(--c-development-dk); }
 [data-sec="recognition"] { --sec: var(--c-recognition); --sec-dk: var(--c-recognition-dk); }
 
+/* Re-evaluate the aliases at body level: --accent is substituted where it is
+   DEFINED, and :root sits above the body[data-sec] override — without this,
+   every page resolved --accent to the default cyan regardless of section. */
+body {
+  --accent: var(--sec);
+  --accent-dk: var(--sec-dk);
+}
+
 /* ============================================================
    Base typography & background
    ============================================================ */
@@ -418,10 +426,10 @@
   }
 }
 
-/* Hover (aquaria — soft cyan tint) */
+/* Hover — soft tint in the section accent */
 .category-nav__trigger:hover,
 .category-nav__item:hover {
-  background-color: rgba(6, 182, 212, 0.10);
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--ink);
 }
 

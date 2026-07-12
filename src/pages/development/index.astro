@@ -142,28 +142,26 @@ const harnessItems = [
             )}
             {projects.map((entry, i) => {
               const num = String(i + 1).padStart(2, '0');
-              const soon = entry.data.status === 'coming-soon';
               const isExternal = !!entry.data.externalUrl;
               const href = entry.data.externalUrl ?? `/development/${entry.slug}`;
               return (
                 <a
                   href={href}
                   class="card flex gap-5 group"
-                  data-stub={soon ? 'true' : undefined}
                   data-reveal
                   style={`transition-delay: ${i * 70}ms`}
                   {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
                   <span class="row-num" aria-hidden="true">{num}</span>
                   <div class="flex flex-col gap-3 min-w-0">
-                    {soon && (
+                    {entry.data.status === 'coming-soon' && (
                       <span class="section-label" style="color: var(--muted);">Coming soon</span>
                     )}
                     {entry.data.status === 'draft' && (
                       <span class="section-label" style="color: var(--accent-dk);">In progress</span>
                     )}
-                    <h4 class="card-title" style={soon ? 'color: var(--muted);' : undefined}>{entry.data.title}</h4>
-                    <p class="text-base" style={soon ? 'color: var(--muted);' : 'color: var(--body);'}>{entry.data.summary}</p>
+                    <h4 class="card-title">{entry.data.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
                     {entry.data.tags && (
                       <div class="flex flex-wrap mt-1">
                         {entry.data.tags.map(tag => <span class="chip">{tag}</span>)}
@@ -209,8 +207,5 @@ const harnessItems = [
   }
   [data-view-panel][hidden] {
     display: none;
-  }
-  [data-stub="true"] {
-    opacity: 0.65;
   }
 </style>
