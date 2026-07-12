@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 
-const experimental = (await getCollection('research')).sort(
-  (a, b) => (a.data.date ?? '').localeCompare(b.data.date ?? '')
-);
-const simulation = (await getCollection('engineering')).sort(
-  (a, b) => (a.data.date ?? '').localeCompare(b.data.date ?? '')
-);
+// Research is now ONE collection; the `section` field splits it into areas.
+const researchAll = await getCollection('research');
+const byDate = (a: { data: { date?: string } }, b: { data: { date?: string } }) =>
+  (a.data.date ?? '').localeCompare(b.data.date ?? '');
+const experimental = researchAll.filter((e) => e.data.section === 'system-engineering').sort(byDate);
+const simulation = researchAll.filter((e) => e.data.section === 'simulation').sort(byDate);
 const publications = (await getCollection('publications')).sort((a, b) => {
   const order = { 'published': 0, 'under-review': 1, 'submitted': 2, 'draft': 3, 'in-preparation': 4 };
   return (order[a.data.status] ?? 9) - (order[b.data.status] ?? 9);
@@ -29,7 +29,7 @@ const navGroups = [
     trigger: 'expand' as const,
     items: [
       { view: 'experimental', label: 'System Engineering' },
-      { view: 'simulation',   label: 'Thermal Simulation' },
+      { view: 'simulation',   label: 'Simulation & Optimization' },
       { view: 'ald',          label: 'ALD' },
     ],
   },
@@ -131,14 +131,14 @@ function simulationEntry(slug: string | null) {
 
         <!-- Simulation -->
         <section data-view-panel="simulation" hidden aria-labelledby="cn-area-trigger">
-          <h2 class="view-title">Area · Thermal Simulation</h2>
+          <h2 class="view-title">Area · Simulation & Optimization</h2>
           <div class="flex flex-col max-w-2xl">
             {simulationPlaceholders.map((p, i) => {
               const real = simulationEntry(p.existingSlug);
               const num = String(i + 1).padStart(2, '0');
               if (real) {
                 return (
-                  <a href={`/engineering/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <a href={`/research/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
                     <span class="row-num" aria-hidden="true">{num}</span>
                     <div class="flex flex-col gap-3 min-w-0">
                       <h4 class="card-title">{real.data.title}</h4>

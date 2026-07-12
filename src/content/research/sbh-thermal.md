@@ -1,5 +1,6 @@
 ---
 title: SBH Thermal Simulation
+section: simulation
 status: published
 summary: Physics-based thermal scenario study across 5 heat-recovery configurations for the SBH hydrogen system — extending experimental observations into systematic design comparison.
 date: "2024"
@@ -72,4 +73,4 @@ Five reactor configurations compared under identical model equations and operati
 - Catalyst activity degradation over time is not modeled
 - Coil heat transfer coefficients estimated from correlations; experimental measurement would improve accuracy
 
-→ Next: [CCPP-LOHC Optimization](/engineering/ccpp-lohc) applies the same methodology — parameterized simulation, scenario comparison, performance ranking — at MW-scale industrial integration.
+→ Next: [CCPP-LOHC Optimization](/research/ccpp-lohc) applies the same methodology — parameterized simulation, scenario comparison, performance ranking — at MW-scale industrial integration.

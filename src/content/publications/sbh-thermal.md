@@ -10,4 +10,4 @@ date: "2026"
 
 In preparation. Simulation framework complete; manuscript writing ongoing.
 
-→ Related project: [SBH Thermal Simulation](/engineering/sbh-thermal)
+→ Related project: [SBH Thermal Simulation](/research/sbh-thermal)

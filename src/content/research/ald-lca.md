@@ -1,5 +1,6 @@
 ---
 title: ALD Life-Cycle Assessment
+section: ald
 status: draft
 summary: Cradle-to-gate LCA of atomic layer deposition processes — quantifying precursor consumption, energy intensity, and emissions per functional unit for sustainable semiconductor processing.
 date: "2026-07"

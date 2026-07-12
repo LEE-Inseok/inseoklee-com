@@ -10,4 +10,4 @@ date: "2026"
 
 Draft in preparation. Phase 1 grid sweep (450 cases × 4 heat-recovery lines) completed; Phase 2 (LHS + surrogate + NSGA-II) underway.
 
-→ Related project: [CCPP-LOHC Optimization](/engineering/ccpp-lohc)
+→ Related project: [CCPP-LOHC Optimization](/research/ccpp-lohc)

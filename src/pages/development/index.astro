@@ -7,17 +7,14 @@ const allTools = await getCollection('development');
 
 const navGroups = [
   {
-    key: 'ai',
-    label: 'AI',
-    trigger: 'expand' as const,
-    items: [
-      { view: 'workflow', label: 'Workflow' },
-      { view: 'harness',  label: 'Harness Engineering' },
-    ],
+    key: 'agent',
+    label: 'AI Agent Engineering',
+    trigger: 'activate' as const,
+    activateView: 'agent',
   },
   {
     key: 'project',
-    label: 'Project',
+    label: 'Projects',
     trigger: 'activate' as const,
     activateView: 'project',
   },
@@ -104,14 +101,14 @@ function projectEntry(slug: string | null) {
 ---
 
 <BaseLayout
-  title="Code — Inseok Lee"
-  description="Engineering tools, automation frameworks, productivity systems, and dashboards."
+  title="AI Engineering — Inseok Lee"
+  description="Building and directing AI agents for engineering — custom harnesses, multi-agent orchestration, and the tools built with them."
   section="development"
 >
   <div class="container-site py-16">
     <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
-      <span class="section-label">Code</span>
-      <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Code. Automation. AI.</h1>
+      <span class="section-label">AI Engineering</span>
+      <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Agents. Automation. Outcomes.</h1>
       <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
         Engineering tools, automation frameworks, and productivity systems built to accelerate research and simulation workflows.
       </p>
@@ -123,17 +120,36 @@ function projectEntry(slug: string | null) {
         <div class="lg:sticky lg:top-24">
           <CategoryNav
             groups={navGroups}
-            defaultView="project"
-            ariaLabel="Code categories"
+            defaultView="agent"
+            ariaLabel="AI Engineering categories"
           />
         </div>
       </aside>
 
       <div class="flex-1 min-w-0">
 
-        <!-- AI · Workflow -->
-        <section data-view-panel="workflow" hidden aria-labelledby="cn-ai-trigger">
-          <h2 class="view-title">AI · Workflow</h2>
+        <!-- AI Agent Engineering — the harness I built + how I run it -->
+        <section data-view-panel="agent" hidden aria-labelledby="cn-agent-trigger">
+          <h2 class="view-title">AI Agent Engineering</h2>
+          <p class="max-w-2xl" style="color: var(--muted); margin-bottom: 2.25rem;">
+            I don't just use AI — I build a custom agent setup and direct it to do engineering work.
+            Two parts: the tooling I built, and how I run it.
+          </p>
+
+          <h3 class="sub-title">What I Built</h3>
+          <div class="flex flex-col max-w-2xl" style="margin-bottom: 2.75rem;">
+            {harnessItems.map((p, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-3 min-w-0">
+                  <h4 class="card-title">{p.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h3 class="sub-title">How I run</h3>
           <div class="flex flex-col max-w-2xl">
             {workflowItems.map((p, i) => (
               <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
@@ -147,25 +163,9 @@ function projectEntry(slug: string | null) {
           </div>
         </section>
 
-        <!-- AI · Harness Engineering -->
-        <section data-view-panel="harness" hidden aria-labelledby="cn-ai-trigger">
-          <h2 class="view-title">AI · Harness Engineering</h2>
-          <div class="flex flex-col max-w-2xl">
-            {harnessItems.map((p, i) => (
-              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
-                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <div class="flex flex-col gap-3 min-w-0">
-                  <h4 class="card-title">{p.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <!-- Project — all in black, all clickable -->
+        <!-- Projects — all in black, all clickable -->
         <section data-view-panel="project" hidden aria-labelledby="cn-project-trigger">
-          <h2 class="view-title">Project</h2>
+          <h2 class="view-title">Projects</h2>
           <div class="flex flex-col max-w-2xl">
             {projectItems.map((p, i) => {
               const real = projectEntry(p.existingSlug);
@@ -223,6 +223,14 @@ function projectEntry(slug: string | null) {
     font-weight: 600;
     color: var(--ink);
     margin-bottom: 1.5rem;
+  }
+  .sub-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
   }
   .card-title {
     font-size: 1.25rem;

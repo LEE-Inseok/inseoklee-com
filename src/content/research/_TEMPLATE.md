@@ -2,6 +2,7 @@
 # ── 이 파일을 복사해서 새 이름으로 저장하면 페이지가 자동 생성됩니다 ──
 # 파일명이 URL이 됩니다: my-project.md → inseoklee.com/research/my-project
 title: 프로젝트 제목
+section: system-engineering   # system-engineering | simulation | ald  (Research 하위 분류 — 필수)
 status: draft            # published | draft | coming-soon
 summary: 한 줄 요약 — 리스트와 나선 카드, 페이지 부제목에 그대로 쓰입니다.
 images:                  # 최대 3장. public/images/ 아래에 넣고 경로 작성.

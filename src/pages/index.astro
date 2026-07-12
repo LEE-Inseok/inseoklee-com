@@ -19,35 +19,43 @@ type HelixCard =
 // Strand 2 (gray)  = Recognition — certifications, awards, activities
 // Colors must match STRAND_COLORS in the script below.
 
+// Research is one collection now; the `section` field splits it into areas.
 const research = await getCollection('research');
-const engineering = await getCollection('engineering');
+const researchSysEng = research.filter((r) => r.data.section === 'system-engineering');
+const researchSim = research.filter((r) => r.data.section === 'simulation');
+const researchAld = research.filter((r) => r.data.section === 'ald');
 const awards = await getCollection('recognition-awards');
 const presentations = await getCollection('recognition-presentations');
+const activities = await getCollection('recognition-activities');
 
+// Small "N items" kicker shown above each category card.
+const n = (arr: unknown[]) => `${arr.length} item${arr.length === 1 ? '' : 's'}`;
+
+// ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
+//    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Researcher', href: '/research/' },
-  ...research.map((r): HelixCard => ({
-    kind: 'text',
-    tag: r.data.tags?.[0] ?? 'Research',
-    label: r.data.title,
-    href: r.data.tags?.includes('ALD') ? '/research#ald' : '/research#experimental',
-  })),
-  { kind: 'photo', img: '/images/home/02-engineer.png', alt: 'Engineer', href: '/research#simulation' },
-  ...engineering.map((e): HelixCard => ({ kind: 'text', tag: 'Simulation', label: e.data.title, href: '/research#simulation' })),
-  ...pubs.map((p): HelixCard => ({ kind: 'text', tag: 'Publication', label: p.data.title, href: '/research#publication' })),
+  { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research/' },
+  { kind: 'text', tag: n(researchSysEng), label: 'System Engineering',        href: '/research#experimental' },
+  { kind: 'text', tag: n(researchSim),    label: 'Simulation & Optimization', href: '/research#simulation' },
+  { kind: 'text', tag: n(researchAld),    label: 'ALD',                       href: '/research#ald' },
+  { kind: 'text', tag: n(pubs),           label: 'Publications',              href: '/research#publication' },
 ];
 
+// AI Engineering strand = its two sub-categories.
 const strandCode: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/03-developer.png', alt: 'Developer', href: '/development/' },
-  ...devs.map((d): HelixCard => ({ kind: 'text', tag: 'Development', label: d.data.title, href: `/development/${d.slug}/` })),
+  { kind: 'photo', img: '/images/home/03-developer.png', alt: 'AI Engineering', href: '/development/' },
+  { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent' },
+  { kind: 'text', tag: n(devs),      label: 'Projects',             href: '/development#project' },
 ];
 
+// Achievements strand = its categories (Publications is cross-listed here too).
 const strandRecognition: HelixCard[] = [
-  { kind: 'photo', img: '/recognition/marathon/bib-medal.jpg', alt: 'Sunset Marathon — bib and medal', href: '/recognition/activities/' },
-  ...certs.map((c): HelixCard => ({ kind: 'text', tag: c.data.issuer, label: c.data.title, href: '/recognition/certifications/' })),
-  ...awards.map((a): HelixCard => ({ kind: 'text', tag: 'Award', label: a.data.title, href: '/recognition/awards/' })),
-  ...presentations.map((p): HelixCard => ({ kind: 'text', tag: p.data.conference, label: p.data.title, href: '/recognition/presentations/' })),
-  { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Sunset Marathon — photo certificate', href: '/recognition/activities/' },
+  { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Achievements', href: '/recognition/' },
+  { kind: 'text', tag: n(pubs),          label: 'Publications',   href: '/research#publication' },
+  { kind: 'text', tag: n(awards),        label: 'Awards',         href: '/recognition#awards' },
+  { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications' },
+  { kind: 'text', tag: n(presentations), label: 'Presentations',  href: '/recognition#presentations' },
+  { kind: 'text', tag: n(activities),    label: 'Activities',     href: '/recognition#activities' },
 ];
 
 // Level 0 of each strand is a category header card; content follows below.
@@ -59,8 +67,8 @@ const strandRecognition: HelixCard[] = [
 const STRAND_HEX = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
 const strandDefs = [
   { label: 'Research', href: '/research/', cards: strandResearch },
-  { label: 'Code', href: '/development/', cards: strandCode },
-  { label: 'Recognition', href: '/recognition/', cards: strandRecognition },
+  { label: 'AI Engineering', href: '/development/', cards: strandCode },
+  { label: 'Achievements', href: '/recognition/', cards: strandRecognition },
 ];
 
 type Slot = HelixCard | { kind: 'blank' };
@@ -297,13 +305,17 @@ const runwayVh = 480;
      smaller title so it reads on a narrow screen. */
   @media (max-width: 700px) {
     .helix-head__count { font-size: 0.6rem; margin-bottom: 0.4rem; }
+    /* Portrait: the card is centered, so the description sits BELOW it. */
     #helix-detail {
-      left: 52%;
-      top: 50%;
-      transform: translateY(-50%);
-      max-width: 44%;
+      left: 50%;
+      right: auto;
+      top: auto;
+      bottom: 11%;
+      transform: translateX(-50%);
+      max-width: 86%;
+      text-align: center;
     }
-    #helix-detail-title { font-size: clamp(1.05rem, 3.4vw, 1.5rem); margin-top: 0.35rem; }
+    #helix-detail-title { font-size: clamp(1.05rem, 4vw, 1.5rem); margin-top: 0.35rem; }
   }
 
 </style>
@@ -333,7 +345,7 @@ const runwayVh = 480;
   const detailTitle = document.getElementById('helix-detail-title');
 
   const STRAND_OFFSET = (Math.PI * 2) / 3; // 120° between strands
-  const STRAND_LABELS = ['Research', 'Code', 'Recognition'];
+  const STRAND_LABELS = ['Research', 'AI Engineering', 'Achievements'];
   const stepAngle = Math.PI / 5; // twist per level as the column descends
   const PERSP = 1200; // must match the container's CSS perspective
   const TWO_PI = Math.PI * 2;
@@ -596,9 +608,11 @@ const runwayVh = 480;
     const fadeDist = window.innerHeight * 0.9;
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
-    // Spiral axis slides left and the ring tightens, so the whole helix sits in
-    // the left half and the right half is free for the description text.
-    const axisX = -radius * 0.52 * shiftT;
+    // Desktop: the spiral axis slides left so the right half is free for the
+    // description. Mobile (portrait): keep it centered — the description sits
+    // BELOW the card instead, so no left-shift is needed.
+    const stackLayout = window.innerWidth <= 700;
+    const axisX = stackLayout ? 0 : -radius * 0.52 * shiftT;
     const rEff = radius * (1 - 0.3 * shiftT);
 
     let focus: { el: HTMLElement; x: number; y: number; z: number; scl: number; h: number } | null = null;
@@ -640,7 +654,9 @@ const runwayVh = 480;
         // left-center and holds in Act 3, then climbs out as the cards descend.
         // Only the SELECTED keyword is bright; the other two stay well dimmed so
         // they never fight the centered word even where the type overlaps.
-        const headDim = isActive ? 1 : 0.2;
+        // Non-selected keywords stay dark on desktop (you drag past them), but
+        // stay visible on mobile so they're clearly tappable.
+        const headDim = isActive ? 1 : (stackLayout ? 0.5 : 0.2);
         const count = el.querySelector('.helix-head__count') as HTMLElement | null;
         if (count) count.style.opacity = ((0.4 + 0.5 * front) * headDim).toFixed(3);
         op = kwIn * vis * (0.3 + 0.7 * front) * headDim;
@@ -719,17 +735,15 @@ const runwayVh = 480;
   // Whichever header sits closest to the front is pulled to angle 0 (screen
   // center). Released exactly between two boxes → the nearer one always wins.
   let snapRaf = 0;
-  function snapToNearest() {
-    computeActive(); // refresh the nearest strand from the current spin
-    const off = normAngle(headerAngle(activeStrand, spin, lastP));
-    if (Math.abs(off) < 0.0008) { render(lastP); return; } // already centered
+  // Spring the rotation to an absolute target `to`, snapping the chosen header
+  // to front-center. Shared by drag-release, tap-to-select, and programmatic use.
+  function springSpinTo(to: number) {
+    if (Math.abs(to - spin) < 0.0008) { computeActive(); render(lastP); return; }
     const from = spin;
-    const to = spin - off; // rotate the active header exactly to the front
     const t0 = performance.now();
     const DUR = 620;
     // Damped spring blended with a plain settle. TENSION scales how much of the
-    // springy overshoot survives (1 = full spring, 0 = no overshoot). At 0.67
-    // the bounce is ~2/3 of the full-spring feel.
+    // springy overshoot survives (1 = full spring, 0 = no overshoot).
     //   DAMPING lower → more / longer bounce · FREQ higher → more oscillations
     const DAMPING = 5.6;
     const FREQ = 2.35;
@@ -747,10 +761,27 @@ const runwayVh = 480;
     }
     snapRaf = requestAnimationFrame(step);
   }
+  function snapToNearest() {
+    computeActive(); // refresh the nearest strand from the current spin
+    springSpinTo(spin - normAngle(headerAngle(activeStrand, spin, lastP)));
+  }
+  // Tap a keyword (touch): rotate THAT strand to the front-center.
+  function selectStrand(s: number) {
+    springSpinTo(spin - normAngle(headerAngle(s, spin, lastP)));
+  }
 
   if (stage && !reduced) {
-    let dragging = false;
+    const coarse = window.matchMedia('(pointer: coarse)').matches; // touch device
+    // Tell touch users to tap (there's no cursor to "drag").
+    if (coarse && hint) {
+      const hintInner = hint.querySelector('.hero-line__inner');
+      if (hintInner) hintInner.textContent = 'Tap a keyword · Scroll ↓';
+    }
+    let active = false;   // a pointer is down, direction not yet decided
+    let dragging = false; // committed to a horizontal rotate
     let moved = 0;
+    let startX = 0;
+    let startY = 0;
     let lastX = 0;
     let targetSpin = spin;
     let smoothRaf = 0;
@@ -786,19 +817,41 @@ const runwayVh = 480;
 
     stage.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return; // left button / touch only
-      dragging = true;
+      // Rotation is allowed ONLY when the keywords are fully centered
+      // (spiralProg === 0, before any left-shift). The moment you scroll into
+      // the descent the selected keyword slides left; rotating from that
+      // shifted state is exactly what left the ring off-center on the way back
+      // up. So: no rotation until you've scrolled all the way up to center.
+      if (spiralProg(lastP) > 0.0005) return;
+      active = true;
+      dragging = false;
       moved = 0;
-      lastX = e.clientX;
+      startX = lastX = e.clientX;
+      startY = e.clientY;
       cancelAnimationFrame(snapRaf);
       targetSpin = spin;
-      stage.classList.add('is-dragging');
-      // Capture the pointer: pointerup is guaranteed to reach us even if
-      // the cursor leaves the stage or the window.
-      stage.setPointerCapture(e.pointerId);
+      // NB: don't capture or mark dragging yet — first see if the gesture is
+      // horizontal (rotate) or vertical (let the page scroll). This is what
+      // stops a vertical touch-scroll from spinning the carousel and flipping
+      // the active strand mid-scroll.
     });
 
     window.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
+      if (!active) return;
+      if (!dragging) {
+        const adx = Math.abs(e.clientX - startX);
+        const ady = Math.abs(e.clientY - startY);
+        // Vertical intent → release the pointer and let the browser scroll.
+        if (ady > adx && ady > 8) { active = false; return; }
+        // Horizontal intent → commit to a rotate and capture the pointer.
+        if (adx > ady && adx > 8) {
+          dragging = true;
+          stage!.classList.add('is-dragging');
+          try { stage!.setPointerCapture(e.pointerId); } catch {}
+        } else {
+          return; // not enough movement to decide yet
+        }
+      }
       const dx = e.clientX - lastX;
       lastX = e.clientX;
       moved += Math.abs(dx);
@@ -807,15 +860,17 @@ const runwayVh = 480;
     });
 
     function endDrag() {
-      if (!dragging) return;
+      if (!active) return;
+      active = false;
+      const wasDrag = dragging;
       dragging = false;
       stage!.classList.remove('is-dragging');
+      if (!wasDrag) return; // a tap (or aborted vertical) — nothing to snap
       if (moved > 6) {
         // Real drag: swallow the click so card links don't fire
         stage!.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); }, { capture: true, once: true });
       }
-      // Snap to the nearest header IMMEDIATELY on release — kill any leftover
-      // drag-inertia lerp so there's no wait before the spring kicks in.
+      // Snap the nearest header to front IMMEDIATELY on release.
       smoothing = false;
       cancelAnimationFrame(smoothRaf);
       snapToNearest();
@@ -823,6 +878,19 @@ const runwayVh = 480;
     window.addEventListener('pointerup', endDrag);
     window.addEventListener('pointercancel', endDrag);
     window.addEventListener('blur', endDrag);
+
+    // Touch: a TAP on a keyword selects that strand (no drag needed). The
+    // keyword headers are links, so we intercept the click while the carousel
+    // is up and rotate instead of navigating. Desktop keeps click-to-navigate.
+    stage.addEventListener('click', (e) => {
+      if (!coarse || moved > 6) return;           // desktop, or this was a drag
+      if (spiralProg(lastP) > 0.0005) return;      // only when fully centered (not shifted)
+      const head = (e.target as HTMLElement).closest('.helix-head') as HTMLElement | null;
+      if (!head) return;                           // taps elsewhere behave normally
+      e.preventDefault();
+      e.stopPropagation();
+      selectStrand(Number(head.dataset.strand));
+    }, { capture: true });
   }
 
   if (wrap && cards.length > 0) {

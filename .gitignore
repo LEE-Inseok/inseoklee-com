@@ -28,3 +28,8 @@ yarn-error.log*
 
 # Cloudflare
 .wrangler/
+
+# Local planning / handoff docs (not part of the site)
+PROJECT-CONTEXT.md
+TAXONOMY.md
+CONTENT-PLAN.md

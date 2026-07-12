@@ -1,5 +1,6 @@
 ---
 title: ALD Catalyst Synthesis
+section: ald
 status: draft
 summary: Atomic layer deposition for precision catalyst synthesis — atomic-scale control of active sites and film composition, bridging process engineering and semiconductor-grade thin-film technique.
 date: "2026-07"

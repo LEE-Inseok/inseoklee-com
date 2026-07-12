@@ -6,6 +6,8 @@ const research = defineCollection({
   type: 'content',
   schema: z.object({
     title:    z.string(),
+    // Sub-category within Research — drives which section the item appears under.
+    section:  z.enum(['system-engineering', 'simulation', 'ald']),
     status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
     summary:  z.string(),
     images:   z.array(z.string()).max(3).default([]), // up to 3 photos, shown in the detail-page photo strip
@@ -20,23 +22,8 @@ const research = defineCollection({
   }),
 });
 
-const engineering = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title:    z.string(),
-    status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
-    summary:  z.string(),
-    images:   z.array(z.string()).max(3).default([]),
-    chapters: z.array(
-      z.object({
-        number: z.number(),
-        title:  z.string(),
-      })
-    ).optional(),
-    date:     z.string().optional(),
-    tags:     z.array(z.string()).optional(),
-  }),
-});
+// NOTE: the former `engineering` collection was merged into `research`.
+// Its items now live in src/content/research/ with `section: simulation`.
 
 const development = defineCollection({
   type: 'content',
@@ -121,7 +108,6 @@ const publications = defineCollection({
 
 export const collections = {
   'research':                   research,
-  'engineering':                engineering,
   'development':                development,
   'recognition-awards':         recognitionAwards,
   'recognition-certifications': recognitionCertifications,

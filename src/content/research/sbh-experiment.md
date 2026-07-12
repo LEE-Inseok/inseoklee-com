@@ -1,5 +1,6 @@
 ---
 title: SBH Hydrogen Energy System
+section: system-engineering
 status: published
 summary: Bench-scale integrated testbed converting sodium borohydride hydrolysis into electricity via PEM fuel cell, with full system thermal characterization.
 date: "2024"
@@ -81,4 +82,4 @@ The subsystems are coupled through: gas flow path (H2 reactor → purification �
 - Catalyst deactivation over long operation was observed but not fully characterized
 - Humidity management between purification and fuel cell was simplified
 
-→ Next: [Thermal System Simulation](/engineering/sbh-thermal) extended this experiment into a multi-scenario heat-recovery study.
+→ Next: [Thermal System Simulation](/research/sbh-thermal) extended this experiment into a multi-scenario heat-recovery study.

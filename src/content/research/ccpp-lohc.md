@@ -1,5 +1,6 @@
 ---
 title: CCPP-LOHC Optimization
+section: simulation
 status: draft
 summary: Multi-objective optimization of a combined-cycle power plant integrated with LOHC hydrogen production — Aspen Plus simulation, analysed along two complementary tracks (Linear Regression for publication; ML surrogate + NSGA-II for downstream optimization).
 date: "2025"
