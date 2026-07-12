@@ -217,21 +217,14 @@ const runwayVh = 480;
         </p>
       </div>
 
-      <!-- Carousel arrows — curved sweep glyphs that follow the ring's
-           elliptical orbit, hinting the keywords rotate along it. Click
-           rotates one keyword step; drag/tap rotation is untouched.
+      <!-- Carousel arrows — notched arrowhead darts flanking the keyword.
+           Click rotates one keyword step; drag/tap rotation is untouched.
            Opacity + interactivity are driven from render(). -->
       <button id="helix-arrow-prev" class="helix-arrow helix-arrow--prev" type="button" aria-label="Previous keyword">
-        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <path d="M7 20 C 16 33, 32 33, 41 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-          <path d="M44.6 16.2 L44.2 23.4 L37.8 18.6 Z" fill="currentColor" stroke="none" />
-        </svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 3 L6 12 L17 21 L13.4 12 Z" /></svg>
       </button>
       <button id="helix-arrow-next" class="helix-arrow helix-arrow--next" type="button" aria-label="Next keyword">
-        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <path d="M7 20 C 16 33, 32 33, 41 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-          <path d="M44.6 16.2 L44.2 23.4 L37.8 18.6 Z" fill="currentColor" stroke="none" />
-        </svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3 L18 12 L7 21 L10.6 12 Z" /></svg>
       </button>
 
       <!-- Active strand indicator -->
@@ -389,9 +382,9 @@ const runwayVh = 480;
     opacity: 0.75;
   }
 
-  /* Carousel arrows — curved orbit-sweep glyphs either side of the keyword
-     ring (the arc mirrors the ring's front edge; the arrowhead shows the
-     sweep direction). Hidden until Act 2; JS drives opacity/interactivity. */
+  /* Carousel arrows — arrowhead darts sitting CLOSE to the keyword text
+     (positioned from screen center, not the viewport edges). Hidden until
+     Act 2; JS drives opacity/interactivity. */
   .helix-arrow {
     position: absolute;
     top: 50%;
@@ -417,11 +410,9 @@ const runwayVh = 480;
     position: absolute;
     inset: -16px;
   }
-  .helix-arrow svg { width: 48px; height: 48px; display: block; }
-  /* The left arrow is the same glyph mirrored — sweep goes the other way. */
-  .helix-arrow--prev svg { transform: scaleX(-1); }
-  .helix-arrow--prev { left: clamp(8px, 4vw, 80px); }
-  .helix-arrow--next { right: clamp(8px, 4vw, 80px); }
+  .helix-arrow svg { width: 40px; height: 40px; display: block; }
+  .helix-arrow--prev { left: calc(50% - clamp(220px, 24vw, 320px) - 42px); }
+  .helix-arrow--next { right: calc(50% - clamp(220px, 24vw, 320px) - 42px); }
   .helix-arrow:hover,
   .helix-arrow:focus-visible { color: var(--ink); }
   .helix-arrow--prev:hover { transform: translateX(-4px); }
@@ -429,7 +420,10 @@ const runwayVh = 480;
   .helix-arrow:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
   @media (max-width: 700px) {
     .helix-arrow { width: 64px; height: 88px; margin-top: -44px; }
-    .helix-arrow svg { width: 38px; height: 38px; }
+    .helix-arrow svg { width: 30px; height: 30px; }
+    /* Narrow screens: back to the edges — no room next to the keyword. */
+    .helix-arrow--prev { left: clamp(4px, 2.5vw, 32px); }
+    .helix-arrow--next { right: clamp(4px, 2.5vw, 32px); }
   }
 
   /* Helix card rendering hints */
@@ -584,8 +578,9 @@ const runwayVh = 480;
     [219, 79, 148],   // Code        #DB4F94 (pink)
     [46, 169, 106],   // Recognition #2EA96A (green)
   ];
-  // Dimmed companion — same hue, darkened (used for the backbone lines).
-  const STRAND_DIM = STRAND_RGB.map((c) => c.map((v) => Math.round(v * 0.42 + 10)));
+  // Dimmed companion — same hue, gently darkened (used for the backbone
+  // lines). Kept fairly bright so the spiral stays clearly visible.
+  const STRAND_DIM = STRAND_RGB.map((c) => c.map((v) => Math.round(v * 0.62 + 22)));
   // Header labels rest at silver/white and bloom to their accent at front.
   const SILVER = [214, 216, 222];
   const rgbStr = (c: number[]) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
@@ -602,7 +597,7 @@ const runwayVh = 480;
       for (let k = 1; k < levels - 1; k++) {
         const line = document.createElementNS(NS, 'line') as SVGLineElement;
         line.setAttribute('stroke', rgbStr(STRAND_DIM[s]));
-        line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-width', '2');
         line.setAttribute('stroke-linecap', 'round');
         svg.appendChild(line);
         segs.push({ el: line, strand: s, level: k });
@@ -933,7 +928,7 @@ const runwayVh = 480;
       const p2 = pts[seg.strand][seg.level + 1];
       if (!p1 || !p2) continue;
       const recedeSeg = seg.strand === activeStrand ? 1 : 1 - 0.75 * recedeT;
-      const o = Math.min(p1.vis, p2.vis) * 0.45 * recedeSeg * contentGate;
+      const o = Math.min(p1.vis, p2.vis) * 0.68 * recedeSeg * contentGate;
       if (o <= 0.02) {
         seg.el.setAttribute('stroke-opacity', '0');
         continue;
@@ -975,13 +970,20 @@ const runwayVh = 480;
   // lastP eases toward it every frame, so all motion stays fluid.
   let targetP = 0;
   let scrollRaf = 0;
+  let velP = 0;
+  // Spring follower — acceleration toward the target plus friction. Gives the
+  // scroll a weighted, elastic feel: it stretches slightly behind fast
+  // scrolling, drifts ~3% past the stop, and settles softly (the "catch").
+  const SPRING_ACCEL = 0.06;
+  const SPRING_FRICTION = 0.72;
   function scrollLoop() {
-    const diff = targetP - lastP;
-    if (Math.abs(diff) > 0.00035) {
-      lastP += diff * 0.14;
+    velP = (velP + (targetP - lastP) * SPRING_ACCEL) * SPRING_FRICTION;
+    lastP += velP;
+    if (Math.abs(targetP - lastP) > 0.00035 || Math.abs(velP) > 0.0002) {
       render(lastP);
       scrollRaf = requestAnimationFrame(scrollLoop);
     } else {
+      velP = 0;
       lastP = targetP;
       render(lastP);
     }
