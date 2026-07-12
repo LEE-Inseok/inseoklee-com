@@ -176,10 +176,24 @@
     border: none;
     border-top: 1px solid var(--border);
     padding: 2rem 0 !important;
-    transition: border-color 150ms ease;
+    transition: background-color 150ms ease, margin 150ms ease, padding 150ms ease;
   }
-  .card:hover {
-    border-top-color: var(--accent);
+  /* Interactive cards INVERT on hover: light box, dark text. The color tokens
+     are remapped locally, so every child — inline styles included — flips with
+     the card; section accents (--accent-dk) keep their hue. The box extends
+     sideways via margin/padding that cancel out, so text never shifts.
+     Static cards (plain divs) get no hover state — inversion means clickable. */
+  a.card:hover,
+  a.card:focus-visible {
+    background: #F5F5F5;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding: 2rem 1.25rem !important;
+    --ink: #0A0A0A;
+    --body: #2A2A2A;
+    --muted: #6B6B6B;
+    --surface: #E9E9E9;
+    --border: #C9C9C9;
   }
 
   /* Chip — plain inline text, identical to body */
