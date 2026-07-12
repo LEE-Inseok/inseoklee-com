@@ -603,6 +603,8 @@ const runwayVh = 480;
     if (best !== activeStrand) {
       activeStrand = best;
       if (activeLabel) activeLabel.textContent = STRAND_LABELS[best];
+      // Remember the selection so back-navigation returns to the same strand.
+      try { sessionStorage.setItem('helix-strand', String(best)); } catch {}
     }
   }
 
@@ -1092,11 +1094,21 @@ const runwayVh = 480;
     window.scrollTo(0, yT); // instant — the spring does the easing
   }
 
+  const bootT = performance.now();
   function onScroll() {
     if (!wrap || scrollTotal <= 0) return;
     // Cached geometry only — reading layout here forces a synchronous reflow
     // on every scroll tick (render() dirties layout each frame).
     targetP = Math.min(1, Math.max(0, (window.scrollY - wrapTop) / scrollTotal));
+    // Browser scroll RESTORATION (back/forward, reload) can land after init:
+    // a large jump within the first moments is restoration, not user input —
+    // sync instantly instead of visibly easing down the whole helix.
+    if (performance.now() - bootT < 800 && Math.abs(targetP - lastP) > 0.03) {
+      cancelAnimationFrame(scrollRaf);
+      lastP = targetP;
+      render(lastP);
+      return;
+    }
     // Restart the ease loop on every scroll tick — cancel + reschedule keeps
     // exactly one pending frame and can never wedge on a stale flag.
     cancelAnimationFrame(scrollRaf);
@@ -1312,6 +1324,16 @@ const runwayVh = 480;
 
   if (wrap && cards.length > 0) {
     measure();
+    // Restore the strand the visitor had selected (back/forward navigation) —
+    // scroll position alone isn't enough, the descent shows the ACTIVE strand.
+    try {
+      const saved = Number(sessionStorage.getItem('helix-strand'));
+      if (saved === 1 || saved === 2) {
+        activeStrand = saved;
+        spin = -saved * STRAND_OFFSET;
+        if (activeLabel) activeLabel.textContent = STRAND_LABELS[saved];
+      }
+    } catch {}
     computeActive();
     if (reduced) {
       // Static composition, no scroll listener — land in the formed helix
@@ -1319,7 +1341,12 @@ const runwayVh = 480;
       render(0.55);
       if (hint) hint.style.opacity = '0';
     } else {
-      render(0);
+      // Start from the CURRENT scroll position — the browser restores it on
+      // back-navigation, and starting blindly at 0 showed the hero instead
+      // of the place the visitor left from.
+      targetP = scrollTotal > 0 ? Math.min(1, Math.max(0, (window.scrollY - wrapTop) / scrollTotal)) : 0;
+      lastP = targetP;
+      render(lastP);
       // Fire the hero line-reveal one frame after first paint so the CSS
       // transition runs from the masked start state. (Reduced motion skips
       // this — the CSS media query shows the lines immediately.)
