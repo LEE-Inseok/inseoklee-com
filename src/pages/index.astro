@@ -1018,26 +1018,22 @@ const runwayVh = 480;
   // lastP eases toward it every frame, so all motion stays fluid.
   let targetP = 0;
   let scrollRaf = 0;
-  let velP = 0;
   let scrollTick = 0;
-  // Spring follower — acceleration toward the target plus friction. Tuned
-  // TIGHT: fast response with only ~2-3% drift-past, so the scene never
-  // wanders visibly after the user stops (big overshoot read as instability).
+  // Plain critically-damped follower — smooth ease toward the target with
+  // ZERO overshoot or bounce (the springy version read as instability).
   // Time-normalized: identical feel at 60/120/144Hz, and dropped frames are
   // covered by distance instead of freezing the motion.
-  const SPRING_ACCEL = 0.1;
-  const SPRING_FRICTION = 0.65;
+  const FOLLOW_RATE = 0.16; // per-60Hz-frame fraction of the remaining gap
   function scrollLoop(now: number) {
     const dt = scrollTick ? Math.min(50, now - scrollTick) : 16.7;
     scrollTick = now;
     const f = dt / 16.7;
-    velP = (velP + (targetP - lastP) * SPRING_ACCEL * f) * Math.pow(SPRING_FRICTION, f);
-    lastP += velP * f;
-    if (Math.abs(targetP - lastP) > 0.00006 || Math.abs(velP) > 0.00005) {
+    const diff = targetP - lastP;
+    if (Math.abs(diff) > 0.00006) {
+      lastP += diff * (1 - Math.pow(1 - FOLLOW_RATE, f));
       render(lastP);
       scrollRaf = requestAnimationFrame(scrollLoop);
     } else {
-      velP = 0;
       lastP = targetP;
       render(lastP);
       scrollTick = 0;
