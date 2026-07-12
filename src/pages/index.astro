@@ -922,8 +922,9 @@ const runwayVh = 480;
       const front = (Math.cos(a) + 1) / 2; // 1 = facing the viewer
 
       const vis = Math.max(0, 1 - Math.abs(y) / fadeDist); // fade with vertical distance
-      // Non-active strands recede once the descent has started (smooth ramp).
-      const recede = isActive ? 1 : 1 - 0.78 * recedeT;
+      // Non-active strands fade out COMPLETELY once the descent starts —
+      // only the highlighted helix remains (smooth ramp to zero).
+      const recede = isActive ? 1 : 1 - recedeT;
       // Centeredness: 1 when a card sits exactly at eye level, 0 by one level
       // away. Drives both the enlargement and which card owns the description.
       const near = Math.max(0, 1 - Math.abs(d));
@@ -963,7 +964,7 @@ const runwayVh = 480;
           const cv = ((0.4 + 0.5 * front) * headDim).toFixed(3);
           if (count.style.opacity !== cv) count.style.opacity = cv;
         }
-        op = kwIn * vis * (0.3 + 0.7 * front) * headDim;
+        op = kwIn * vis * (0.3 + 0.7 * front) * headDim * recede;
       } else {
         // Content cards: held behind the keyword in Act 2, then wind down the
         // spiral. The centered card is brightest; siblings stay readable.
@@ -1016,7 +1017,7 @@ const runwayVh = 480;
       const p1 = pts[seg.strand][seg.level];
       const p2 = pts[seg.strand][seg.level + 1];
       if (!p1 || !p2) continue;
-      const recedeSeg = seg.strand === activeStrand ? 1 : 1 - 0.75 * recedeT;
+      const recedeSeg = seg.strand === activeStrand ? 1 : 1 - recedeT;
       const o = Math.min(p1.vis, p2.vis) * 0.85 * recedeSeg * contentGate;
       if (o <= 0.02) {
         if (seg.lastO !== '0') {
