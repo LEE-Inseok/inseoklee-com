@@ -172,12 +172,22 @@ const runwayVh = 480;
           <span class="hero-line__inner">Hi, I'm Inseok.</span>
         </h1>
         <p class="hero-line mt-6 text-lg lg:text-2xl" style="color: var(--muted);">
-          <span class="hero-line__inner">Systems Engineering · Thermal Simulation · AI · ALD</span>
+          <span class="hero-line__inner">System Engineering · Simulation &amp; Optimization · ALD <span style="color: var(--accent); font-weight: 600; white-space: nowrap;">× AI</span></span>
         </p>
         <p id="helix-hint" class="hero-line mt-12 text-xs uppercase tracking-widest" style="color: var(--muted);">
           <span class="hero-line__inner">Drag to rotate · Scroll ↓</span>
         </p>
       </div>
+
+      <!-- Carousel arrows — sleek arrowhead darts flanking the Act 2 keyword
+           ring. Click rotates one keyword step; drag/tap rotation is untouched.
+           Opacity + interactivity are driven from render(). -->
+      <button id="helix-arrow-prev" class="helix-arrow helix-arrow--prev" type="button" aria-label="Previous keyword">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 3 L6 12 L17 21 L13.4 12 Z" /></svg>
+      </button>
+      <button id="helix-arrow-next" class="helix-arrow helix-arrow--next" type="button" aria-label="Next keyword">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3 L18 12 L7 21 L10.6 12 Z" /></svg>
+      </button>
 
       <!-- Active strand indicator -->
       <div
@@ -279,6 +289,40 @@ const runwayVh = 480;
     margin-top: 0.5rem;
   }
 
+  /* Carousel arrows — filled arrowhead darts (notched triangles) either side
+     of the keyword ring. Hidden until Act 2; JS drives opacity/interactivity. */
+  .helix-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 20;
+    width: 56px;
+    height: 72px;
+    margin-top: -36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: color 160ms ease, transform 160ms ease;
+  }
+  .helix-arrow svg { width: 28px; height: 28px; display: block; }
+  .helix-arrow--prev { left: clamp(10px, 4.5vw, 88px); }
+  .helix-arrow--next { right: clamp(10px, 4.5vw, 88px); }
+  .helix-arrow:hover,
+  .helix-arrow:focus-visible { color: var(--ink); }
+  .helix-arrow--prev:hover { transform: translateX(-3px); }
+  .helix-arrow--next:hover { transform: translateX(3px); }
+  .helix-arrow:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+  @media (max-width: 700px) {
+    .helix-arrow { width: 44px; height: 60px; margin-top: -30px; }
+    .helix-arrow svg { width: 22px; height: 22px; }
+  }
+
   /* Helix card rendering hints */
   .helix-card {
     backface-visibility: hidden;
@@ -344,6 +388,8 @@ const runwayVh = 480;
   const detailBox = document.getElementById('helix-detail');
   const detailTag = document.getElementById('helix-detail-tag');
   const detailTitle = document.getElementById('helix-detail-title');
+  const arrowPrev = document.getElementById('helix-arrow-prev');
+  const arrowNext = document.getElementById('helix-arrow-next');
 
   const STRAND_OFFSET = (Math.PI * 2) / 3; // 120° between strands
   const STRAND_LABELS = ['Research', 'AI Engineering', 'Achievements'];
@@ -718,6 +764,16 @@ const runwayVh = 480;
     }
     if (hint) hint.style.opacity = p > 0.03 ? '0' : '1';
     if (activeBox) activeBox.style.opacity = spiralP > 0.02 ? '1' : '0';
+
+    // Carousel arrows live with the keyword ring: in through Act 2, gone the
+    // moment the descent shifts the ring left (same guard as drag rotation).
+    if (arrowPrev && arrowNext) {
+      const aOp = kwIn * (1 - smooth01(Math.min(1, spiralP / 0.02)));
+      for (const b of [arrowPrev, arrowNext]) {
+        b.style.opacity = aOp.toFixed(3);
+        b.style.pointerEvents = aOp > 0.35 ? 'auto' : 'none';
+      }
+    }
   }
 
   let ticking = false;
@@ -769,6 +825,13 @@ const runwayVh = 480;
   // Tap a keyword (touch): rotate THAT strand to the front-center.
   function selectStrand(s: number) {
     springSpinTo(spin - normAngle(headerAngle(s, spin, lastP)));
+  }
+  // Arrow-click: rotate exactly one keyword step. dir +1 pulls the keyword
+  // waiting on the RIGHT to front-center; -1 pulls the one on the LEFT.
+  function rotateStep(dir: number) {
+    computeActive();
+    const centered = spin - normAngle(headerAngle(activeStrand, spin, lastP));
+    springSpinTo(centered - dir * STRAND_OFFSET);
   }
 
   if (stage && !reduced) {
@@ -892,6 +955,20 @@ const runwayVh = 480;
       e.stopPropagation();
       selectStrand(Number(head.dataset.strand));
     }, { capture: true });
+
+    // Arrow buttons rotate one keyword step — same centered-only guard as
+    // drag/tap. pointerdown is stopped so a click never starts a stage drag.
+    const arrowDirs: [HTMLElement | null, number][] = [[arrowPrev, -1], [arrowNext, +1]];
+    for (const [btn, dir] of arrowDirs) {
+      if (!btn) continue;
+      btn.addEventListener('pointerdown', (e) => e.stopPropagation());
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (spiralProg(lastP) > 0.0005) return;
+        rotateStep(dir);
+      });
+    }
   }
 
   if (wrap && cards.length > 0) {
