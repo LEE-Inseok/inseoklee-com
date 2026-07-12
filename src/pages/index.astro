@@ -618,20 +618,38 @@ const runwayVh = 480;
 
   // Strand backbones: one polyline segment between consecutive cards of the
   // same strand, drawn in screen space using the same perspective projection.
-  type Seg = { el: SVGLineElement; strand: number; level: number; lastO?: string; lastStroke?: string };
+  type Seg = { el: SVGPathElement; strand: number; level: number; lastO?: string; lastStroke?: string };
   const segs: Seg[] = [];
+  // Orbit rings — perspective-projected ellipses around the helix column, one
+  // per level (+ a larger echo around the keyword ring). Overlapping curved
+  // geometry the strands weave through.
+  type Ring = { el: SVGPathElement; level: number; scale: number; lastO?: string };
+  const rings: Ring[] = [];
   if (svg) {
     const NS = 'http://www.w3.org/2000/svg';
+    const mkRing = (level: number, scale: number, dash: string) => {
+      const path = document.createElementNS(NS, 'path') as SVGPathElement;
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', 'rgb(150, 155, 165)');
+      path.setAttribute('stroke-width', '1');
+      path.setAttribute('stroke-dasharray', dash);
+      path.setAttribute('stroke-opacity', '0');
+      svg.appendChild(path); // rings first — strands draw on top of them
+      rings.push({ el: path, level, scale });
+    };
+    mkRing(0, 1.16, '2 10'); // echo orbit around the keyword ring (Act 2)
+    for (let k = 0; k < levels; k++) mkRing(k, 1, '3 7');
     for (let s = 0; s < 3; s++) {
       // Start at k=1: skip the header→first-card segment (it would run behind
       // the big header text and read as a stray line).
       for (let k = 1; k < levels - 1; k++) {
-        const line = document.createElementNS(NS, 'line') as SVGLineElement;
-        line.setAttribute('stroke', rgbStr(STRAND_DIM[s]));
-        line.setAttribute('stroke-width', '2.5');
-        line.setAttribute('stroke-linecap', 'round');
-        svg.appendChild(line);
-        segs.push({ el: line, strand: s, level: k });
+        const path = document.createElementNS(NS, 'path') as SVGPathElement;
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', rgbStr(STRAND_DIM[s]));
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(path);
+        segs.push({ el: path, strand: s, level: k });
       }
     }
   }
@@ -975,7 +993,21 @@ const runwayVh = 480;
 
     updateFocusExtras(focus, contentGate, descending);
 
-    // Strand backbone segments — appear with the content in Act 3.
+    // ── Curved geometry: helix strand arcs + orbit rings ─────────
+    // Both are the TRUE 3D curves sampled and perspective-projected, so they
+    // sit exactly on the geometry the cards ride.
+    const projPt = (x3: number, y3: number, z3: number) => {
+      const pr = PERSP / (PERSP - z3);
+      return `${(cx + x3 * pr).toFixed(1)} ${(cy + y3 * pr).toFixed(1)}`;
+    };
+    const helixPt = (strand: number, lv: number) => {
+      const dL = lv - camera;
+      const aL = dL * stepAngle + strand * STRAND_OFFSET + spin;
+      return projPt(Math.sin(aL) * rEff + axisX, dL * stepY + axisY, Math.cos(aL) * rEff - radius * 0.3);
+    };
+
+    // Strand backbone arcs — appear with the content in Act 3.
+    const SEG_SUBS = 8;
     for (const seg of segs) {
       const p1 = pts[seg.strand][seg.level];
       const p2 = pts[seg.strand][seg.level + 1];
@@ -989,14 +1021,44 @@ const runwayVh = 480;
         }
         continue;
       }
-      seg.el.setAttribute('x1', p1.sx.toFixed(1));
-      seg.el.setAttribute('y1', p1.sy.toFixed(1));
-      seg.el.setAttribute('x2', p2.sx.toFixed(1));
-      seg.el.setAttribute('y2', p2.sy.toFixed(1));
+      let dStr = 'M ' + helixPt(seg.strand, seg.level);
+      for (let i = 1; i <= SEG_SUBS; i++) dStr += ' L ' + helixPt(seg.strand, seg.level + i / SEG_SUBS);
+      seg.el.setAttribute('d', dStr);
       const oStr = o.toFixed(3);
       if (seg.lastO !== oStr) {
         seg.el.setAttribute('stroke-opacity', oStr);
         seg.lastO = oStr;
+      }
+    }
+
+    // Orbit rings — the keyword orbit (+ its echo) during Act 2, then one
+    // dashed ring per level stacking up through the descent.
+    const RING_SUBS = 24;
+    const echoGate = kwIn * (1 - smooth01(Math.min(1, spiralP / 0.02)));
+    for (const ring of rings) {
+      const yC = (ring.level - camera) * stepY + axisY;
+      const gate = ring.scale !== 1
+        ? echoGate
+        : ring.level === 0 ? Math.max(kwIn * 0.9, contentGate) : contentGate;
+      const o = Math.max(0, 1 - Math.abs(yC) / fadeDist) * 0.14 * gate;
+      if (o <= 0.015) {
+        if (ring.lastO !== '0') {
+          ring.el.setAttribute('stroke-opacity', '0');
+          ring.lastO = '0';
+        }
+        continue;
+      }
+      const rr = rEff * ring.scale;
+      let dStr = '';
+      for (let i = 0; i <= RING_SUBS; i++) {
+        const th = (i / RING_SUBS) * TWO_PI;
+        dStr += (i === 0 ? 'M ' : ' L ') + projPt(Math.sin(th) * rr + axisX, yC, Math.cos(th) * rr - radius * 0.3);
+      }
+      ring.el.setAttribute('d', dStr + ' Z');
+      const oStr = o.toFixed(3);
+      if (ring.lastO !== oStr) {
+        ring.el.setAttribute('stroke-opacity', oStr);
+        ring.lastO = oStr;
       }
     }
 
