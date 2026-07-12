@@ -72,7 +72,7 @@ const activityItems: HelixItem[] = activities.map((a2) => ({ t: a2.data.title, h
 // ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
 //    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research' },
+  { kind: 'photo', img: '/images/home/01-researcher-card.png', alt: 'Research', href: '/research' },
   { kind: 'text', tag: n(sysItems), label: 'System Engineering',        href: '/research#system-engineering', items: sysItems },
   { kind: 'text', tag: n(simItems), label: 'Simulation & Optimization', href: '/research#simulation',         items: simItems },
   { kind: 'text', tag: n(aldItems), label: 'ALD',                       href: '/research#ald',                items: aldItems },
@@ -81,14 +81,14 @@ const strandResearch: HelixCard[] = [
 
 // AI Engineering strand = its two sub-categories.
 const strandCode: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/03-developer.png', alt: 'AI Engineering', href: '/development' },
+  { kind: 'photo', img: '/images/home/03-developer-card.png', alt: 'AI Engineering', href: '/development' },
   { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent',    items: [{ t: 'What I Built', href: '/development#agent' }, { t: 'How I run', href: '/development#agent' }] },
   { kind: 'text', tag: n(devItems),  label: 'Projects',             href: '/development#projects', items: devItems },
 ];
 
 // Achievements strand = its categories (Publications is cross-listed here too).
 const strandRecognition: HelixCard[] = [
-  { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Achievements', href: '/recognition' },
+  { kind: 'photo', img: '/recognition/marathon/photo-certificate-card.jpg', alt: 'Achievements', href: '/recognition' },
   { kind: 'text', tag: n(pubItems),      label: 'Publications',   href: '/research#publications',      items: pubItems },
   { kind: 'text', tag: n(awardItems),    label: 'Awards',         href: '/recognition#awards',         items: awardItems },
   { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications', items: certItems },
@@ -322,7 +322,8 @@ const runwayVh = 480;
     transform: translateY(-50%);
     max-width: 37%;
     opacity: 0;
-    transition: opacity var(--dur-base) var(--ease-expo);
+    /* NO opacity transition here — JS writes opacity every frame, and a CSS
+       transition on top keeps restarting, which lags and smears the fade. */
   }
   #helix-detail-title {
     font-family: 'Fraunces', Georgia, serif;
@@ -534,9 +535,6 @@ const runwayVh = 480;
   const smooth01 = (v: number) => { const s = Math.min(1, Math.max(0, v)); return s * s * (3 - 2 * s); };
   // Act 3 progress: 0 while the carousel is held, 0→1 through the descent.
   const spiralProg = (p: number) => Math.min(1, Math.max(0, (p - KW_OUT) / (1 - KW_OUT)));
-  // Camera depth down the column. Sits at 0 during the carousel (headers at
-  // eye level, on the ring), then descends level-by-level through Act 3.
-  const cameraAt = (sp: number) => sp * (levels + 0.5);
 
   // ── Drag-to-rotate & strand selection ──────────────────────────
   // `spin` is a user-controlled rotation added to every card's angle.
@@ -550,17 +548,34 @@ const runwayVh = 480;
     return ((a % TWO_PI) + TWO_PI + Math.PI) % TWO_PI - Math.PI; // → [-π, π)
   }
 
+  // The ACTUAL dwell camera used by render() — shared here so the header
+  // angle (and therefore strand colors/brightness) always matches what is
+  // rendered. The old approximation drifted badly mid-descent, blooming the
+  // wrong strand's colors.
+  function cameraAtP(p: number) {
+    const descP = Math.max(0, (spiralProg(p) - KHOLD) / (1 - KHOLD));
+    const lastLevel = Math.max(1, strandMaxLevel[activeStrand]);
+    const rawP = Math.min(1, descP / ARRIVE);
+    const raw = rawP * lastLevel;
+    const kBase = Math.min(lastLevel - 1, Math.floor(raw));
+    const frac = raw - kBase;
+    const moveRaw = frac <= HOLD ? 0 : (frac - HOLD) / (1 - HOLD);
+    return kBase + smooth01(moveRaw);
+  }
+
   // On-screen ring angle of a strand's header card at scroll position p.
-  // Mirrors render()'s geometry (camera = cameraAt(spiralProg)), so angle 0 ===
-  // front-center. Selection/snapping happens while the carousel is held
-  // (spiralProg 0 → camera 0 → header at eye level), where this is exact.
+  // Angle 0 === front-center. Selection/snapping happens while the carousel
+  // is held (camera 0 → header at eye level), where this is exact.
   function headerAngle(s: number, sp: number, p: number) {
-    const camera = cameraAt(spiralProg(p));
-    const d = 0 - camera; // header sits at level 0
+    const d = 0 - cameraAtP(p); // header sits at level 0
     return d * stepAngle + s * STRAND_OFFSET + sp;
   }
 
   function computeActive() {
+    // Frozen during the descent — the camera term rotates all headers
+    // together there, and a mid-descent strand flip changes lastLevel and
+    // teleports the whole scene in one frame.
+    if (spiralProg(lastP) > 0.0005) return;
     let best = 0;
     let bestAbs = Infinity;
     for (let s = 0; s < 3; s++) {
@@ -591,7 +606,7 @@ const runwayVh = 480;
 
   // Strand backbones: one polyline segment between consecutive cards of the
   // same strand, drawn in screen space using the same perspective projection.
-  type Seg = { el: SVGLineElement; strand: number; level: number };
+  type Seg = { el: SVGLineElement; strand: number; level: number; lastO?: string; lastStroke?: string };
   const segs: Seg[] = [];
   if (svg) {
     const NS = 'http://www.w3.org/2000/svg';
@@ -614,6 +629,8 @@ const runwayVh = 480;
   for (const el of cards) {
     if (el.dataset.level === '0') headerEls[Number(el.dataset.strand)] = el;
   }
+  // Per-header count element, cached — querySelector in the frame loop is waste.
+  const headCountEls = new WeakMap<HTMLElement, HTMLElement | null>();
 
   // Deepest level that actually holds a card (has a title) per strand — the
   // descent stops here so a short strand doesn't scroll through empty padding.
@@ -648,15 +665,25 @@ const runwayVh = 480;
       // Act 2 title screen, cooling to silver as the word joins the helix),
       // so it is intentionally NOT set here.
       // Descending stem for this strand carries the accent: dim hue → full
-      // accent as the strand swings to front-center.
+      // accent as the strand swings to front-center. Skip unchanged colors —
+      // same-value attribute writes still cost style work every frame.
+      const stroke = mix(STRAND_DIM[s], STRAND_RGB[s], w);
       for (const seg of segs) {
-        if (seg.strand === s) seg.el.setAttribute('stroke', mix(STRAND_DIM[s], STRAND_RGB[s], w));
+        if (seg.strand === s && seg.lastStroke !== stroke) {
+          seg.el.setAttribute('stroke', stroke);
+          seg.lastStroke = stroke;
+        }
       }
     }
     // Bottom indicator dot mirrors the active strand's full identity color.
     if (activeDot) activeDot.style.background = rgbStr(STRAND_RGB[activeStrand]);
   }
 
+  // Scroll geometry cached here so the per-tick scroll path never reads
+  // layout (offsetHeight/getBoundingClientRect force a synchronous reflow
+  // right after render() has dirtied layout — a per-tick stutter machine).
+  let wrapTop = 0;
+  let scrollTotal = 0;
   function measure() {
     // Proportional zoom: at/above ~760px this is 1 (full desktop); below it the
     // whole composition scales down so phones show the SAME layout, smaller.
@@ -666,6 +693,10 @@ const runwayVh = 480;
     // before the next climbs into center — tightened a little on small screens.
     stepY = Math.max(300, window.innerHeight * 0.52) * (0.6 + 0.4 * uiScale);
     if (svg) svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
+    if (wrap) {
+      wrapTop = wrap.getBoundingClientRect().top + window.scrollY;
+      scrollTotal = wrap.offsetHeight - window.innerHeight;
+    }
   }
 
   // Where active-strand cards cross eye level once the descent is underway:
@@ -699,21 +730,23 @@ const runwayVh = 480;
 
     if (detailBox) {
       if (on && focus) {
-        if (detailTag) {
-          detailTag.textContent = focus.el.dataset.tag || '';
-          detailTag.style.color = rgbStr(STRAND_RGB[activeStrand]);
-        }
-        const catHref = focus.el.getAttribute('href') || '#';
-        if (detailTitleLink) {
-          detailTitleLink.textContent = focus.el.dataset.title || '';
-          detailTitleLink.href = catHref;
-        }
-        // Sub-content links under the category title — rebuilt only when the
-        // focused card changes (first 4 + "+N more" beyond five).
-        if (detailItems) {
-          const key = `${focus.el.dataset.strand}-${focus.el.dataset.level}`;
-          if (detailItems.dataset.key !== key) {
-            detailItems.dataset.key = key;
+        // All text/href content is keyed by the focused card and rebuilt ONLY
+        // when it changes — per-frame textContent writes dirty layout every
+        // frame and force reflows on the scroll path.
+        const key = `${focus.el.dataset.strand}-${focus.el.dataset.level}`;
+        if (detailBox.dataset.key !== key) {
+          detailBox.dataset.key = key;
+          const catHref = focus.el.getAttribute('href') || '#';
+          if (detailTag) {
+            detailTag.textContent = focus.el.dataset.tag || '';
+            detailTag.style.color = rgbStr(STRAND_RGB[activeStrand]);
+          }
+          if (detailTitleLink) {
+            detailTitleLink.textContent = focus.el.dataset.title || '';
+            detailTitleLink.href = catHref;
+          }
+          // Sub-content links under the category title (first 4 + "+N more").
+          if (detailItems) {
             detailItems.textContent = '';
             let entries: { t: string; href: string }[] = [];
             try { entries = JSON.parse(focus.el.dataset.items || '[]'); } catch {}
@@ -812,13 +845,7 @@ const runwayVh = 480;
     // eases to the next over the rest. Identical scroll distance for every card,
     // all the way down. The descent spans only the active strand's real cards,
     // and the last card arrives a touch early so it gets a full dwell too.
-    const lastLevel = Math.max(1, strandMaxLevel[activeStrand]);
-    const rawP = Math.min(1, descP / ARRIVE);
-    const raw = rawP * lastLevel;
-    const kBase = Math.min(lastLevel - 1, Math.floor(raw));
-    const frac = raw - kBase;
-    const moveRaw = frac <= HOLD ? 0 : (frac - HOLD) / (1 - HOLD);
-    const camera = kBase + smooth01(moveRaw);
+    const camera = cameraAtP(p); // shared dwell-camera math (see cameraAtP)
 
     const fadeDist = window.innerHeight * 0.9;
     const cx = window.innerWidth / 2;
@@ -869,15 +896,16 @@ const runwayVh = 480;
       const nearS = near * near * (3 - 2 * near);
 
       // Scale capped at ~1.0 (native) so rasters never upscale → no pixelation.
+      // Everything BLENDS between states — branching on booleans popped sizes
+      // by ~2% whenever the descent boundary was crossed.
       let scl;
-      if (isActive && descending) {
-        scl = 0.6 + 0.36 * nearS + 0.04 * front; // grows AT center
+      const sclCarousel = 0.78 + front * 0.20; // Act 2 carousel
+      if (isActive) {
+        const sclDesc = 0.6 + 0.36 * nearS + 0.04 * front; // grows AT center
+        scl = sclCarousel + (sclDesc - sclCarousel) * shiftT;
       } else {
-        // Blend carousel size → receded size on the same smooth ramp as the
-        // opacity recede, so other strands shrink instead of snapping small.
-        const sclFull = 0.78 + front * 0.20; // Act 2 carousel
-        const sclFar = 0.56 + front * 0.10;  // receded strand
-        scl = sclFull + (sclFar - sclFull) * (isActive ? 0 : recedeT);
+        const sclFar = 0.56 + front * 0.10; // receded strand
+        scl = sclCarousel + (sclFar - sclCarousel) * recedeT;
       }
       scl *= uiScale; // proportional shrink on small screens (desktop = ×1)
 
@@ -892,8 +920,15 @@ const runwayVh = 480;
         // the strand's ring angle CONTINUOUSLY, so rotation cross-fades keywords.
         const dimFloor = stackLayout ? 0.5 : 0.2;
         const headDim = dimFloor + (1 - dimFloor) * strandW[strand];
-        const count = el.querySelector('.helix-head__count') as HTMLElement | null;
-        if (count) count.style.opacity = ((0.4 + 0.5 * front) * headDim).toFixed(3);
+        let count = headCountEls.get(el);
+        if (count === undefined) {
+          count = el.querySelector('.helix-head__count') as HTMLElement | null;
+          headCountEls.set(el, count);
+        }
+        if (count) {
+          const cv = ((0.4 + 0.5 * front) * headDim).toFixed(3);
+          if (count.style.opacity !== cv) count.style.opacity = cv;
+        }
         op = kwIn * vis * (0.3 + 0.7 * front) * headDim;
       } else {
         // Content cards: held behind the keyword in Act 2, then wind down the
@@ -902,12 +937,18 @@ const runwayVh = 480;
         op = vis * (0.35 + 0.65 * front) * recede * contentGate * dim;
       }
 
-      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) scale(${scl.toFixed(3)})`;
-      el.style.opacity = op.toFixed(3);
+      // Compare-before-write: same-value style writes still cost style
+      // recalcs, and zIndex/visibility flips churn the compositor.
+      const tf = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) scale(${scl.toFixed(3)})`;
+      if (el.style.transform !== tf) el.style.transform = tf;
+      const opStr = op.toFixed(3);
+      if (el.style.opacity !== opStr) el.style.opacity = opStr;
       const zBoost = isActive && descending ? Math.round(nearS * 9) : 0;
-      el.style.zIndex = String((isHead ? 9 : isActive ? 8 : 1) + Math.round(front * 6) + zBoost);
+      const zStr = String((isHead ? 9 : isActive ? 8 : 1) + Math.round(front * 6) + zBoost);
+      if (el.style.zIndex !== zStr) el.style.zIndex = zStr;
       const hidden = isHead ? op <= 0.01 : (op <= 0.01 || contentGate <= 0.02);
-      el.style.visibility = hidden ? 'hidden' : 'visible';
+      const visStr = hidden ? 'hidden' : 'visible';
+      if (el.style.visibility !== visStr) el.style.visibility = visStr;
 
       // The most-centered active content card owns the right-side description.
       if (isActive && descending && hasTitle && near > bestNear) {
@@ -930,14 +971,21 @@ const runwayVh = 480;
       const recedeSeg = seg.strand === activeStrand ? 1 : 1 - 0.75 * recedeT;
       const o = Math.min(p1.vis, p2.vis) * 0.68 * recedeSeg * contentGate;
       if (o <= 0.02) {
-        seg.el.setAttribute('stroke-opacity', '0');
+        if (seg.lastO !== '0') {
+          seg.el.setAttribute('stroke-opacity', '0');
+          seg.lastO = '0';
+        }
         continue;
       }
       seg.el.setAttribute('x1', p1.sx.toFixed(1));
       seg.el.setAttribute('y1', p1.sy.toFixed(1));
       seg.el.setAttribute('x2', p2.sx.toFixed(1));
       seg.el.setAttribute('y2', p2.sy.toFixed(1));
-      seg.el.setAttribute('stroke-opacity', o.toFixed(3));
+      const oStr = o.toFixed(3);
+      if (seg.lastO !== oStr) {
+        seg.el.setAttribute('stroke-opacity', oStr);
+        seg.lastO = oStr;
+      }
     }
 
     updateStrandColors();
@@ -971,33 +1019,45 @@ const runwayVh = 480;
   let targetP = 0;
   let scrollRaf = 0;
   let velP = 0;
-  // Spring follower — acceleration toward the target plus friction. Gives the
-  // scroll a weighted, elastic feel: it stretches slightly behind fast
-  // scrolling, drifts ~3% past the stop, and settles softly (the "catch").
-  const SPRING_ACCEL = 0.06;
-  const SPRING_FRICTION = 0.76; // higher = more elastic stretch + settle bounce
-  function scrollLoop() {
-    velP = (velP + (targetP - lastP) * SPRING_ACCEL) * SPRING_FRICTION;
-    lastP += velP;
-    if (Math.abs(targetP - lastP) > 0.00035 || Math.abs(velP) > 0.0002) {
+  let scrollTick = 0;
+  // Spring follower — acceleration toward the target plus friction. Tuned
+  // TIGHT: fast response with only ~2-3% drift-past, so the scene never
+  // wanders visibly after the user stops (big overshoot read as instability).
+  // Time-normalized: identical feel at 60/120/144Hz, and dropped frames are
+  // covered by distance instead of freezing the motion.
+  const SPRING_ACCEL = 0.1;
+  const SPRING_FRICTION = 0.65;
+  function scrollLoop(now: number) {
+    const dt = scrollTick ? Math.min(50, now - scrollTick) : 16.7;
+    scrollTick = now;
+    const f = dt / 16.7;
+    velP = (velP + (targetP - lastP) * SPRING_ACCEL * f) * Math.pow(SPRING_FRICTION, f);
+    lastP += velP * f;
+    if (Math.abs(targetP - lastP) > 0.00006 || Math.abs(velP) > 0.00005) {
       render(lastP);
       scrollRaf = requestAnimationFrame(scrollLoop);
     } else {
       velP = 0;
       lastP = targetP;
       render(lastP);
+      scrollTick = 0;
     }
   }
   // ── Idle snap ──────────────────────────────────────────────────
-  // If scrolling stops at an ambiguous point BETWEEN two cards, glide the
-  // page to the nearer card's dwell so something is always cleanly centered.
-  // The smooth scroll emits scroll events itself, which reset the timer; the
-  // final idle check lands inside a dwell window and no-ops — so it settles.
+  // If scrolling stops at an ambiguous point BETWEEN two cards, align to the
+  // nearer card's dwell. The scroll position is set INSTANTLY and our own
+  // spring provides the visual glide — a single animation authority, so the
+  // scene never gets double-eased or moves twice after stopping. A long idle
+  // window plus a settled-spring guard keeps it from firing between slow,
+  // deliberate wheel ticks (fighting the user reads as instability).
   let snapTimer: number | undefined;
   function snapScrollToCard() {
-    if (!wrap) return;
-    const total = wrap.offsetHeight - window.innerHeight;
-    if (total <= 0) return;
+    if (!wrap || scrollTotal <= 0) return;
+    // Still gliding? Re-arm instead of stacking motion on motion.
+    if (Math.abs(targetP - lastP) > 0.002) {
+      snapTimer = window.setTimeout(snapScrollToCard, 160);
+      return;
+    }
     const spiralP = spiralProg(targetP);
     const descP = (spiralP - KHOLD) / (1 - KHOLD);
     const lastLevel = Math.max(1, strandMaxLevel[activeStrand]);
@@ -1007,26 +1067,30 @@ const runwayVh = 480;
     const kBase = Math.min(lastLevel - 1, Math.floor(raw));
     const frac = raw - kBase;
     if (frac <= HOLD) return;           // already resting on a card
-    // Mid-move: pick the nearer dwell and scroll to the middle of its window.
+    // Mid-move: pick the nearer dwell and align to the middle of its window.
     const kTarget = frac - HOLD < 1 - frac ? kBase : kBase + 1;
     const rawT = kTarget + HOLD * 0.5;
     const pT = KW_OUT + (KHOLD + (rawT / lastLevel) * ARRIVE * (1 - KHOLD)) * (1 - KW_OUT);
-    const yT = Math.min(total, Math.max(0, pT * total));
+    // Document coordinates — the hero does NOT start at document top, so the
+    // wrap offset must be added or every snap lands short of the dwell.
+    const yT = wrapTop + Math.min(scrollTotal, Math.max(0, pT * scrollTotal));
     if (Math.abs(yT - window.scrollY) < 2) return;
-    window.scrollTo({ top: yT, behavior: 'smooth' });
+    window.scrollTo(0, yT); // instant — the spring does the easing
   }
 
   function onScroll() {
-    if (!wrap) return;
-    const total = wrap.offsetHeight - window.innerHeight;
-    targetP = total > 0 ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total)) : 0;
+    if (!wrap || scrollTotal <= 0) return;
+    // Cached geometry only — reading layout here forces a synchronous reflow
+    // on every scroll tick (render() dirties layout each frame).
+    targetP = Math.min(1, Math.max(0, (window.scrollY - wrapTop) / scrollTotal));
     // Restart the ease loop on every scroll tick — cancel + reschedule keeps
     // exactly one pending frame and can never wedge on a stale flag.
     cancelAnimationFrame(scrollRaf);
     scrollRaf = requestAnimationFrame(scrollLoop);
-    // Arm the idle snap: fires only once scrolling has actually stopped.
+    // Arm the idle snap: fires only once scrolling has actually stopped —
+    // long enough that slow deliberate wheel ticks never trigger it.
     window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(snapScrollToCard, 220);
+    snapTimer = window.setTimeout(snapScrollToCard, 450);
   }
 
   // ── Drag to rotate, snap the nearest strand header to dead center ──
@@ -1048,6 +1112,13 @@ const runwayVh = 480;
     const TENSION = 0.42;
     cancelAnimationFrame(snapRaf);
     function step(now: number) {
+      // The user scrolled into the descent mid-spring: finish instantly.
+      // A live spin spring during the descent wobbles the whole column.
+      if (spiralProg(lastP) > 0.0005) {
+        spin = to;
+        render(lastP);
+        return;
+      }
       const t = Math.min(1, (now - t0) / DUR);
       const spring = 1 - Math.exp(-DAMPING * t) * Math.cos(FREQ * Math.PI * t);
       const settle = 1 - Math.pow(1 - t, 4); // easeOutQuart, no overshoot
@@ -1092,11 +1163,16 @@ const runwayVh = 480;
     let smoothing = false;
 
     // The pointer drives targetSpin; the visible spin eases toward it every
-    // frame (critically damped lerp) so rotation feels weighty, not twitchy.
-    function smoothLoop() {
+    // frame (critically damped lerp, time-normalized for any refresh rate)
+    // so rotation feels weighty, not twitchy.
+    let smoothTick = 0;
+    function smoothLoop(now: number) {
+      const dt = smoothTick ? Math.min(50, now - smoothTick) : 16.7;
+      smoothTick = now;
+      const f = dt / 16.7;
       const diff = targetSpin - spin;
       if (Math.abs(diff) > 0.0004) {
-        spin += diff * 0.1;
+        spin += diff * (1 - Math.pow(0.9, f));
         computeActive();
         render(lastP);
         smoothRaf = requestAnimationFrame(smoothLoop);
@@ -1105,6 +1181,7 @@ const runwayVh = 480;
         computeActive();
         render(lastP);
         smoothing = false;
+        smoothTick = 0;
         if (!dragging) snapToNearest();
       }
     }
