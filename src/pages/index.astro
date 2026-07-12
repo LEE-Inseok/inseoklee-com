@@ -609,9 +609,9 @@ const runwayVh = 480;
     [219, 79, 148],   // Code        #DB4F94 (pink)
     [46, 169, 106],   // Recognition #2EA96A (green)
   ];
-  // Dimmed companion — same hue, gently darkened (used for the backbone
-  // lines). Kept fairly bright so the spiral stays clearly visible.
-  const STRAND_DIM = STRAND_RGB.map((c) => c.map((v) => Math.round(v * 0.62 + 22)));
+  // Dimmed companion — same hue, only slightly darkened (used for the
+  // backbone lines). Kept bright so the spiral reads clearly behind cards.
+  const STRAND_DIM = STRAND_RGB.map((c) => c.map((v) => Math.round(v * 0.78 + 30)));
   // Header labels rest at silver/white and bloom to their accent at front.
   const SILVER = [214, 216, 222];
   const rgbStr = (c: number[]) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
@@ -628,7 +628,7 @@ const runwayVh = 480;
       for (let k = 1; k < levels - 1; k++) {
         const line = document.createElementNS(NS, 'line') as SVGLineElement;
         line.setAttribute('stroke', rgbStr(STRAND_DIM[s]));
-        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-width', '2.5');
         line.setAttribute('stroke-linecap', 'round');
         svg.appendChild(line);
         segs.push({ el: line, strand: s, level: k });
@@ -981,7 +981,7 @@ const runwayVh = 480;
       const p2 = pts[seg.strand][seg.level + 1];
       if (!p1 || !p2) continue;
       const recedeSeg = seg.strand === activeStrand ? 1 : 1 - 0.75 * recedeT;
-      const o = Math.min(p1.vis, p2.vis) * 0.68 * recedeSeg * contentGate;
+      const o = Math.min(p1.vis, p2.vis) * 0.85 * recedeSeg * contentGate;
       if (o <= 0.02) {
         if (seg.lastO !== '0') {
           seg.el.setAttribute('stroke-opacity', '0');
