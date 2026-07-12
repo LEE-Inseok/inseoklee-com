@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectDetail from '../../components/ProjectDetail.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-// Static pages already exist for some slugs — excluded here to avoid route
-// collisions. Every OTHER research entry gets a page automatically.
+// Every research entry gets a detail page automatically, except coming-soon
+// stubs — those render only as unlinked cards on the index.
 export async function getStaticPaths() {
   const entries = await getCollection('research');
   return entries
-    .filter((entry) => !['sbh-experiment'].includes(entry.slug))
+    .filter((entry) => entry.data.status !== 'coming-soon')
     .map((entry) => ({
       params: { slug: entry.slug },
       props:  { entry },
@@ -18,12 +18,12 @@ export async function getStaticPaths() {
 type Props = { entry: CollectionEntry<'research'> };
 const { entry } = Astro.props;
 const { Content } = await entry.render();
-const { title, summary, tags, date, images } = entry.data;
+const { title, summary, tags, date, images, section } = entry.data;
 ---
 
 <BaseLayout title={`${title} — Inseok Lee`} description={summary} section="research">
   <ProjectDetail
-    backHref="/research"
+    backHref={`/research#${section}`}
     backLabel="Research"
     title={title}
     summary={summary}

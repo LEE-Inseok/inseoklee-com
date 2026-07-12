@@ -57,14 +57,17 @@ const navGroups = [
             {awards.length === 0 && (
               <p class="text-base" style="color: var(--muted);">No awards recorded yet.</p>
             )}
-            {awards.map((a) => (
-              <div class="card flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                  <span class="section-label">{a.data.year}</span>
-                  <span class="section-label" style="color: var(--accent-dk);">{a.data.prize}</span>
+            {awards.map((a, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-2 min-w-0 flex-1">
+                  <div class="flex items-center justify-between">
+                    <span class="section-label">{a.data.year}</span>
+                    <span class="section-label" style="color: var(--accent-dk);">{a.data.prize}</span>
+                  </div>
+                  <h4 class="card-title">{a.data.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{a.data.summary}</p>
                 </div>
-                <h4 class="card-title">{a.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{a.data.summary}</p>
               </div>
             ))}
           </div>
@@ -77,19 +80,22 @@ const navGroups = [
             {certifications.length === 0 && (
               <p class="text-base" style="color: var(--muted);">No certifications recorded yet.</p>
             )}
-            {certifications.map((c) => (
-              <div class="card flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                  <span class="section-label">{c.data.issuer}</span>
-                  <span class="section-label">{c.data.date}</span>
-                </div>
-                <h4 class="card-title">{c.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{c.data.summary}</p>
-                {c.data.verifyUrl && (
-                  <div class="flex flex-wrap gap-4 mt-1 text-sm">
-                    <a href={c.data.verifyUrl} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Verify →</a>
+            {certifications.map((c, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-2 min-w-0 flex-1">
+                  <div class="flex items-center justify-between">
+                    <span class="section-label">{c.data.issuer}</span>
+                    <span class="section-label">{c.data.date}</span>
                   </div>
-                )}
+                  <h4 class="card-title">{c.data.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{c.data.summary}</p>
+                  {c.data.verifyUrl && (
+                    <div class="flex flex-wrap gap-4 mt-1 text-sm">
+                      <a href={c.data.verifyUrl} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Verify →</a>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -102,18 +108,21 @@ const navGroups = [
             {presentations.length === 0 && (
               <p class="text-base" style="color: var(--muted);">No conference presentations recorded yet.</p>
             )}
-            {presentations.map((p) => (
-              <div class="card flex flex-col gap-2">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                  <span class="section-label">{p.data.conference}</span>
-                  <div class="flex items-center gap-2">
-                    {p.data.type && <span class="presentation-badge presentation-badge--type">{p.data.type}</span>}
-                    {p.data.status === 'scheduled' && <span class="presentation-badge presentation-badge--scheduled">Scheduled</span>}
-                    <span class="section-label">{p.data.date}</span>
+            {presentations.map((p, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-2 min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <span class="section-label">{p.data.conference}</span>
+                    <div class="flex items-center gap-2">
+                      {p.data.type && <span class="presentation-badge presentation-badge--type">{p.data.type}</span>}
+                      {p.data.status === 'scheduled' && <span class="presentation-badge presentation-badge--scheduled">Scheduled</span>}
+                      <span class="section-label">{p.data.date}</span>
+                    </div>
                   </div>
+                  <h4 class="card-title">{p.data.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.data.summary}</p>
                 </div>
-                <h4 class="card-title">{p.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{p.data.summary}</p>
               </div>
             ))}
           </div>
@@ -126,32 +135,35 @@ const navGroups = [
             {activities.length === 0 && (
               <p class="text-base" style="color: var(--muted);">No activities recorded yet.</p>
             )}
-            {activities.map((act) => (
-              <div class="card flex flex-col gap-3">
-                <span class="section-label">{act.data.date}</span>
-                <h4 class="card-title">{act.data.title}</h4>
-                <p class="text-base" style="color: var(--body);">{act.data.summary}</p>
-                {act.data.images && act.data.images.length > 0 && (
-                  <div class="activity-photos" data-gallery>
-                    {act.data.images.map((src, i) => (
-                      <button
-                        type="button"
-                        class="activity-photo-btn"
-                        data-photo-src={src}
-                        data-photo-index={i}
-                        aria-label={`Open photo ${i + 1} of ${act.data.title}`}
-                      >
-                        <img
-                          src={src}
-                          alt={act.data.title}
-                          class="activity-photo"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {activities.map((act, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-3 min-w-0 flex-1">
+                  <span class="section-label">{act.data.date}</span>
+                  <h4 class="card-title">{act.data.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{act.data.summary}</p>
+                  {act.data.images && act.data.images.length > 0 && (
+                    <div class="activity-photos" data-gallery>
+                      {act.data.images.map((src, j) => (
+                        <button
+                          type="button"
+                          class="activity-photo-btn"
+                          data-photo-src={src}
+                          data-photo-index={j}
+                          aria-label={`Open photo ${j + 1} of ${act.data.title}`}
+                        >
+                          <img
+                            src={src}
+                            alt={act.data.title}
+                            class="activity-photo"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

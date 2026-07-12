@@ -152,6 +152,9 @@ const allViews = groups.flatMap((g) =>
         const target = `#${view}`;
         if (location.hash !== target) {
           history.replaceState(null, '', target);
+          // replaceState fires no hashchange — dispatch one so other hash
+          // listeners (e.g. the top nav's active-sublink highlight) stay in sync.
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
         }
       }
     }

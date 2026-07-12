@@ -20,7 +20,8 @@ type HelixCard =
 // Colors must match STRAND_COLORS in the script below.
 
 // Research is one collection now; the `section` field splits it into areas.
-const research = await getCollection('research');
+// "N items" counts exclude coming-soon stubs — only real content counts.
+const research = (await getCollection('research')).filter((r) => r.data.status !== 'coming-soon');
 const researchSysEng = research.filter((r) => r.data.section === 'system-engineering');
 const researchSim = research.filter((r) => r.data.section === 'simulation');
 const researchAld = research.filter((r) => r.data.section === 'ald');
@@ -34,24 +35,24 @@ const n = (arr: unknown[]) => `${arr.length} item${arr.length === 1 ? '' : 's'}`
 // ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
 //    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research/' },
-  { kind: 'text', tag: n(researchSysEng), label: 'System Engineering',        href: '/research#experimental' },
+  { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research' },
+  { kind: 'text', tag: n(researchSysEng), label: 'System Engineering',        href: '/research#system-engineering' },
   { kind: 'text', tag: n(researchSim),    label: 'Simulation & Optimization', href: '/research#simulation' },
   { kind: 'text', tag: n(researchAld),    label: 'ALD',                       href: '/research#ald' },
-  { kind: 'text', tag: n(pubs),           label: 'Publications',              href: '/research#publication' },
+  { kind: 'text', tag: n(pubs),           label: 'Publications',              href: '/research#publications' },
 ];
 
 // AI Engineering strand = its two sub-categories.
 const strandCode: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/03-developer.png', alt: 'AI Engineering', href: '/development/' },
+  { kind: 'photo', img: '/images/home/03-developer.png', alt: 'AI Engineering', href: '/development' },
   { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent' },
-  { kind: 'text', tag: n(devs),      label: 'Projects',             href: '/development#project' },
+  { kind: 'text', tag: n(devs),      label: 'Projects',             href: '/development#projects' },
 ];
 
 // Achievements strand = its categories (Publications is cross-listed here too).
 const strandRecognition: HelixCard[] = [
-  { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Achievements', href: '/recognition/' },
-  { kind: 'text', tag: n(pubs),          label: 'Publications',   href: '/research#publication' },
+  { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Achievements', href: '/recognition' },
+  { kind: 'text', tag: n(pubs),          label: 'Publications',   href: '/research#publications' },
   { kind: 'text', tag: n(awards),        label: 'Awards',         href: '/recognition#awards' },
   { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications' },
   { kind: 'text', tag: n(presentations), label: 'Presentations',  href: '/recognition#presentations' },
@@ -66,9 +67,9 @@ const strandRecognition: HelixCard[] = [
 // SSR paints silver first; JS recolors the centered strand on load.
 const STRAND_HEX = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
 const strandDefs = [
-  { label: 'Research', href: '/research/', cards: strandResearch },
-  { label: 'AI Engineering', href: '/development/', cards: strandCode },
-  { label: 'Achievements', href: '/recognition/', cards: strandRecognition },
+  { label: 'Research', href: '/research', cards: strandResearch },
+  { label: 'AI Engineering', href: '/development', cards: strandCode },
+  { label: 'Achievements', href: '/recognition', cards: strandRecognition },
 ];
 
 type Slot = HelixCard | { kind: 'blank' };

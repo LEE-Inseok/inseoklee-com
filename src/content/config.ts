@@ -30,8 +30,14 @@ const development = defineCollection({
   schema: z.object({
     title:   z.string(),
     type:    z.enum(['framework', 'productivity', 'dashboard', 'tool']),
+    // Same status vocabulary as `research` — coming-soon entries render as
+    // unlinked stubs and get no detail page.
+    status:  z.enum(['published', 'draft', 'coming-soon']).default('published'),
     summary: z.string(),
     images:  z.array(z.string()).max(3).default([]),
+    // When set, the project card links here (e.g. a GitHub repo) instead of
+    // to a generated detail page.
+    externalUrl: z.string().url().optional(),
     date:    z.string().optional(),
     tags:    z.array(z.string()).optional(),
   }),

@@ -1,14 +1,30 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CategoryNav from '../../components/CategoryNav.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
-// Research is now ONE collection; the `section` field splits it into areas.
+// Research is ONE collection; the `section` field splits it into areas.
+// Every panel renders straight from the collection — presentation is decided
+// by `status` alone: published → linked card, draft → linked + "In progress",
+// coming-soon → unlinked dimmed stub (and no detail page is built for it).
+// View ids / hash anchors equal the `section` field values.
 const researchAll = await getCollection('research');
-const byDate = (a: { data: { date?: string } }, b: { data: { date?: string } }) =>
-  (a.data.date ?? '').localeCompare(b.data.date ?? '');
-const experimental = researchAll.filter((e) => e.data.section === 'system-engineering').sort(byDate);
-const simulation = researchAll.filter((e) => e.data.section === 'simulation').sort(byDate);
+const statusOrder: Record<string, number> = { 'published': 0, 'draft': 1, 'coming-soon': 2 };
+const bySection = (section: CollectionEntry<'research'>['data']['section']) =>
+  researchAll
+    .filter((e) => e.data.section === section)
+    .sort(
+      (a, b) =>
+        (statusOrder[a.data.status] ?? 9) - (statusOrder[b.data.status] ?? 9) ||
+        (a.data.date ?? '').localeCompare(b.data.date ?? '')
+    );
+
+const areas = [
+  { view: 'system-engineering', label: 'System Engineering',        entries: bySection('system-engineering') },
+  { view: 'simulation',         label: 'Simulation & Optimization', entries: bySection('simulation') },
+  { view: 'ald',                label: 'ALD',                       entries: bySection('ald') },
+];
+
 const publications = (await getCollection('publications')).sort((a, b) => {
   const order = { 'published': 0, 'under-review': 1, 'submitted': 2, 'draft': 3, 'in-preparation': 4 };
   return (order[a.data.status] ?? 9) - (order[b.data.status] ?? 9);
@@ -27,46 +43,15 @@ const navGroups = [
     key: 'area',
     label: 'Area',
     trigger: 'expand' as const,
-    items: [
-      { view: 'experimental', label: 'System Engineering' },
-      { view: 'simulation',   label: 'Simulation & Optimization' },
-      { view: 'ald',          label: 'ALD' },
-    ],
+    items: areas.map(({ view, label }) => ({ view, label })),
   },
   {
-    key: 'publication',
-    label: 'Publication',
+    key: 'publications',
+    label: 'Publications',
     trigger: 'activate' as const,
-    activateView: 'publication',
+    activateView: 'publications',
   },
 ];
-
-const experimentalPlaceholders = [
-  { title: 'Integrated Energy System — Bench scale', summary: 'Designed, built, and operated an integrated system end-to-end — SBH hydrolysis reactor, balance-of-plant, and PEM fuel cell delivering electricity on demand.', existingSlug: 'sbh-experiment' },
-  { title: 'Integrated Energy System — Scale-up', summary: 'Scale-up engineering toward a vehicle-class system — coolant-loop redesign, thermal envelope, and safety constraints.', existingSlug: null },
-  { title: 'Regulatory Approval Track', summary: 'Certification and safety review for portable power systems — engineering a system that must pass, not just work.', existingSlug: null },
-  { title: 'PEMFC Characterization', summary: 'Proton-exchange-membrane fuel cell testing — IV curves, EIS, and CO sensitivity.', existingSlug: null },
-];
-
-const aldPlaceholders = [
-  { title: 'ALD Catalyst Synthesis', summary: 'Atomic layer deposition for precision catalyst synthesis — atomic-scale control of active sites and film composition. Ongoing.', existingSlug: null },
-  { title: 'ALD Life-Cycle Assessment', summary: 'Cradle-to-gate LCA of ALD processes — precursor consumption, energy intensity, and emissions per functional unit. Ongoing.', existingSlug: null },
-];
-
-const simulationPlaceholders = [
-  { title: 'SBH Thermal Simulation', summary: 'Physics-based thermal scenario study across 5 heat-recovery configurations for the SBH hydrogen system.', existingSlug: 'sbh-thermal' },
-  { title: 'LOHC-CCPP Thermal Coupling System Optimization', summary: 'Multi-objective optimization of CCPP integrated with LOHC hydrogen production — Aspen + ML surrogate + NSGA-II.', existingSlug: 'ccpp-lohc' },
-  { title: 'Dynamic System Modeling', summary: 'Time-resolved system dynamics for transient and start-up scenarios in hydrogen energy systems.', existingSlug: null },
-];
-
-function experimentalEntry(slug: string | null) {
-  if (!slug) return null;
-  return experimental.find((e) => e.slug === slug) ?? null;
-}
-function simulationEntry(slug: string | null) {
-  if (!slug) return null;
-  return simulation.find((e) => e.slug === slug) ?? null;
-}
 ---
 
 <BaseLayout
@@ -89,7 +74,7 @@ function simulationEntry(slug: string | null) {
         <div class="lg:sticky lg:top-24">
           <CategoryNav
             groups={navGroups}
-            defaultView="publication"
+            defaultView="system-engineering"
             ariaLabel="Research categories"
           />
         </div>
@@ -97,91 +82,48 @@ function simulationEntry(slug: string | null) {
 
       <div class="flex-1 min-w-0">
 
-        <!-- Experimental — all items are active/in-progress, rendered in full color -->
-        <section data-view-panel="experimental" hidden aria-labelledby="cn-area-trigger">
-          <h2 class="view-title">Area · System Engineering</h2>
-          <div class="flex flex-col max-w-2xl">
-            {experimentalPlaceholders.map((p, i) => {
-              const real = experimentalEntry(p.existingSlug);
-              const num = String(i + 1).padStart(2, '0');
-              if (real) {
+        {areas.map((area) => (
+          <section data-view-panel={area.view} hidden aria-labelledby="cn-area-trigger">
+            <h2 class="view-title">Area · {area.label}</h2>
+            <div class="flex flex-col max-w-2xl">
+              {area.entries.length === 0 && (
+                <p class="text-base" style="color: var(--muted);">No projects recorded yet.</p>
+              )}
+              {area.entries.map((entry, i) => {
+                const num = String(i + 1).padStart(2, '0');
+                if (entry.data.status === 'coming-soon') {
+                  return (
+                    <div class="card flex gap-5" data-stub="true" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                      <span class="row-num" aria-hidden="true">{num}</span>
+                      <div class="flex flex-col gap-3 min-w-0">
+                        <span class="section-label" style="color: var(--muted);">Coming soon</span>
+                        <h4 class="card-title" style="color: var(--muted);">{entry.data.title}</h4>
+                        <p class="text-base" style="color: var(--muted);">{entry.data.summary}</p>
+                      </div>
+                    </div>
+                  );
+                }
                 return (
-                  <a href={`/research/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <a href={`/research/${entry.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
                     <span class="row-num" aria-hidden="true">{num}</span>
                     <div class="flex flex-col gap-3 min-w-0">
-                      <h4 class="card-title">{real.data.title}</h4>
-                      <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                      {entry.data.status === 'draft' && (
+                        <span class="section-label" style="color: var(--accent-dk);">In progress</span>
+                      )}
+                      <h4 class="card-title">{entry.data.title}</h4>
+                      <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
                       <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
                     </div>
                   </a>
                 );
-              }
-              return (
-                <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
-                  <span class="row-num" aria-hidden="true">{num}</span>
-                  <div class="flex flex-col gap-3 min-w-0">
-                    <h4 class="card-title">{p.title}</h4>
-                    <p class="text-base" style="color: var(--body);">{p.summary}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+              })}
+            </div>
+          </section>
+        ))}
 
-        <!-- Simulation -->
-        <section data-view-panel="simulation" hidden aria-labelledby="cn-area-trigger">
-          <h2 class="view-title">Area · Simulation & Optimization</h2>
-          <div class="flex flex-col max-w-2xl">
-            {simulationPlaceholders.map((p, i) => {
-              const real = simulationEntry(p.existingSlug);
-              const num = String(i + 1).padStart(2, '0');
-              if (real) {
-                return (
-                  <a href={`/research/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
-                    <span class="row-num" aria-hidden="true">{num}</span>
-                    <div class="flex flex-col gap-3 min-w-0">
-                      <h4 class="card-title">{real.data.title}</h4>
-                      <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
-                      <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
-                    </div>
-                  </a>
-                );
-              }
-              return (
-                <div class="card flex gap-5" data-stub="true" data-reveal style={`transition-delay: ${i * 70}ms`}>
-                  <span class="row-num" aria-hidden="true">{num}</span>
-                  <div class="flex flex-col gap-3 min-w-0">
-                    <span class="section-label" style="color: var(--muted);">In preparation</span>
-                    <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
-                    <p class="text-base" style="color: var(--muted);">{p.summary}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <!-- ALD -->
-        <section data-view-panel="ald" hidden aria-labelledby="cn-area-trigger">
-          <h2 class="view-title">Area · ALD</h2>
-          <div class="flex flex-col max-w-2xl">
-            {aldPlaceholders.map((p, i) => (
-              <div class="card flex gap-5" data-stub="true" data-reveal style={`transition-delay: ${i * 70}ms`}>
-                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <div class="flex flex-col gap-3 min-w-0">
-                  <span class="section-label" style="color: var(--accent-dk);">In progress</span>
-                  <h4 class="card-title">{p.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <!-- Publication -->
-        <section data-view-panel="publication" hidden aria-labelledby="cn-publication-trigger">
-          <h2 class="view-title">Publication</h2>
+        <!-- Publications -->
+        <section data-view-panel="publications" hidden aria-labelledby="cn-publications-trigger">
+          <h2 class="view-title">Publications</h2>
           <div class="flex flex-col max-w-2xl">
             {publications.map((pub, i) => {
               const isPending = pub.data.status === 'in-preparation' || pub.data.status === 'draft';

@@ -4,18 +4,14 @@
   <url><loc>https://inseoklee.com/about</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://inseoklee.com/research</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://inseoklee.com/research/sbh-experiment</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/engineering</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://inseoklee.com/engineering/sbh-thermal</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/engineering/ccpp-lohc</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://inseoklee.com/research/sbh-thermal</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://inseoklee.com/research/ccpp-lohc</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://inseoklee.com/research/ald-catalyst-synthesis</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://inseoklee.com/research/ald-lca</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://inseoklee.com/development</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://inseoklee.com/development/code</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/development/engineering-productivity</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/development/dashboards</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://inseoklee.com/development/aspen-automation</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://inseoklee.com/development/sbh-framework</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://inseoklee.com/recognition</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://inseoklee.com/recognition/awards</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/recognition/certifications</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/recognition/presentations</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://inseoklee.com/recognition/activities</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://inseoklee.com/news</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://inseoklee.com/contact</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
 </urlset>

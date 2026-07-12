@@ -3,12 +3,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectDetail from '../../components/ProjectDetail.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
+// Every project gets a detail page automatically, except coming-soon stubs
+// and entries with an externalUrl (their cards link out instead).
 export async function getStaticPaths() {
   const entries = await getCollection('development');
-  return entries.map((entry) => ({
-    params: { slug: entry.slug },
-    props:  { entry },
-  }));
+  return entries
+    .filter((entry) => entry.data.status !== 'coming-soon' && !entry.data.externalUrl)
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props:  { entry },
+    }));
 }
 
 type Props = { entry: CollectionEntry<'development'> };
@@ -19,7 +23,7 @@ const { title, summary, tags, date, images } = entry.data;
 
 <BaseLayout title={`${title} — Inseok Lee`} description={summary} section="development">
   <ProjectDetail
-    backHref="/development"
+    backHref="/development#projects"
     backLabel="AI Engineering"
     title={title}
     summary={summary}

@@ -3,7 +3,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 
-const allTools = await getCollection('development');
+// Projects render straight from the `development` collection, with the same
+// status rule as Research panels: published → linked card, draft → linked +
+// "In progress", coming-soon → unlinked dimmed stub. Entries with
+// `externalUrl` link out (e.g. GitHub) instead of to a detail page.
+const statusOrder: Record<string, number> = { 'published': 0, 'draft': 1, 'coming-soon': 2 };
+const projects = (await getCollection('development')).sort(
+  (a, b) =>
+    (statusOrder[a.data.status] ?? 9) - (statusOrder[b.data.status] ?? 9) ||
+    (a.data.date ?? '').localeCompare(b.data.date ?? '')
+);
 
 const navGroups = [
   {
@@ -13,10 +22,10 @@ const navGroups = [
     activateView: 'agent',
   },
   {
-    key: 'project',
+    key: 'projects',
     label: 'Projects',
     trigger: 'activate' as const,
-    activateView: 'project',
+    activateView: 'projects',
   },
 ];
 
@@ -59,45 +68,6 @@ const harnessItems = [
     summary: 'Project-scoped commands that wrap recurring workflows — /codex:rescue, /codex:review, /research-toolkit, /sync-papers, /portfolio-update, etc.',
   },
 ];
-
-// Project — concrete deliverables built with AI-assisted coding
-const projectItems = [
-  {
-    title: 'Aspen Automation Framework',
-    summary: 'Python pipeline for Aspen Plus — DOE, parallel simulation, surrogate training, NSGA-II / Bayesian optimization.',
-    existingSlug: 'aspen-automation',
-    externalHref: null,
-  },
-  {
-    title: 'SBH Thermal Simulation Framework',
-    summary: 'ODE-based thermal framework — model / scenario / execution layers across 5 reactor configurations.',
-    existingSlug: 'sbh-framework',
-    externalHref: null,
-  },
-  {
-    title: 'Dashboard',
-    summary: 'Local HTML dashboards for Pareto front, grid sweep, weekly research updates — annotated figures and convergence views.',
-    existingSlug: null,
-    externalHref: '/development/dashboards',
-  },
-  {
-    title: 'Presentation',
-    summary: 'Slide-format research updates and conference materials — methodology walkthroughs and annotated figures.',
-    existingSlug: null,
-    externalHref: '/development/engineering-productivity',
-  },
-  {
-    title: 'Portfolio Site',
-    summary: 'This very site — Astro + Tailwind + Cloudflare Pages. Source of truth for research, code, and recognition.',
-    existingSlug: null,
-    externalHref: 'https://github.com/LEE-Inseok/inseoklee-com',
-  },
-];
-
-function projectEntry(slug: string | null) {
-  if (!slug) return null;
-  return allTools.find((t) => t.slug === slug) ?? null;
-}
 ---
 
 <BaseLayout
@@ -163,34 +133,29 @@ function projectEntry(slug: string | null) {
           </div>
         </section>
 
-        <!-- Projects — all in black, all clickable -->
-        <section data-view-panel="project" hidden aria-labelledby="cn-project-trigger">
+        <!-- Projects -->
+        <section data-view-panel="projects" hidden aria-labelledby="cn-projects-trigger">
           <h2 class="view-title">Projects</h2>
           <div class="flex flex-col max-w-2xl">
-            {projectItems.map((p, i) => {
-              const real = projectEntry(p.existingSlug);
+            {projects.length === 0 && (
+              <p class="text-base" style="color: var(--muted);">No projects recorded yet.</p>
+            )}
+            {projects.map((entry, i) => {
               const num = String(i + 1).padStart(2, '0');
-
-              if (real) {
+              if (entry.data.status === 'coming-soon') {
                 return (
-                  <a href={`/development/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <div class="card flex gap-5" data-stub="true" data-reveal style={`transition-delay: ${i * 70}ms`}>
                     <span class="row-num" aria-hidden="true">{num}</span>
                     <div class="flex flex-col gap-3 min-w-0">
-                      <h4 class="card-title">{real.data.title}</h4>
-                      <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
-                      {real.data.tags && (
-                        <div class="flex flex-wrap mt-1">
-                          {real.data.tags.map(tag => <span class="chip">{tag}</span>)}
-                        </div>
-                      )}
-                      <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                      <span class="section-label" style="color: var(--muted);">Coming soon</span>
+                      <h4 class="card-title" style="color: var(--muted);">{entry.data.title}</h4>
+                      <p class="text-base" style="color: var(--muted);">{entry.data.summary}</p>
                     </div>
-                  </a>
+                  </div>
                 );
               }
-
-              const href = p.externalHref ?? '#';
-              const isExternal = !!p.externalHref && p.externalHref.startsWith('http');
+              const isExternal = !!entry.data.externalUrl;
+              const href = entry.data.externalUrl ?? `/development/${entry.slug}`;
               return (
                 <a
                   href={href}
@@ -201,9 +166,17 @@ function projectEntry(slug: string | null) {
                 >
                   <span class="row-num" aria-hidden="true">{num}</span>
                   <div class="flex flex-col gap-3 min-w-0">
-                    <h4 class="card-title">{p.title}</h4>
-                    <p class="text-base" style="color: var(--body);">{p.summary}</p>
-                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                    {entry.data.status === 'draft' && (
+                      <span class="section-label" style="color: var(--accent-dk);">In progress</span>
+                    )}
+                    <h4 class="card-title">{entry.data.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{entry.data.summary}</p>
+                    {entry.data.tags && (
+                      <div class="flex flex-wrap mt-1">
+                        {entry.data.tags.map(tag => <span class="chip">{tag}</span>)}
+                      </div>
+                    )}
+                    <span class="text-sm mt-1" style="color: var(--accent-dk);">{isExternal ? 'View on GitHub ↗' : 'View project →'}</span>
                   </div>
                 </a>
               );
@@ -243,5 +216,8 @@ function projectEntry(slug: string | null) {
   }
   [data-view-panel][hidden] {
     display: none;
+  }
+  [data-stub="true"] {
+    opacity: 0.65;
   }
 </style>
