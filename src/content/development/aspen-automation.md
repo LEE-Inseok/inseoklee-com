@@ -1,7 +1,7 @@
 ---
 title: Aspen Automation Framework
 type: framework
-summary: Python automation pipeline for Aspen Plus — DOE generation, parallel simulation execution, surrogate model training, and optimization. Enabled a 1,575-case study completed in hours instead of weeks.
+summary: Python pipeline turning Aspen Plus into an automated engine — DOE, parallel simulation, surrogate training, optimization. 1,575 cases in hours instead of weeks.
 date: "2024"
 tags:
   - Python
@@ -12,36 +12,17 @@ tags:
   - Bayesian Optimization
 ---
 
-## Problem
+## What it is
 
-Aspen Plus is designed for interactive use. Running thousands of simulations for DOE-based dataset generation manually requires opening the simulation file, setting each input, running, recording results — for every case. At ~2–5 minutes per run and 1,000+ cases required for surrogate model training, manual operation is not feasible.
+A Python pipeline that turns Aspen Plus from an interactive tool into an automated engine — DOE generation, parallel simulation, surrogate training, and optimization, end to end.
 
-## Solution
+## Highlights
 
-Full pipeline automation from simulation to optimization:
-
-| Stage | Module | Description |
-|-------|--------|-------------|
-| Simulation | `aspen_simulation_engine` | Python COM interface to Aspen Plus |
-| DOE | `model_doe_generator` (GUI) | Grid / LHS design of experiments |
-| Data collection | `simulation_worker` | Parallel simulation execution |
-| Preprocessing | `preprocessing_engine` | Outlier removal, normalization |
-| Surrogate training | `SurrogateTrainingPipeline` | RF, GB, NN, GP model comparison |
-| Optimization | `BayesianOptimizer`, `MultiObjectiveOptimizer` | Bayesian + NSGA-II |
-
-## Impact
-
-- **1,575 simulations** completed in hours (vs. weeks manually)
-- Eliminated human transcription errors in parameter setting and result recording
-- Reusable pipeline applicable to any Aspen Plus model with minimal reconfiguration
-- Powers the CCPP-LOHC optimization study end-to-end
-
-## Architecture Highlights
-
-- Document-level Reinit pattern eliminates convergence propagation contamination across runs
-- Modular separation: DOE / simulation / preprocessing / training / optimization
-- Configuration-driven scenarios — new study = new YAML config, no code change
-- Failure isolation: one simulation crash does not abort the run; failed cases are flagged and retried
+- **1,575 simulations completed in hours** instead of weeks of manual clicking
+- COM-driven engine with failure isolation — one crashed case never aborts the run
+- Surrogate comparison (RF · GB · NN · GP) feeding Bayesian and NSGA-II optimizers
+- Configuration-driven: a new study is a new YAML file, not new code
+- Powers the [CCPP-LOHC Optimization](/research/ccpp-lohc) study end-to-end
 
 ## Repository
 

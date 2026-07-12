@@ -7,7 +7,6 @@ date: "2026-07"
 tags: [ALD, Catalyst, Thin Film]
 ---
 
-## Overview
+## What it is
 
-Catalyst synthesis via atomic layer deposition (ALD) — leveraging self-limiting surface reactions
-to place active sites with atomic-scale precision. Ongoing work; details to follow.
+Catalyst synthesis via atomic layer deposition (ALD) — self-limiting surface reactions place active sites with atomic-scale precision. Ongoing work; details to follow.

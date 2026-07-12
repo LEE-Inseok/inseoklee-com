@@ -1,7 +1,7 @@
 ---
 title: SBH Thermal Reactor Framework
 type: framework
-summary: ODE-based thermal simulation framework for reactor configurations — separates model definition, scenario specification, and execution. Powers the 5-scenario heat recovery comparison study.
+summary: ODE-based thermal simulation framework — one model definition, five reactor scenarios, fully reproducible runs.
 date: "2024"
 tags:
   - Python
@@ -10,32 +10,16 @@ tags:
   - Reactor Modeling
 ---
 
-## Problem
+## What it is
 
-The thermal simulation study required running the same energy balance equations across 5 reactor configurations × multiple parameter variations. Hardcoding each scenario separately leads to duplicated equation logic, manual parameter management, and difficulty adding new scenarios.
+An ODE-based thermal simulation framework that separates model definition, scenario configuration, and execution — one set of energy-balance equations runs every reactor configuration.
 
-## Solution
+## Highlights
 
-Three-layer separation:
-
-| Stage | Description |
-|-------|-------------|
-| **Model definition** | Energy balance ODEs for reactor + heat recovery structures |
-| **Scenario configuration** | Parameter sets for each system configuration (baseline, wrap coil, internal coil, embedded purification, hybrid) |
-| **Simulation execution** | ODE integration across all scenarios using `scipy.integrate.solve_ivp` |
-| **Post-processing** | Temperature profile comparison, heat recovery quantification, scenario ranking |
-
-## Before / After
-
-**Before**: Individual scripts per scenario, copy-pasted ODE logic, manual result collection.
-
-**After**: Single model definition reused across all scenarios. New scenario = add one parameter dictionary. Results automatically collected and compared.
-
-## Impact
-
-- 5 scenarios compared systematically with identical model equations
-- Parameter sensitivity analysis enabled without code modification
-- Fully reproducible — any scenario can be re-run with exact parameters logged
+- 5 heat-recovery scenarios compared with a single source of model equations
+- Adding a scenario = adding one parameter set — no copied code
+- Fully reproducible: every run logs its exact parameters
+- Powers the [SBH Thermal Simulation](/research/sbh-thermal) study
 
 ## Repository
 

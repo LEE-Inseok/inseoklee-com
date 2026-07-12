@@ -3,16 +3,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectDetail from '../../components/ProjectDetail.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-// Every research entry gets a detail page automatically, except coming-soon
-// stubs — those render only as unlinked cards on the index.
+// Every research entry gets a detail page automatically — coming-soon
+// entries included, so every index card has a working link.
 export async function getStaticPaths() {
   const entries = await getCollection('research');
-  return entries
-    .filter((entry) => entry.data.status !== 'coming-soon')
-    .map((entry) => ({
-      params: { slug: entry.slug },
-      props:  { entry },
-    }));
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props:  { entry },
+  }));
 }
 
 type Props = { entry: CollectionEntry<'research'> };

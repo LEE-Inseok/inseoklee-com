@@ -7,7 +7,6 @@ date: "2026-07"
 tags: [ALD, LCA, Sustainability]
 ---
 
-## Overview
+## What it is
 
-Life-cycle assessment of ALD processes — building the inventory model for precursors, carrier gases,
-and energy use, toward a defensible per-layer environmental footprint. Ongoing work; details to follow.
+Life-cycle assessment of ALD processes — an inventory model for precursors, carrier gases, and energy use, toward a defensible per-layer environmental footprint. Ongoing work; details to follow.

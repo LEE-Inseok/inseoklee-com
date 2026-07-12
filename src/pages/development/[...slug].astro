@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectDetail from '../../components/ProjectDetail.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-// Every project gets a detail page automatically, except coming-soon stubs
-// and entries with an externalUrl (their cards link out instead).
+// Every project gets a detail page automatically — coming-soon entries
+// included. Only entries with an externalUrl skip it (their cards link out).
 export async function getStaticPaths() {
   const entries = await getCollection('development');
   return entries
-    .filter((entry) => entry.data.status !== 'coming-soon' && !entry.data.externalUrl)
+    .filter((entry) => !entry.data.externalUrl)
     .map((entry) => ({
       params: { slug: entry.slug },
       props:  { entry },
