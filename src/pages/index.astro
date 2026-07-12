@@ -8,9 +8,10 @@ const certs = await getCollection('recognition-certifications');
 const pubs = await getCollection('publications');
 const devs = await getCollection('development');
 
+type HelixItem = { t: string; href: string };
 type HelixCard =
   | { kind: 'photo'; img: string; alt: string; href: string }
-  | { kind: 'text'; tag: string; label: string; href: string; items: string[] }
+  | { kind: 'text'; tag: string; label: string; href: string; items: HelixItem[] }
   | { kind: 'head'; label: string; href: string; color: string; count: number };
 
 // ── Triple helix: each strand tells ONE story ────────────────────
@@ -27,9 +28,10 @@ const activities = await getCollection('recognition-activities');
 // Small "N items" kicker — kept as data-tag for the descent detail panel.
 const n = (arr: unknown[]) => `${arr.length} item${arr.length === 1 ? '' : 's'}`;
 
-// ── Sub-content TITLES listed inside each category card ──────────
-// Pulled from the full collections (coming-soon included) and sorted the same
-// way the category pages sort them, so card and page always agree.
+// ── Sub-content links shown in the descent's right-side detail panel ──
+// {title, href} pairs pulled from the full collections (coming-soon included),
+// sorted the same way the category pages sort them. Items with their own
+// detail page link straight to it; list-only categories link to their panel.
 type Sortable = { data: { status?: string; date?: string } };
 const statusOrder: Record<string, number> = { 'published': 0, 'draft': 1, 'coming-soon': 2 };
 const byStatusDate = (a: Sortable, b: Sortable) =>
@@ -37,46 +39,61 @@ const byStatusDate = (a: Sortable, b: Sortable) =>
   (a.data.date ?? '').localeCompare(b.data.date ?? '');
 
 const researchEvery = await getCollection('research');
-const secTitles = (section: string) =>
-  researchEvery.filter((r) => r.data.section === section).sort(byStatusDate).map((r) => r.data.title);
-const sysTitles = secTitles('system-engineering');
-const simTitles = secTitles('simulation');
-const aldTitles = secTitles('ald');
+const secItems = (section: string): HelixItem[] =>
+  researchEvery
+    .filter((r) => r.data.section === section)
+    .sort(byStatusDate)
+    .map((r) => ({ t: r.data.title, href: `/research/${r.slug}` }));
+const sysItems = secItems('system-engineering');
+const simItems = secItems('simulation');
+const aldItems = secItems('ald');
 
 const pubOrder: Record<string, number> = { 'published': 0, 'under-review': 1, 'submitted': 2, 'draft': 3, 'in-preparation': 4 };
-const pubTitles = [...pubs].sort((a, b) => (pubOrder[a.data.status] ?? 9) - (pubOrder[b.data.status] ?? 9)).map((p) => p.data.title);
-const devTitles = [...devs].sort(byStatusDate).map((d) => d.data.title);
-const certTitles = [...certs].sort((a, b) => b.data.date.localeCompare(a.data.date)).map((c) => c.data.title);
-const awardTitles = [...awards].sort((a, b) => b.data.year - a.data.year).map((a2) => a2.data.title);
-// Presentations list the venue (conference) — paper titles are far too long for a card line.
-const presTitles = [...presentations].sort((a, b) => b.data.date.localeCompare(a.data.date)).map((p) => p.data.conference);
-const activityTitles = activities.map((a2) => a2.data.title);
+const pubItems: HelixItem[] = [...pubs]
+  .sort((a, b) => (pubOrder[a.data.status] ?? 9) - (pubOrder[b.data.status] ?? 9))
+  .map((p) => ({ t: p.data.title, href: '/research#publications' }));
+const devItems: HelixItem[] = [...devs]
+  .sort(byStatusDate)
+  .map((d) => ({ t: d.data.title, href: d.data.externalUrl ?? `/development/${d.slug}` }));
+// Certifications grouped by issuer — two lines, not seven.
+const certItems: HelixItem[] = [
+  { t: 'Anthropic Academy', href: '/recognition#certifications' },
+  { t: 'Korea IT Academy',  href: '/recognition#certifications' },
+];
+const awardItems: HelixItem[] = [...awards]
+  .sort((a, b) => b.data.year - a.data.year)
+  .map((a2) => ({ t: a2.data.title, href: '/recognition#awards' }));
+// Presentations list the venue (conference) — paper titles are far too long for one line.
+const presItems: HelixItem[] = [...presentations]
+  .sort((a, b) => b.data.date.localeCompare(a.data.date))
+  .map((p) => ({ t: p.data.conference, href: '/recognition#presentations' }));
+const activityItems: HelixItem[] = activities.map((a2) => ({ t: a2.data.title, href: '/recognition#activities' }));
 
 // ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
 //    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
   { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research' },
-  { kind: 'text', tag: n(sysTitles), label: 'System Engineering',        href: '/research#system-engineering', items: sysTitles },
-  { kind: 'text', tag: n(simTitles), label: 'Simulation & Optimization', href: '/research#simulation',         items: simTitles },
-  { kind: 'text', tag: n(aldTitles), label: 'ALD',                       href: '/research#ald',                items: aldTitles },
-  { kind: 'text', tag: n(pubTitles), label: 'Publications',              href: '/research#publications',       items: pubTitles },
+  { kind: 'text', tag: n(sysItems), label: 'System Engineering',        href: '/research#system-engineering', items: sysItems },
+  { kind: 'text', tag: n(simItems), label: 'Simulation & Optimization', href: '/research#simulation',         items: simItems },
+  { kind: 'text', tag: n(aldItems), label: 'ALD',                       href: '/research#ald',                items: aldItems },
+  { kind: 'text', tag: n(pubItems), label: 'Publications',              href: '/research#publications',       items: pubItems },
 ];
 
 // AI Engineering strand = its two sub-categories.
 const strandCode: HelixCard[] = [
   { kind: 'photo', img: '/images/home/03-developer.png', alt: 'AI Engineering', href: '/development' },
-  { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent',    items: ['What I Built', 'How I run'] },
-  { kind: 'text', tag: n(devs),      label: 'Projects',             href: '/development#projects', items: devTitles },
+  { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent',    items: [{ t: 'What I Built', href: '/development#agent' }, { t: 'How I run', href: '/development#agent' }] },
+  { kind: 'text', tag: n(devItems),  label: 'Projects',             href: '/development#projects', items: devItems },
 ];
 
 // Achievements strand = its categories (Publications is cross-listed here too).
 const strandRecognition: HelixCard[] = [
   { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Achievements', href: '/recognition' },
-  { kind: 'text', tag: n(pubs),          label: 'Publications',   href: '/research#publications',      items: pubTitles },
-  { kind: 'text', tag: n(awards),        label: 'Awards',         href: '/recognition#awards',         items: awardTitles },
-  { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications', items: certTitles },
-  { kind: 'text', tag: n(presentations), label: 'Presentations',  href: '/recognition#presentations',  items: presTitles },
-  { kind: 'text', tag: n(activities),    label: 'Activities',     href: '/recognition#activities',     items: activityTitles },
+  { kind: 'text', tag: n(pubItems),      label: 'Publications',   href: '/research#publications',      items: pubItems },
+  { kind: 'text', tag: n(awardItems),    label: 'Awards',         href: '/recognition#awards',         items: awardItems },
+  { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications', items: certItems },
+  { kind: 'text', tag: n(presItems),     label: 'Presentations',  href: '/recognition#presentations',  items: presItems },
+  { kind: 'text', tag: n(activityItems), label: 'Activities',     href: '/recognition#activities',     items: activityItems },
 ];
 
 // Level 0 of each strand is a category header card; content follows below.
@@ -165,7 +182,7 @@ const runwayVh = 480;
               data-strand={strand}
               data-tag={card.tag}
               data-title={card.label}
-              data-items={card.items.join('|')}
+              data-items={JSON.stringify(card.items)}
               class="helix-card absolute flex flex-col justify-between p-5"
               style="width: 288px; height: 168px; left: -144px; top: -84px; background: var(--surface); border: 1px solid var(--border);"
             >
@@ -221,10 +238,12 @@ const runwayVh = 480;
       </div>
 
       <!-- Right-side detail for the focused card (paired with the left card).
-           Below the category title: the titles of its sub-contents. -->
+           The big title links to the category; each sub-content line links
+           straight to its project. Pointer events are toggled by JS so the
+           links are only clickable while the panel is visible. -->
       <div id="helix-detail" class="absolute z-10 pointer-events-none">
         <span id="helix-detail-tag" class="section-label"></span>
-        <h2 id="helix-detail-title"></h2>
+        <h2 id="helix-detail-title"><a id="helix-detail-title-link" href="#"></a></h2>
         <ul id="helix-detail-items"></ul>
       </div>
     </div>
@@ -312,23 +331,52 @@ const runwayVh = 480;
     margin-top: 0.5rem;
   }
 
-  /* Sub-content titles under the detail title — one truncated line each;
-     long lists show the first 4 plus a "+N more" line (filled by JS). */
+  /* The big detail title is a link to its category — inverts on hover like
+     the content cards do. */
+  #helix-detail-title a {
+    color: inherit;
+    text-decoration: none;
+    padding: 0 0.12em;
+    margin: 0 -0.12em;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+  #helix-detail-title a:hover {
+    background: #F5F5F5;
+    color: #0A0A0A;
+  }
+
+  /* Sub-content links under the detail title — dash-labelled lines, one per
+     project; hovering inverts the line and clicking jumps straight to it.
+     Long lists show the first 4 plus a "+N more" line (filled by JS). */
   #helix-detail-items {
     list-style: none;
     margin: 1rem 0 0;
     padding: 0;
   }
-  #helix-detail-items li {
+  #helix-detail-items a {
+    display: block;
+    max-width: 100%;
     font-size: 0.9rem;
-    line-height: 1.8;
+    line-height: 1.9;
     color: var(--muted);
+    text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 0 0.5rem;
+    margin: 0 -0.5rem;
+    transition: background-color 120ms ease, color 120ms ease;
   }
-  #helix-detail-items li.helix-detail__more {
-    opacity: 0.7;
+  #helix-detail-items a::before {
+    content: '–  ';
+    white-space: pre;
+  }
+  #helix-detail-items a:hover {
+    background: #F5F5F5;
+    color: #0A0A0A;
+  }
+  #helix-detail-items li.helix-detail__more a {
+    opacity: 0.75;
   }
 
   /* Carousel arrows — filled arrowhead darts (notched triangles) either side
@@ -415,7 +463,7 @@ const runwayVh = 480;
     .helix-card span.leading-snug { font-size: 1.5rem !important; }
     .helix-card .section-label { font-size: 0.95rem; }
     #helix-detail-items { margin-top: 0.5rem; }
-    #helix-detail-items li { font-size: 0.8rem; line-height: 1.55; }
+    #helix-detail-items a { font-size: 0.8rem; line-height: 1.7; }
   }
 
 </style>
@@ -443,7 +491,7 @@ const runwayVh = 480;
   const activeLabel = document.getElementById('helix-active-label');
   const detailBox = document.getElementById('helix-detail');
   const detailTag = document.getElementById('helix-detail-tag');
-  const detailTitle = document.getElementById('helix-detail-title');
+  const detailTitleLink = document.getElementById('helix-detail-title-link') as HTMLAnchorElement | null;
   const detailItems = document.getElementById('helix-detail-items');
   const arrowPrev = document.getElementById('helix-arrow-prev');
   const arrowNext = document.getElementById('helix-arrow-next');
@@ -636,32 +684,42 @@ const runwayVh = 480;
           detailTag.textContent = focus.el.dataset.tag || '';
           detailTag.style.color = rgbStr(STRAND_RGB[activeStrand]);
         }
-        if (detailTitle) detailTitle.textContent = focus.el.dataset.title || '';
-        // Sub-content titles under the category title — rebuilt only when the
+        const catHref = focus.el.getAttribute('href') || '#';
+        if (detailTitleLink) {
+          detailTitleLink.textContent = focus.el.dataset.title || '';
+          detailTitleLink.href = catHref;
+        }
+        // Sub-content links under the category title — rebuilt only when the
         // focused card changes (first 4 + "+N more" beyond five).
         if (detailItems) {
           const key = `${focus.el.dataset.strand}-${focus.el.dataset.level}`;
           if (detailItems.dataset.key !== key) {
             detailItems.dataset.key = key;
             detailItems.textContent = '';
-            const titles = (focus.el.dataset.items || '').split('|').filter(Boolean);
-            const shown = titles.length > 5 ? titles.slice(0, 4) : titles;
-            for (const t of shown) {
+            let entries: { t: string; href: string }[] = [];
+            try { entries = JSON.parse(focus.el.dataset.items || '[]'); } catch {}
+            const shown = entries.length > 5 ? entries.slice(0, 4) : entries;
+            const addLine = (text: string, href: string, cls?: string) => {
               const li = document.createElement('li');
-              li.textContent = t;
+              if (cls) li.className = cls;
+              const a = document.createElement('a');
+              a.href = href;
+              a.textContent = text;
+              if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+              li.appendChild(a);
               detailItems.appendChild(li);
-            }
-            if (titles.length > 5) {
-              const li = document.createElement('li');
-              li.className = 'helix-detail__more';
-              li.textContent = `+${titles.length - 4} more`;
-              detailItems.appendChild(li);
-            }
+            };
+            for (const it of shown) addLine(it.t, it.href);
+            if (entries.length > 5) addLine(`+${entries.length - 4} more`, catHref, 'helix-detail__more');
           }
         }
-        detailBox.style.opacity = String(Math.min(1, intro * settle));
+        const op = Math.min(1, intro * settle);
+        detailBox.style.opacity = String(op);
+        // Links are real now — clickable only while the panel is visible.
+        detailBox.style.pointerEvents = op > 0.25 ? 'auto' : 'none';
       } else {
         detailBox.style.opacity = '0';
+        detailBox.style.pointerEvents = 'none';
       }
     }
 
