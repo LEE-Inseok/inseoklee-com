@@ -195,6 +195,17 @@
     color: var(--muted);
     margin: 0 0.4rem 0 0;
   }
+  /* Mobile: chip rows can wrap — a ::before separator would orphan a leading
+     "·" at the start of the wrapped line, so trail it after the previous chip
+     instead. Single-line spacing is identical; desktop never wraps these rows. */
+  @media (max-width: 639.98px) {
+    .chip + .chip::before { content: none; }
+    .chip:not(:last-child)::after {
+      content: "·";
+      color: var(--muted);
+      margin: 0 0 0 0.4rem;
+    }
+  }
 
   /* CTA link */
   .cta-link {
@@ -322,6 +333,17 @@
   background: transparent;
   padding: 0;
 }
+/* Mobile guards for author-supplied markdown: wide tables scroll inside their
+   own box instead of stretching the page, and long unbreakable tokens
+   (URLs, DOIs) wrap instead of forcing horizontal scroll. Desktop untouched. */
+@media (max-width: 767px) {
+  .article { overflow-wrap: anywhere; }
+  .article table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
 .article blockquote {
   border-left: 2px solid var(--accent);
   padding-left: 1rem;
@@ -372,6 +394,14 @@
   font-size: 0.875rem;
   padding: 0.4rem 0.75rem 0.4rem 1.5rem;
   text-decoration: none;
+}
+/* Stacked (mobile/tablet) layout: sub-items are adjacent 34px rows — bump the
+   vertical padding to ~42px touch targets. Desktop sidebar (lg+) unchanged. */
+@media (max-width: 1023px) {
+  .category-nav__item {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
 }
 
 /* Hover (aquaria — soft cyan tint) */

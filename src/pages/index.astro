@@ -105,7 +105,7 @@ const runwayVh = 480;
     <div
       id="helix-stage"
       class="sticky top-0 h-screen overflow-hidden flex items-center justify-center"
-      style="perspective: 1200px; padding-top: var(--nav-h); cursor: grab; touch-action: pan-y;"
+      style="perspective: 1200px; padding-top: var(--nav-h); cursor: grab; touch-action: pan-y pinch-zoom;"
     >
       <!-- Strand backbones — SVG lines connecting consecutive cards per strand -->
       <svg id="helix-links" class="absolute inset-0 w-full h-full" aria-hidden="true"></svg>
@@ -350,17 +350,28 @@ const runwayVh = 480;
      smaller title so it reads on a narrow screen. */
   @media (max-width: 700px) {
     .helix-head__count { font-size: 0.6rem; margin-bottom: 0.4rem; }
-    /* Portrait: the card is centered, so the description sits BELOW it. */
+    /* Portrait: the card is centered, so the description sits BELOW it.
+       bottom compensates for mobile browser chrome: (100vh - 100dvh) equals
+       the visible chrome height, 0 on desktop and when the bar is collapsed. */
     #helix-detail {
       left: 50%;
       right: auto;
       top: auto;
-      bottom: 11%;
+      bottom: calc(11% + (100vh - 100dvh));
       transform: translateX(-50%);
       max-width: 86%;
       text-align: center;
     }
     #helix-detail-title { font-size: clamp(1.05rem, 4vw, 1.5rem); margin-top: 0.35rem; }
+    /* Keep the strand indicator above mobile browser chrome too. */
+    #helix-active {
+      bottom: calc(2rem + (100vh - 100dvh));
+    }
+    /* Cards render at ~0.5 scale on phones — bump in-card type so the focused
+       card stays legible (roughly cancels the shrink). !important beats the
+       inline font-size on the label span. */
+    .helix-card span.leading-snug { font-size: 1.5rem !important; }
+    .helix-card .section-label { font-size: 0.95rem; }
   }
 
 </style>
@@ -380,6 +391,7 @@ const runwayVh = 480;
     : [];
   const levels = ring ? Number(ring.dataset.levels) || 1 : 1;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = window.matchMedia('(pointer: coarse)').matches; // touch device
 
   const stage = document.getElementById('helix-stage');
   const activeBox = document.getElementById('helix-active');
@@ -835,7 +847,6 @@ const runwayVh = 480;
   }
 
   if (stage && !reduced) {
-    const coarse = window.matchMedia('(pointer: coarse)').matches; // touch device
     // Tell touch users to tap (there's no cursor to "drag").
     if (coarse && hint) {
       const hintInner = hint.querySelector('.hero-line__inner');
@@ -919,7 +930,11 @@ const runwayVh = 480;
       const dx = e.clientX - lastX;
       lastX = e.clientX;
       moved += Math.abs(dx);
-      targetSpin += dx * 0.0028; // drag sensitivity (lower = calmer)
+      // Drag sensitivity: fixed on desktop (lower = calmer). On touch it is
+      // width-relative — a ~55%-width swipe rotates one keyword step; the
+      // fixed value would need a physically impossible ~750px swipe on phones.
+      const sens = coarse ? STRAND_OFFSET / (window.innerWidth * 0.55) : 0.0028;
+      targetSpin += dx * sens;
       startSmoothing();
     });
 
@@ -951,9 +966,13 @@ const runwayVh = 480;
       if (spiralProg(lastP) > 0.0005) return;      // only when fully centered (not shifted)
       const head = (e.target as HTMLElement).closest('.helix-head') as HTMLElement | null;
       if (!head) return;                           // taps elsewhere behave normally
+      const s = Number(head.dataset.strand);
+      // Tap-to-select, tap-again-to-open: a tap on the ALREADY-centered
+      // keyword falls through to its link instead of a no-op re-select.
+      if (s === activeStrand && Math.abs(normAngle(headerAngle(s, spin, lastP))) < 0.05) return;
       e.preventDefault();
       e.stopPropagation();
-      selectStrand(Number(head.dataset.strand));
+      selectStrand(s);
     }, { capture: true });
 
     // Arrow buttons rotate one keyword step — same centered-only guard as
@@ -986,7 +1005,17 @@ const runwayVh = 480;
       // this — the CSS media query shows the lines immediately.)
       requestAnimationFrame(() => title?.classList.add('is-in'));
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', () => { measure(); onScroll(); }, { passive: true });
+      // Mobile browser chrome (URL bar) show/hide fires HEIGHT-only resizes;
+      // re-measuring then makes every card lurch mid-scroll. On touch devices
+      // only re-measure when the width changes (rotation, split-screen).
+      // Desktop resize behavior is unchanged.
+      let lastResizeW = window.innerWidth;
+      window.addEventListener('resize', () => {
+        if (coarse && window.innerWidth === lastResizeW) return;
+        lastResizeW = window.innerWidth;
+        measure();
+        onScroll();
+      }, { passive: true });
     }
   }
 </script>

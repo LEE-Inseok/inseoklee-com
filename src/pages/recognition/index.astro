@@ -114,7 +114,7 @@ const navGroups = [
                 <div class="flex flex-col gap-2 min-w-0 flex-1">
                   <div class="flex items-center justify-between gap-3 flex-wrap">
                     <span class="section-label">{p.data.conference}</span>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                       {p.data.type && <span class="presentation-badge presentation-badge--type">{p.data.type}</span>}
                       {p.data.status === 'scheduled' && <span class="presentation-badge presentation-badge--scheduled">Scheduled</span>}
                       <span class="section-label">{p.data.date}</span>
@@ -261,6 +261,11 @@ const navGroups = [
     height: 100vh;
     max-width: 100vw;
     max-height: 100vh;
+    /* dvh tracks mobile browser chrome (address/tool bars) so the counter and
+       nav buttons stay on-screen; identical to vh on desktop. vh lines above
+       remain as the older-browser fallback. */
+    height: 100dvh;
+    max-height: 100dvh;
     padding: 0;
     margin: 0;
     border: none;
@@ -279,6 +284,7 @@ const navGroups = [
   .photo-lightbox__img {
     max-width: 92vw;
     max-height: 88vh;
+    max-height: 88dvh; /* mobile chrome-safe; == 88vh on desktop */
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;

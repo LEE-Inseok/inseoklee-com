@@ -141,14 +141,14 @@ function isActive(href: string): boolean {
     class="hidden md:hidden absolute top-16 left-0 right-0 border-t"
     style="background-color: var(--bg); border-color: var(--border);"
   >
-    <ul class="container-site py-6 flex flex-col gap-4">
+    <ul class="container-site py-6 flex flex-col gap-2">
       {navLinks.map(({ label, href }) => {
         const active = isActive(href);
         return (
           <li>
             <a
               href={href}
-              class="block text-sm font-medium py-1"
+              class="block text-sm font-medium py-2"
               style={active ? 'color: var(--accent);' : 'color: var(--body);'}
             >
               {label}
@@ -170,6 +170,27 @@ function isActive(href: string): boolean {
 </nav>
 
 <style>
+  /* Mobile-only chrome fixes — both elements are md:hidden, so desktop is
+     untouched by construction. */
+  /* Hamburger: the visual is ~24x11px; extend the HIT AREA (not the visual)
+     to ~56x43px so the only mobile nav entry point is comfortably tappable. */
+  #mobile-menu-btn {
+    position: relative;
+  }
+  #mobile-menu-btn::after {
+    content: '';
+    position: absolute;
+    inset: -16px;
+  }
+  /* Menu panel lives inside the fixed nav — cap it to the visible viewport
+     and let it scroll so Contact stays reachable on short/landscape screens.
+     (vh fallback first; dvh tracks mobile browser chrome.) */
+  #mobile-menu {
+    max-height: calc(100vh - 4rem);
+    max-height: calc(100dvh - 4rem);
+    overflow-y: auto;
+  }
+
   /* Top nav link hover (works whether item has sub-menu or not) */
   .top-nav-link {
     position: relative;

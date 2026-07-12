@@ -59,3 +59,14 @@ const buildHash = (import.meta.env.CF_PAGES_COMMIT_SHA ?? 'dev').slice(0, 7);
     </div>
   </div>
 </footer>
+
+<style>
+  /* Mobile only: grow the Email/LinkedIn/GitHub hit areas to ~40px. Padding is
+     cancelled by an equal negative margin, so nothing shifts visually. */
+  @media (max-width: 767px) {
+    footer .flex.items-center.gap-5 a {
+      padding: 12px 6px;
+      margin: -12px -6px;
+    }
+  }
+</style>
