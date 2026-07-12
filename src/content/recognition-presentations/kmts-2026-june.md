@@ -3,8 +3,8 @@ conference: 한국 군사기술학회 (Korea Military Technology Society)
 title: Selective CO-to-Hydrocarbon Conversion in Formic Acid-Promoted Sodium Borohydride Hydrolysis for High-Purity Hydrogen Production
 date: "2026-06"
 type: oral
-status: scheduled
-summary: Oral presentation at the Korea Military Technology Society 2026 meeting. Reframes the SBH-CO selectivity work for defense logistics — on-demand high-purity hydrogen generation from chemical hydride hydrolysis suited to field-portable and remote power systems.
+status: presented
+summary: Oral presentation delivered at the Korea Military Technology Society 2026 meeting. Reframes the SBH-CO selectivity work for defense logistics — on-demand high-purity hydrogen generation from chemical hydride hydrolysis suited to field-portable and remote power systems.
 ---
 
 ## Topic

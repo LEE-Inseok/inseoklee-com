@@ -1,6 +1,6 @@
 ---
 title: CO Purification — Manuscript
-status: submitted
+status: under-review
 target: International Journal of Hydrogen Energy (TBD)
 summary: Manuscript on CO purification under submission. Catalyst performance and CO removal under varying SBH operating conditions for PEM fuel cell integration.
 date: "2026"

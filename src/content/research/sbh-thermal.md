@@ -1,7 +1,7 @@
 ---
 title: SBH Thermal Simulation
 section: simulation
-status: published
+status: draft
 summary: Physics-based thermal study comparing 5 heat-recovery configurations for the SBH hydrogen system — from simple retrofit to fully integrated design.
 date: "2024"
 tags:
