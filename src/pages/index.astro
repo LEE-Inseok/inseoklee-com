@@ -10,7 +10,7 @@ const devs = await getCollection('development');
 
 type HelixCard =
   | { kind: 'photo'; img: string; alt: string; href: string }
-  | { kind: 'text'; tag: string; label: string; href: string }
+  | { kind: 'text'; tag: string; label: string; href: string; items: string[] }
   | { kind: 'head'; label: string; href: string; color: string; count: number };
 
 // ── Triple helix: each strand tells ONE story ────────────────────
@@ -29,34 +29,56 @@ const awards = await getCollection('recognition-awards');
 const presentations = await getCollection('recognition-presentations');
 const activities = await getCollection('recognition-activities');
 
-// Small "N items" kicker shown above each category card.
+// Small "N items" kicker — kept as data-tag for the descent detail panel.
 const n = (arr: unknown[]) => `${arr.length} item${arr.length === 1 ? '' : 's'}`;
+
+// ── Sub-content TITLES listed inside each category card ──────────
+// Pulled from the full collections (coming-soon included) and sorted the same
+// way the category pages sort them, so card and page always agree.
+type Sortable = { data: { status?: string; date?: string } };
+const statusOrder: Record<string, number> = { 'published': 0, 'draft': 1, 'coming-soon': 2 };
+const byStatusDate = (a: Sortable, b: Sortable) =>
+  (statusOrder[a.data.status ?? ''] ?? 9) - (statusOrder[b.data.status ?? ''] ?? 9) ||
+  (a.data.date ?? '').localeCompare(b.data.date ?? '');
+
+const researchEvery = await getCollection('research');
+const secTitles = (section: string) =>
+  researchEvery.filter((r) => r.data.section === section).sort(byStatusDate).map((r) => r.data.title);
+
+const pubOrder: Record<string, number> = { 'published': 0, 'under-review': 1, 'submitted': 2, 'draft': 3, 'in-preparation': 4 };
+const pubTitles = [...pubs].sort((a, b) => (pubOrder[a.data.status] ?? 9) - (pubOrder[b.data.status] ?? 9)).map((p) => p.data.title);
+const devTitles = [...devs].sort(byStatusDate).map((d) => d.data.title);
+const certTitles = [...certs].sort((a, b) => b.data.date.localeCompare(a.data.date)).map((c) => c.data.title);
+const awardTitles = [...awards].sort((a, b) => b.data.year - a.data.year).map((a2) => a2.data.title);
+// Presentations list the venue (conference) — paper titles are far too long for a card line.
+const presTitles = [...presentations].sort((a, b) => b.data.date.localeCompare(a.data.date)).map((p) => p.data.conference);
+const activityTitles = activities.map((a2) => a2.data.title);
 
 // ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
 //    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
   { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research' },
-  { kind: 'text', tag: n(researchSysEng), label: 'System Engineering',        href: '/research#system-engineering' },
-  { kind: 'text', tag: n(researchSim),    label: 'Simulation & Optimization', href: '/research#simulation' },
-  { kind: 'text', tag: n(researchAld),    label: 'ALD',                       href: '/research#ald' },
-  { kind: 'text', tag: n(pubs),           label: 'Publications',              href: '/research#publications' },
+  { kind: 'text', tag: n(researchSysEng), label: 'System Engineering',        href: '/research#system-engineering', items: secTitles('system-engineering') },
+  { kind: 'text', tag: n(researchSim),    label: 'Simulation & Optimization', href: '/research#simulation',         items: secTitles('simulation') },
+  { kind: 'text', tag: n(researchAld),    label: 'ALD',                       href: '/research#ald',                items: secTitles('ald') },
+  { kind: 'text', tag: n(pubs),           label: 'Publications',              href: '/research#publications',       items: pubTitles },
 ];
 
 // AI Engineering strand = its two sub-categories.
 const strandCode: HelixCard[] = [
   { kind: 'photo', img: '/images/home/03-developer.png', alt: 'AI Engineering', href: '/development' },
-  { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent' },
-  { kind: 'text', tag: n(devs),      label: 'Projects',             href: '/development#projects' },
+  { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent',    items: ['What I Built', 'How I run'] },
+  { kind: 'text', tag: n(devs),      label: 'Projects',             href: '/development#projects', items: devTitles },
 ];
 
 // Achievements strand = its categories (Publications is cross-listed here too).
 const strandRecognition: HelixCard[] = [
   { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Achievements', href: '/recognition' },
-  { kind: 'text', tag: n(pubs),          label: 'Publications',   href: '/research#publications' },
-  { kind: 'text', tag: n(awards),        label: 'Awards',         href: '/recognition#awards' },
-  { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications' },
-  { kind: 'text', tag: n(presentations), label: 'Presentations',  href: '/recognition#presentations' },
-  { kind: 'text', tag: n(activities),    label: 'Activities',     href: '/recognition#activities' },
+  { kind: 'text', tag: n(pubs),          label: 'Publications',   href: '/research#publications',      items: pubTitles },
+  { kind: 'text', tag: n(awards),        label: 'Awards',         href: '/recognition#awards',         items: awardTitles },
+  { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications', items: certTitles },
+  { kind: 'text', tag: n(presentations), label: 'Presentations',  href: '/recognition#presentations',  items: presTitles },
+  { kind: 'text', tag: n(activities),    label: 'Activities',     href: '/recognition#activities',     items: activityTitles },
 ];
 
 // Level 0 of each strand is a category header card; content follows below.
@@ -145,11 +167,14 @@ const runwayVh = 480;
               data-strand={strand}
               data-tag={card.tag}
               data-title={card.label}
-              class="helix-card absolute flex flex-col justify-between p-5"
+              class="helix-card absolute flex flex-col p-5 overflow-hidden"
               style="width: 288px; height: 168px; left: -144px; top: -84px; background: var(--surface); border: 1px solid var(--border);"
             >
-              <span class="section-label">{card.tag}</span>
               <span class="leading-snug" style="color: var(--ink); font-weight: 600; font-size: 1.05rem;">{card.label}</span>
+              <ul class="helix-card__items">
+                {(card.items.length > 5 ? card.items.slice(0, 4) : card.items).map((t) => <li>{t}</li>)}
+                {card.items.length > 5 && <li class="helix-card__more">+{card.items.length - 4} more</li>}
+              </ul>
             </a>
           ) : (
             <div
@@ -289,6 +314,26 @@ const runwayVh = 480;
     margin-top: 0.5rem;
   }
 
+  /* Sub-content titles listed inside each category text card — one truncated
+     line per title; long lists show the first 4 plus a "+N more" line. */
+  .helix-card__items {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .helix-card__items li {
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .helix-card__more {
+    opacity: 0.7;
+  }
+
   /* Carousel arrows — filled arrowhead darts (notched triangles) either side
      of the keyword ring. Hidden until Act 2; JS drives opacity/interactivity. */
   .helix-arrow {
@@ -372,6 +417,7 @@ const runwayVh = 480;
        inline font-size on the label span. */
     .helix-card span.leading-snug { font-size: 1.5rem !important; }
     .helix-card .section-label { font-size: 0.95rem; }
+    .helix-card__items li { font-size: 0.95rem; }
   }
 
 </style>
