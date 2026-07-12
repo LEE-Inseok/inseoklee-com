@@ -38,12 +38,28 @@ const byStatusDate = (a: Sortable, b: Sortable) =>
   (statusOrder[a.data.status ?? ''] ?? 9) - (statusOrder[b.data.status ?? ''] ?? 9) ||
   (a.data.date ?? '').localeCompare(b.data.date ?? '');
 
+// Display-name overrides for the detail panel — long titles compressed to
+// keywords so no line ever ellipsizes. Panel display only; the real pages
+// keep the full titles. New long titles: add a pair here.
+const SHORT: Record<string, string> = {
+  'Integrated Energy System — Scale-up': 'System Scale-up',
+  'CO Purification — Manuscript': 'CO Purification',
+  'LOHC-CCPP Integrated Optimization — Manuscript Draft': 'LOHC-CCPP Optimization',
+  'SBH Thermal Simulation — Manuscript Draft': 'SBH Thermal Simulation',
+  'SBH Thermal Reactor Framework': 'SBH Reactor Framework',
+  'Korea University 3MT — Presentation Award': 'Korea University 3MT',
+  'Sunset Marathon 2026 — Half Course': 'Sunset Marathon 2026',
+  '한국 수소 및 신재생에너지 학회 (KHNES Spring Meeting)': 'KHNES 2026 Spring',
+  '한국 군사기술학회 (Korea Military Technology Society)': 'KMTS 2026',
+};
+const short = (t: string) => SHORT[t] ?? t;
+
 const researchEvery = await getCollection('research');
 const secItems = (section: string): HelixItem[] =>
   researchEvery
     .filter((r) => r.data.section === section)
     .sort(byStatusDate)
-    .map((r) => ({ t: r.data.title, href: `/research/${r.slug}` }));
+    .map((r) => ({ t: short(r.data.title), href: `/research/${r.slug}` }));
 const sysItems = secItems('system-engineering');
 const simItems = secItems('simulation');
 const aldItems = secItems('ald');
@@ -51,10 +67,10 @@ const aldItems = secItems('ald');
 const pubOrder: Record<string, number> = { 'published': 0, 'under-review': 1, 'submitted': 2, 'draft': 3, 'in-preparation': 4 };
 const pubItems: HelixItem[] = [...pubs]
   .sort((a, b) => (pubOrder[a.data.status] ?? 9) - (pubOrder[b.data.status] ?? 9))
-  .map((p) => ({ t: p.data.title, href: '/research#publications' }));
+  .map((p) => ({ t: short(p.data.title), href: '/research#publications' }));
 const devItems: HelixItem[] = [...devs]
   .sort(byStatusDate)
-  .map((d) => ({ t: d.data.title, href: d.data.externalUrl ?? `/development/${d.slug}` }));
+  .map((d) => ({ t: short(d.data.title), href: d.data.externalUrl ?? `/development/${d.slug}` }));
 // Certifications grouped by issuer — two lines, not seven.
 const certItems: HelixItem[] = [
   { t: 'Anthropic Academy', href: '/recognition#certifications' },
@@ -62,12 +78,12 @@ const certItems: HelixItem[] = [
 ];
 const awardItems: HelixItem[] = [...awards]
   .sort((a, b) => b.data.year - a.data.year)
-  .map((a2) => ({ t: a2.data.title, href: '/recognition#awards' }));
+  .map((a2) => ({ t: short(a2.data.title), href: '/recognition#awards' }));
 // Presentations list the venue (conference) — paper titles are far too long for one line.
 const presItems: HelixItem[] = [...presentations]
   .sort((a, b) => b.data.date.localeCompare(a.data.date))
-  .map((p) => ({ t: p.data.conference, href: '/recognition#presentations' }));
-const activityItems: HelixItem[] = activities.map((a2) => ({ t: a2.data.title, href: '/recognition#activities' }));
+  .map((p) => ({ t: short(p.data.conference), href: '/recognition#presentations' }));
+const activityItems: HelixItem[] = activities.map((a2) => ({ t: short(a2.data.title), href: '/recognition#activities' }));
 
 // ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
 //    clicking a card jumps to that category (the items themselves live there).
@@ -320,7 +336,9 @@ const runwayVh = 480;
     left: 57%;
     top: 50%;
     transform: translateY(-50%);
-    max-width: 37%;
+    /* Definite width — shrink-to-fit sized the box to the TITLE, clamping
+       longer item lines to the title's width and ellipsizing them. */
+    width: 37%;
     opacity: 0;
     /* NO opacity transition here — JS writes opacity every frame, and a CSS
        transition on top keeps restarting, which lags and smears the fade. */
@@ -463,7 +481,7 @@ const runwayVh = 480;
       top: auto;
       bottom: calc(11% + (100vh - 100dvh));
       transform: translateX(-50%);
-      max-width: 86%;
+      width: 86%;
       text-align: center;
     }
     #helix-detail-title { font-size: clamp(1.05rem, 4vw, 1.5rem); margin-top: 0.35rem; }
