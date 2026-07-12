@@ -2,12 +2,14 @@
 const currentPath = Astro.url.pathname;
 
 interface SubLink { label: string; href: string; }
-interface NavLink { label: string; href: string; sub?: SubLink[]; }
+// `sec` pins the item to ITS OWN section color (helix strand identity) —
+// hover/active highlights use it instead of the current page's accent.
+interface NavLink { label: string; href: string; sec?: 'research' | 'development' | 'recognition'; sub?: SubLink[]; }
 
 const navLinks: NavLink[] = [
   { label: 'About',    href: '/about' },
   {
-    label: 'Research', href: '/research',
+    label: 'Research', href: '/research', sec: 'research',
     sub: [
       { label: 'System Engineering', href: '/research#system-engineering' },
       { label: 'Simulation & Optimization', href: '/research#simulation' },
@@ -16,14 +18,14 @@ const navLinks: NavLink[] = [
     ],
   },
   {
-    label: 'AI Engineering', href: '/development',
+    label: 'AI Engineering', href: '/development', sec: 'development',
     sub: [
       { label: 'AI Agent Engineering', href: '/development#agent' },
       { label: 'Projects',             href: '/development#projects' },
     ],
   },
   {
-    label: 'Achievements', href: '/recognition',
+    label: 'Achievements', href: '/recognition', sec: 'recognition',
     sub: [
       { label: 'Awards',                   href: '/recognition#awards' },
       { label: 'Certifications',           href: '/recognition#certifications' },
@@ -59,11 +61,14 @@ function isActive(href: string): boolean {
 
     <!-- Center nav links -->
     <ul class="hidden md:flex items-center gap-8">
-      {navLinks.map(({ label, href, sub }) => {
+      {navLinks.map(({ label, href, sec, sub }) => {
         const active = isActive(href);
         const hasSub = !!sub && sub.length > 0;
         return (
-          <li class={`relative top-nav-item ${hasSub ? 'has-sub' : ''}`}>
+          <li
+            class={`relative top-nav-item ${hasSub ? 'has-sub' : ''}`}
+            style={sec ? `--nav-accent: var(--c-${sec}); --nav-accent-dk: var(--c-${sec}-dk);` : undefined}
+          >
             {active && <span class="nav-active-line" />}
             <a
               href={href}
@@ -142,14 +147,15 @@ function isActive(href: string): boolean {
     style="background-color: var(--bg); border-color: var(--border);"
   >
     <ul class="container-site py-6 flex flex-col gap-2">
-      {navLinks.map(({ label, href }) => {
+      {navLinks.map(({ label, href, sec }) => {
         const active = isActive(href);
+        const activeColor = sec ? `var(--c-${sec})` : 'var(--accent)';
         return (
           <li>
             <a
               href={href}
               class="block text-sm font-medium py-2"
-              style={active ? 'color: var(--accent);' : 'color: var(--body);'}
+              style={active ? `color: ${activeColor};` : 'color: var(--body);'}
             >
               {label}
             </a>
@@ -202,7 +208,7 @@ function isActive(href: string): boolean {
     right: 0;
     bottom: -4px;
     height: 2px;
-    background-color: var(--accent);
+    background-color: var(--nav-accent, var(--accent));
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 180ms ease;
@@ -265,16 +271,16 @@ function isActive(href: string): boolean {
     transition: background-color 150ms ease, color 150ms ease;
   }
   .top-nav-sub-link:hover {
-    background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+    background-color: color-mix(in srgb, var(--nav-accent, var(--accent)) 10%, transparent);
     color: var(--ink);
   }
   .top-nav-sub-link[aria-current="true"] {
-    background-color: var(--accent);
+    background-color: var(--nav-accent, var(--accent));
     color: #0A0A0A;
     font-weight: 700;
   }
   .top-nav-sub-link[aria-current="true"]:hover {
-    background-color: var(--accent-dk);
+    background-color: var(--nav-accent-dk, var(--accent-dk));
     color: #0A0A0A;
   }
 

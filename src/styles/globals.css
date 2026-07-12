@@ -250,14 +250,16 @@ body {
     font-weight: 700;
   }
 
-  /* Mustard active indicator above nav item */
+  /* Active indicator under the nav item — each item carries its own section
+     color via --nav-accent (set per <li> in Nav.astro); neutral items fall
+     back to the page accent. */
   .nav-active-line {
     position: absolute;
     bottom: -4px;
     left: 0;
     right: 0;
     height: 2px;
-    background-color: var(--accent);
+    background-color: var(--nav-accent, var(--accent));
   }
 
   /* Placeholder photo box */
