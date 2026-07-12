@@ -669,6 +669,7 @@ const runwayVh = 480;
     descending: boolean,
   ) {
     const on = !!focus && descending && intro > 0.02;
+    const stack = window.innerWidth <= 700; // mobile: photo on top, text below
     // "Settle" = how centered the focused card is vertically (1 at eye level).
     // The text + reflection fade in only once the card has arrived, not while
     // it is still sliding up into place.
@@ -713,6 +714,16 @@ const runwayVh = 480;
             if (entries.length > 5) addLine(`+${entries.length - 4} more`, catHref, 'helix-detail__more');
           }
         }
+        // Mobile: pin the text directly BELOW the centered card so the pair
+        // reads as one centered group. Desktop keeps the CSS placement.
+        if (stack && focus) {
+          const cardBottom = window.innerHeight / 2 + focus.y + (focus.h / 2) * focus.scl;
+          detailBox.style.top = `${(cardBottom + 16).toFixed(1)}px`;
+          detailBox.style.bottom = 'auto';
+        } else {
+          detailBox.style.top = '';
+          detailBox.style.bottom = '';
+        }
         const op = Math.min(1, intro * settle);
         detailBox.style.opacity = String(op);
         // Links are real now — clickable only while the panel is visible.
@@ -724,7 +735,9 @@ const runwayVh = 480;
     }
 
     if (reflectEl) {
-      if (on && focus) {
+      // No mirror on the stacked mobile layout — the detail text sits where
+      // the reflection would render.
+      if (on && focus && !stack) {
         const key = `${focus.el.dataset.strand}-${focus.el.dataset.level}`;
         if (reflectEl.dataset.key !== key) {
           reflectEl.dataset.key = key;
@@ -797,6 +810,10 @@ const runwayVh = 480;
     // BELOW the card instead, so no left-shift is needed.
     const stackLayout = window.innerWidth <= 700;
     const axisX = stackLayout ? 0 : -radius * 0.52 * shiftT;
+    // Mobile: lift the spiral axis during the descent so the focused card sits
+    // in the upper half and the detail text fits directly beneath it —
+    // photo on top, text below, both centered as one group.
+    const axisY = stackLayout ? -window.innerHeight * 0.11 * shiftT : 0;
     const rEff = radius * (1 - 0.3 * shiftT);
 
     let focus: { el: HTMLElement; x: number; y: number; z: number; scl: number; h: number } | null = null;
@@ -814,7 +831,7 @@ const runwayVh = 480;
       const a = d * stepAngle + strand * STRAND_OFFSET + spin;
       const x = Math.sin(a) * rEff + axisX;
       const z = Math.cos(a) * rEff - radius * 0.3;
-      const y = d * stepY;
+      const y = d * stepY + axisY;
       const front = (Math.cos(a) + 1) / 2; // 1 = facing the viewer
 
       const vis = Math.max(0, 1 - Math.abs(y) / fadeDist); // fade with vertical distance
