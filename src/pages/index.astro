@@ -20,11 +20,6 @@ type HelixCard =
 // Colors must match STRAND_COLORS in the script below.
 
 // Research is one collection now; the `section` field splits it into areas.
-// "N items" counts exclude coming-soon stubs — only real content counts.
-const research = (await getCollection('research')).filter((r) => r.data.status !== 'coming-soon');
-const researchSysEng = research.filter((r) => r.data.section === 'system-engineering');
-const researchSim = research.filter((r) => r.data.section === 'simulation');
-const researchAld = research.filter((r) => r.data.section === 'ald');
 const awards = await getCollection('recognition-awards');
 const presentations = await getCollection('recognition-presentations');
 const activities = await getCollection('recognition-activities');
@@ -44,6 +39,9 @@ const byStatusDate = (a: Sortable, b: Sortable) =>
 const researchEvery = await getCollection('research');
 const secTitles = (section: string) =>
   researchEvery.filter((r) => r.data.section === section).sort(byStatusDate).map((r) => r.data.title);
+const sysTitles = secTitles('system-engineering');
+const simTitles = secTitles('simulation');
+const aldTitles = secTitles('ald');
 
 const pubOrder: Record<string, number> = { 'published': 0, 'under-review': 1, 'submitted': 2, 'draft': 3, 'in-preparation': 4 };
 const pubTitles = [...pubs].sort((a, b) => (pubOrder[a.data.status] ?? 9) - (pubOrder[b.data.status] ?? 9)).map((p) => p.data.title);
@@ -58,10 +56,10 @@ const activityTitles = activities.map((a2) => a2.data.title);
 //    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
   { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Research', href: '/research' },
-  { kind: 'text', tag: n(researchSysEng), label: 'System Engineering',        href: '/research#system-engineering', items: secTitles('system-engineering') },
-  { kind: 'text', tag: n(researchSim),    label: 'Simulation & Optimization', href: '/research#simulation',         items: secTitles('simulation') },
-  { kind: 'text', tag: n(researchAld),    label: 'ALD',                       href: '/research#ald',                items: secTitles('ald') },
-  { kind: 'text', tag: n(pubs),           label: 'Publications',              href: '/research#publications',       items: pubTitles },
+  { kind: 'text', tag: n(sysTitles), label: 'System Engineering',        href: '/research#system-engineering', items: sysTitles },
+  { kind: 'text', tag: n(simTitles), label: 'Simulation & Optimization', href: '/research#simulation',         items: simTitles },
+  { kind: 'text', tag: n(aldTitles), label: 'ALD',                       href: '/research#ald',                items: aldTitles },
+  { kind: 'text', tag: n(pubTitles), label: 'Publications',              href: '/research#publications',       items: pubTitles },
 ];
 
 // AI Engineering strand = its two sub-categories.
@@ -167,14 +165,12 @@ const runwayVh = 480;
               data-strand={strand}
               data-tag={card.tag}
               data-title={card.label}
-              class="helix-card absolute flex flex-col p-5 overflow-hidden"
+              data-items={card.items.join('|')}
+              class="helix-card absolute flex flex-col justify-between p-5"
               style="width: 288px; height: 168px; left: -144px; top: -84px; background: var(--surface); border: 1px solid var(--border);"
             >
+              <span class="section-label">{card.tag}</span>
               <span class="leading-snug" style="color: var(--ink); font-weight: 600; font-size: 1.05rem;">{card.label}</span>
-              <ul class="helix-card__items">
-                {(card.items.length > 5 ? card.items.slice(0, 4) : card.items).map((t) => <li>{t}</li>)}
-                {card.items.length > 5 && <li class="helix-card__more">+{card.items.length - 4} more</li>}
-              </ul>
             </a>
           ) : (
             <div
@@ -224,10 +220,12 @@ const runwayVh = 480;
         <span id="helix-active-label">Research</span>
       </div>
 
-      <!-- Right-side detail for the focused card (paired with the left card). -->
+      <!-- Right-side detail for the focused card (paired with the left card).
+           Below the category title: the titles of its sub-contents. -->
       <div id="helix-detail" class="absolute z-10 pointer-events-none">
         <span id="helix-detail-tag" class="section-label"></span>
         <h2 id="helix-detail-title"></h2>
+        <ul id="helix-detail-items"></ul>
       </div>
     </div>
   </section>
@@ -314,23 +312,22 @@ const runwayVh = 480;
     margin-top: 0.5rem;
   }
 
-  /* Sub-content titles listed inside each category text card — one truncated
-     line per title; long lists show the first 4 plus a "+N more" line. */
-  .helix-card__items {
+  /* Sub-content titles under the detail title — one truncated line each;
+     long lists show the first 4 plus a "+N more" line (filled by JS). */
+  #helix-detail-items {
     list-style: none;
-    margin: 0.6rem 0 0;
+    margin: 1rem 0 0;
     padding: 0;
-    min-width: 0;
   }
-  .helix-card__items li {
-    font-size: 0.72rem;
-    line-height: 1.5;
+  #helix-detail-items li {
+    font-size: 0.9rem;
+    line-height: 1.8;
     color: var(--muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .helix-card__more {
+  #helix-detail-items li.helix-detail__more {
     opacity: 0.7;
   }
 
@@ -417,7 +414,8 @@ const runwayVh = 480;
        inline font-size on the label span. */
     .helix-card span.leading-snug { font-size: 1.5rem !important; }
     .helix-card .section-label { font-size: 0.95rem; }
-    .helix-card__items li { font-size: 0.95rem; }
+    #helix-detail-items { margin-top: 0.5rem; }
+    #helix-detail-items li { font-size: 0.8rem; line-height: 1.55; }
   }
 
 </style>
@@ -446,6 +444,7 @@ const runwayVh = 480;
   const detailBox = document.getElementById('helix-detail');
   const detailTag = document.getElementById('helix-detail-tag');
   const detailTitle = document.getElementById('helix-detail-title');
+  const detailItems = document.getElementById('helix-detail-items');
   const arrowPrev = document.getElementById('helix-arrow-prev');
   const arrowNext = document.getElementById('helix-arrow-next');
 
@@ -638,6 +637,28 @@ const runwayVh = 480;
           detailTag.style.color = rgbStr(STRAND_RGB[activeStrand]);
         }
         if (detailTitle) detailTitle.textContent = focus.el.dataset.title || '';
+        // Sub-content titles under the category title — rebuilt only when the
+        // focused card changes (first 4 + "+N more" beyond five).
+        if (detailItems) {
+          const key = `${focus.el.dataset.strand}-${focus.el.dataset.level}`;
+          if (detailItems.dataset.key !== key) {
+            detailItems.dataset.key = key;
+            detailItems.textContent = '';
+            const titles = (focus.el.dataset.items || '').split('|').filter(Boolean);
+            const shown = titles.length > 5 ? titles.slice(0, 4) : titles;
+            for (const t of shown) {
+              const li = document.createElement('li');
+              li.textContent = t;
+              detailItems.appendChild(li);
+            }
+            if (titles.length > 5) {
+              const li = document.createElement('li');
+              li.className = 'helix-detail__more';
+              li.textContent = `+${titles.length - 4} more`;
+              detailItems.appendChild(li);
+            }
+          }
+        }
         detailBox.style.opacity = String(Math.min(1, intro * settle));
       } else {
         detailBox.style.opacity = '0';
