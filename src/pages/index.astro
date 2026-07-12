@@ -527,6 +527,10 @@ const runwayVh = 480;
   const HERO_OUT = 0.08; // headline gone / keywords fade in
   const KW_IN = 0.14;    // keyword carousel fully present
   const KW_OUT = 0.28;   // camera starts descending into the content
+  // Descent rhythm (shared by render() and the idle scroll-snap):
+  const KHOLD = 0.11;  // opening hold — keyword lingers at the side
+  const ARRIVE = 0.9;  // whole strand centered by 90% of the descent
+  const HOLD = 0.35;   // fraction of each card's cell spent perfectly centered
   const smooth01 = (v: number) => { const s = Math.min(1, Math.max(0, v)); return s * s * (3 - 2 * s); };
   // Act 3 progress: 0 while the carousel is held, 0→1 through the descent.
   const spiralProg = (p: number) => Math.min(1, Math.max(0, (p - KW_OUT) / (1 - KW_OUT)));
@@ -799,7 +803,6 @@ const runwayVh = 480;
 
     // Act 3 opens with a short hold: the selected keyword slides to left-center
     // and lingers briefly (spiralP 0 → KHOLD), then the camera descends.
-    const KHOLD = 0.11;
     const descP = Math.max(0, (spiralP - KHOLD) / (1 - KHOLD)); // 0 during hold, 0→1 through descent
     const contentGate = smooth01(Math.min(1, descP / 0.03));    // content fades in as the descent begins
     const descending = spiralP > 0.004;
@@ -810,13 +813,10 @@ const runwayVh = 480;
     // all the way down. The descent spans only the active strand's real cards,
     // and the last card arrives a touch early so it gets a full dwell too.
     const lastLevel = Math.max(1, strandMaxLevel[activeStrand]);
-    const arrive = 0.9; // whole strand centered by 90% of the descent, then last card holds
-    const rawP = Math.min(1, descP / arrive);
+    const rawP = Math.min(1, descP / ARRIVE);
     const raw = rawP * lastLevel;
     const kBase = Math.min(lastLevel - 1, Math.floor(raw));
     const frac = raw - kBase;
-    // Shorter dwell + eased move — long freezes between moves read as stutter.
-    const HOLD = 0.35; // fraction of each card's cell spent perfectly centered (the dwell)
     const moveRaw = frac <= HOLD ? 0 : (frac - HOLD) / (1 - HOLD);
     const camera = kBase + smooth01(moveRaw);
 
@@ -975,7 +975,7 @@ const runwayVh = 480;
   // scroll a weighted, elastic feel: it stretches slightly behind fast
   // scrolling, drifts ~3% past the stop, and settles softly (the "catch").
   const SPRING_ACCEL = 0.06;
-  const SPRING_FRICTION = 0.72;
+  const SPRING_FRICTION = 0.76; // higher = more elastic stretch + settle bounce
   function scrollLoop() {
     velP = (velP + (targetP - lastP) * SPRING_ACCEL) * SPRING_FRICTION;
     lastP += velP;
@@ -988,6 +988,34 @@ const runwayVh = 480;
       render(lastP);
     }
   }
+  // ── Idle snap ──────────────────────────────────────────────────
+  // If scrolling stops at an ambiguous point BETWEEN two cards, glide the
+  // page to the nearer card's dwell so something is always cleanly centered.
+  // The smooth scroll emits scroll events itself, which reset the timer; the
+  // final idle check lands inside a dwell window and no-ops — so it settles.
+  let snapTimer: number | undefined;
+  function snapScrollToCard() {
+    if (!wrap) return;
+    const total = wrap.offsetHeight - window.innerHeight;
+    if (total <= 0) return;
+    const spiralP = spiralProg(targetP);
+    const descP = (spiralP - KHOLD) / (1 - KHOLD);
+    const lastLevel = Math.max(1, strandMaxLevel[activeStrand]);
+    const rawP = descP / ARRIVE;
+    if (rawP <= 0 || rawP >= 1) return; // before the first card / last card held
+    const raw = rawP * lastLevel;
+    const kBase = Math.min(lastLevel - 1, Math.floor(raw));
+    const frac = raw - kBase;
+    if (frac <= HOLD) return;           // already resting on a card
+    // Mid-move: pick the nearer dwell and scroll to the middle of its window.
+    const kTarget = frac - HOLD < 1 - frac ? kBase : kBase + 1;
+    const rawT = kTarget + HOLD * 0.5;
+    const pT = KW_OUT + (KHOLD + (rawT / lastLevel) * ARRIVE * (1 - KHOLD)) * (1 - KW_OUT);
+    const yT = Math.min(total, Math.max(0, pT * total));
+    if (Math.abs(yT - window.scrollY) < 2) return;
+    window.scrollTo({ top: yT, behavior: 'smooth' });
+  }
+
   function onScroll() {
     if (!wrap) return;
     const total = wrap.offsetHeight - window.innerHeight;
@@ -996,6 +1024,9 @@ const runwayVh = 480;
     // exactly one pending frame and can never wedge on a stale flag.
     cancelAnimationFrame(scrollRaf);
     scrollRaf = requestAnimationFrame(scrollLoop);
+    // Arm the idle snap: fires only once scrolling has actually stopped.
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(snapScrollToCard, 220);
   }
 
   // ── Drag to rotate, snap the nearest strand header to dead center ──
