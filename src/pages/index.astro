@@ -620,25 +620,29 @@ const runwayVh = 480;
   // same strand, drawn in screen space using the same perspective projection.
   type Seg = { el: SVGPathElement; strand: number; level: number; lastO?: string; lastStroke?: string };
   const segs: Seg[] = [];
-  // Orbit rings — perspective-projected ellipses around the helix column, one
-  // per level (+ a larger echo around the keyword ring). Overlapping curved
-  // geometry the strands weave through.
-  type Ring = { el: SVGPathElement; level: number; scale: number; lastO?: string };
-  const rings: Ring[] = [];
+  // Curtain — a veil of translucent vertical wave curves across the viewport,
+  // drawn beneath the strands. It sways with the ring rotation and ripples in
+  // step with the camera through the descent (see render()).
+  type Drape = { el: SVGPathElement; j: number; amp: number; phase: number; baseO: number; lastO?: string; lastStroke?: string };
+  const CURTAIN_N = 16;
+  const curtain: Drape[] = [];
   if (svg) {
     const NS = 'http://www.w3.org/2000/svg';
-    const mkRing = (level: number, scale: number, dash: string) => {
+    for (let j = 0; j < CURTAIN_N; j++) {
       const path = document.createElementNS(NS, 'path') as SVGPathElement;
       path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', 'rgb(150, 155, 165)');
-      path.setAttribute('stroke-width', '1');
-      path.setAttribute('stroke-dasharray', dash);
+      path.setAttribute('stroke', 'rgb(126, 132, 142)');
+      path.setAttribute('stroke-width', '1.2');
       path.setAttribute('stroke-opacity', '0');
-      svg.appendChild(path); // rings first — strands draw on top of them
-      rings.push({ el: path, level, scale });
-    };
-    mkRing(0, 1.16, '2 10'); // echo orbit around the keyword ring (Act 2)
-    for (let k = 0; k < levels; k++) mkRing(k, 1, '3 7');
+      svg.appendChild(path); // appended before the strand paths → drawn beneath
+      curtain.push({
+        el: path,
+        j,
+        amp: 18 + ((j * 5) % 4) * 7,          // varied fold depth
+        phase: j * 0.75,                       // staggered folds
+        baseO: 0.08 + ((j * 3) % 4) * 0.02,    // varied translucency
+      });
+    }
     for (let s = 0; s < 3; s++) {
       // Start at k=1: skip the header→first-card segment (it would run behind
       // the big header text and read as a stray line).
@@ -1031,34 +1035,42 @@ const runwayVh = 480;
       }
     }
 
-    // Orbit rings — the keyword orbit (+ its echo) during Act 2, then one
-    // dashed ring per level stacking up through the descent.
-    const RING_SUBS = 24;
-    const echoGate = kwIn * (1 - smooth01(Math.min(1, spiralP / 0.02)));
-    for (const ring of rings) {
-      const yC = (ring.level - camera) * stepY + axisY;
-      const gate = ring.scale !== 1
-        ? echoGate
-        : ring.level === 0 ? Math.max(kwIn * 0.9, contentGate) : contentGate;
-      const o = Math.max(0, 1 - Math.abs(yC) / fadeDist) * 0.14 * gate;
-      if (o <= 0.015) {
-        if (ring.lastO !== '0') {
-          ring.el.setAttribute('stroke-opacity', '0');
-          ring.lastO = '0';
+    // Curtain — translucent vertical waves across the viewport. The wave
+    // phase is driven by the ring rotation AND the camera, so dragging sways
+    // the veil and scrolling makes it ripple in step with the helix descent.
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const kWave = TWO_PI / (vh * 0.85);
+    const drift = spin * 1.6 + camera * 1.15;
+    const CURTAIN_SUBS = 14;
+    // Tinted faintly toward the active strand so the veil belongs to the scene.
+    const tint = mix([126, 132, 142], STRAND_RGB[activeStrand], 0.3);
+    for (const c of curtain) {
+      const o = kwIn * c.baseO;
+      if (o <= 0.012) {
+        if (c.lastO !== '0') {
+          c.el.setAttribute('stroke-opacity', '0');
+          c.lastO = '0';
         }
         continue;
       }
-      const rr = rEff * ring.scale;
+      const bx = (c.j / (CURTAIN_N - 1)) * vw;
+      const amp = c.amp * uiScale;
       let dStr = '';
-      for (let i = 0; i <= RING_SUBS; i++) {
-        const th = (i / RING_SUBS) * TWO_PI;
-        dStr += (i === 0 ? 'M ' : ' L ') + projPt(Math.sin(th) * rr + axisX, yC, Math.cos(th) * rr - radius * 0.3);
+      for (let i = 0; i <= CURTAIN_SUBS; i++) {
+        const yy = (i / CURTAIN_SUBS) * vh;
+        const xx = bx + Math.sin(yy * kWave + c.phase + drift) * amp;
+        dStr += (i === 0 ? 'M ' : ' L ') + xx.toFixed(1) + ' ' + yy.toFixed(1);
       }
-      ring.el.setAttribute('d', dStr + ' Z');
+      c.el.setAttribute('d', dStr);
+      if (c.lastStroke !== tint) {
+        c.el.setAttribute('stroke', tint);
+        c.lastStroke = tint;
+      }
       const oStr = o.toFixed(3);
-      if (ring.lastO !== oStr) {
-        ring.el.setAttribute('stroke-opacity', oStr);
-        ring.lastO = oStr;
+      if (c.lastO !== oStr) {
+        c.el.setAttribute('stroke-opacity', oStr);
+        c.lastO = oStr;
       }
     }
 
