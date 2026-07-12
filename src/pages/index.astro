@@ -217,14 +217,21 @@ const runwayVh = 480;
         </p>
       </div>
 
-      <!-- Carousel arrows — sleek arrowhead darts flanking the Act 2 keyword
-           ring. Click rotates one keyword step; drag/tap rotation is untouched.
+      <!-- Carousel arrows — curved sweep glyphs that follow the ring's
+           elliptical orbit, hinting the keywords rotate along it. Click
+           rotates one keyword step; drag/tap rotation is untouched.
            Opacity + interactivity are driven from render(). -->
       <button id="helix-arrow-prev" class="helix-arrow helix-arrow--prev" type="button" aria-label="Previous keyword">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 3 L6 12 L17 21 L13.4 12 Z" /></svg>
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path d="M7 20 C 16 33, 32 33, 41 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M44.6 16.2 L44.2 23.4 L37.8 18.6 Z" fill="currentColor" stroke="none" />
+        </svg>
       </button>
       <button id="helix-arrow-next" class="helix-arrow helix-arrow--next" type="button" aria-label="Next keyword">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3 L18 12 L7 21 L10.6 12 Z" /></svg>
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path d="M7 20 C 16 33, 32 33, 41 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M44.6 16.2 L44.2 23.4 L37.8 18.6 Z" fill="currentColor" stroke="none" />
+        </svg>
       </button>
 
       <!-- Active strand indicator -->
@@ -277,6 +284,9 @@ const runwayVh = 480;
   @media (prefers-reduced-motion: reduce) {
     .hero-line__inner { transform: none !important; transition: none !important; }
   }
+
+  /* The scroll hint fades instead of blinking off. */
+  #helix-hint { transition: opacity 300ms ease; }
 
   /* Strand header — big typographic label with a mirrored reflection below.
      No box/border: the type itself is the object. Color is driven by JS
@@ -379,15 +389,16 @@ const runwayVh = 480;
     opacity: 0.75;
   }
 
-  /* Carousel arrows — filled arrowhead darts (notched triangles) either side
-     of the keyword ring. Hidden until Act 2; JS drives opacity/interactivity. */
+  /* Carousel arrows — curved orbit-sweep glyphs either side of the keyword
+     ring (the arc mirrors the ring's front edge; the arrowhead shows the
+     sweep direction). Hidden until Act 2; JS drives opacity/interactivity. */
   .helix-arrow {
     position: absolute;
     top: 50%;
     z-index: 20;
-    width: 56px;
-    height: 72px;
-    margin-top: -36px;
+    width: 84px;
+    height: 108px;
+    margin-top: -54px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -400,17 +411,25 @@ const runwayVh = 480;
     pointer-events: none;
     transition: color 160ms ease, transform 160ms ease;
   }
-  .helix-arrow svg { width: 28px; height: 28px; display: block; }
-  .helix-arrow--prev { left: clamp(10px, 4.5vw, 88px); }
-  .helix-arrow--next { right: clamp(10px, 4.5vw, 88px); }
+  /* Extra invisible hit area beyond the visual button box. */
+  .helix-arrow::after {
+    content: '';
+    position: absolute;
+    inset: -16px;
+  }
+  .helix-arrow svg { width: 48px; height: 48px; display: block; }
+  /* The left arrow is the same glyph mirrored — sweep goes the other way. */
+  .helix-arrow--prev svg { transform: scaleX(-1); }
+  .helix-arrow--prev { left: clamp(8px, 4vw, 80px); }
+  .helix-arrow--next { right: clamp(8px, 4vw, 80px); }
   .helix-arrow:hover,
   .helix-arrow:focus-visible { color: var(--ink); }
-  .helix-arrow--prev:hover { transform: translateX(-3px); }
-  .helix-arrow--next:hover { transform: translateX(3px); }
+  .helix-arrow--prev:hover { transform: translateX(-4px); }
+  .helix-arrow--next:hover { transform: translateX(4px); }
   .helix-arrow:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
   @media (max-width: 700px) {
-    .helix-arrow { width: 44px; height: 60px; margin-top: -30px; }
-    .helix-arrow svg { width: 22px; height: 22px; }
+    .helix-arrow { width: 64px; height: 88px; margin-top: -44px; }
+    .helix-arrow svg { width: 38px; height: 38px; }
   }
 
   /* Helix card rendering hints */
@@ -776,9 +795,12 @@ const runwayVh = 480;
     //                      to the right) before the next takes its place.
     const kwIn = smooth01((p - HERO_OUT) / (KW_IN - HERO_OUT));   // 0→1 keyword fade-in
     const spiralP = spiralProg(p);                               // Act 3 progress
-    // Shift-to-left + tighten: completes fast so the keyword snaps to the left
-    // and everything after it lives in the left column.
-    const shiftT = smooth01(Math.min(1, spiralP / 0.04));
+    // Shift-to-left + tighten — eased over a longer ramp so the keyword glides
+    // to the side instead of snapping.
+    const shiftT = smooth01(Math.min(1, spiralP / 0.08));
+    // Non-active strands recede on a smooth ramp (was a hard visibility jump
+    // the moment the descent started).
+    const recedeT = smooth01(Math.min(1, Math.max(0, (spiralP - 0.01) / 0.08)));
 
     // Act 3 opens with a short hold: the selected keyword slides to left-center
     // and lingers briefly (spiralP 0 → KHOLD), then the camera descends.
@@ -798,7 +820,8 @@ const runwayVh = 480;
     const raw = rawP * lastLevel;
     const kBase = Math.min(lastLevel - 1, Math.floor(raw));
     const frac = raw - kBase;
-    const HOLD = 0.5; // fraction of each card's cell spent perfectly centered (the dwell)
+    // Shorter dwell + eased move — long freezes between moves read as stutter.
+    const HOLD = 0.35; // fraction of each card's cell spent perfectly centered (the dwell)
     const moveRaw = frac <= HOLD ? 0 : (frac - HOLD) / (1 - HOLD);
     const camera = kBase + smooth01(moveRaw);
 
@@ -821,6 +844,14 @@ const runwayVh = 480;
     // pts[strand][level] = projected screen position + visibility
     const pts: { sx: number; sy: number; vis: number }[][] = [[], [], []];
 
+    // Continuous per-strand focus weight (1 = header at front-center) — drives
+    // keyword brightness so rotating fades keywords instead of snapping them.
+    const strandW = [0, 1, 2].map((s) => {
+      const aS = Math.abs(normAngle(headerAngle(s, spin, p)));
+      const wRaw = aS <= ZONE_IN ? 1 : aS >= ZONE_OUT ? 0 : 1 - (aS - ZONE_IN) / (ZONE_OUT - ZONE_IN);
+      return wRaw * wRaw * (3 - 2 * wRaw);
+    });
+
     for (const el of cards) {
       const level = Number(el.dataset.level);
       const strand = Number(el.dataset.strand);
@@ -835,8 +866,8 @@ const runwayVh = 480;
       const front = (Math.cos(a) + 1) / 2; // 1 = facing the viewer
 
       const vis = Math.max(0, 1 - Math.abs(y) / fadeDist); // fade with vertical distance
-      // Non-active strands recede once the descent has started.
-      const recede = spiralP > 0.02 && !isActive ? 0.22 : 1;
+      // Non-active strands recede once the descent has started (smooth ramp).
+      const recede = isActive ? 1 : 1 - 0.78 * recedeT;
       // Centeredness: 1 when a card sits exactly at eye level, 0 by one level
       // away. Drives both the enlargement and which card owns the description.
       const near = Math.max(0, 1 - Math.abs(d));
@@ -844,9 +875,15 @@ const runwayVh = 480;
 
       // Scale capped at ~1.0 (native) so rasters never upscale → no pixelation.
       let scl;
-      if (recede < 1) scl = 0.56 + front * 0.10;                       // other strands, small
-      else if (isActive && descending) scl = 0.6 + 0.36 * nearS + 0.04 * front; // grows AT center
-      else scl = 0.78 + front * 0.20;                                   // Act 2 carousel
+      if (isActive && descending) {
+        scl = 0.6 + 0.36 * nearS + 0.04 * front; // grows AT center
+      } else {
+        // Blend carousel size → receded size on the same smooth ramp as the
+        // opacity recede, so other strands shrink instead of snapping small.
+        const sclFull = 0.78 + front * 0.20; // Act 2 carousel
+        const sclFar = 0.56 + front * 0.10;  // receded strand
+        scl = sclFull + (sclFar - sclFull) * (isActive ? 0 : recedeT);
+      }
       scl *= uiScale; // proportional shrink on small screens (desktop = ×1)
 
       let op: number;
@@ -856,8 +893,10 @@ const runwayVh = 480;
         // Only the SELECTED keyword is bright; the other two stay well dimmed so
         // they never fight the centered word even where the type overlaps.
         // Non-selected keywords stay dark on desktop (you drag past them), but
-        // stay visible on mobile so they're clearly tappable.
-        const headDim = isActive ? 1 : (stackLayout ? 0.5 : 0.2);
+        // stay visible on mobile so they're clearly tappable. Brightness follows
+        // the strand's ring angle CONTINUOUSLY, so rotation cross-fades keywords.
+        const dimFloor = stackLayout ? 0.5 : 0.2;
+        const headDim = dimFloor + (1 - dimFloor) * strandW[strand];
         const count = el.querySelector('.helix-head__count') as HTMLElement | null;
         if (count) count.style.opacity = ((0.4 + 0.5 * front) * headDim).toFixed(3);
         op = kwIn * vis * (0.3 + 0.7 * front) * headDim;
@@ -893,7 +932,7 @@ const runwayVh = 480;
       const p1 = pts[seg.strand][seg.level];
       const p2 = pts[seg.strand][seg.level + 1];
       if (!p1 || !p2) continue;
-      const recedeSeg = spiralP > 0.02 && seg.strand !== activeStrand ? 0.25 : 1;
+      const recedeSeg = seg.strand === activeStrand ? 1 : 1 - 0.75 * recedeT;
       const o = Math.min(p1.vis, p2.vis) * 0.45 * recedeSeg * contentGate;
       if (o <= 0.02) {
         seg.el.setAttribute('stroke-opacity', '0');
@@ -930,16 +969,31 @@ const runwayVh = 480;
     }
   }
 
-  let ticking = false;
-  function onScroll() {
-    if (ticking || !wrap) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      const total = wrap.offsetHeight - window.innerHeight;
-      lastP = total > 0 ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total)) : 0;
+  // ── Scroll smoothing ───────────────────────────────────────────
+  // Raw scroll position jumps in wheel-sized steps; rendering it directly
+  // makes the whole scene stutter. The scroll only sets targetP — the visible
+  // lastP eases toward it every frame, so all motion stays fluid.
+  let targetP = 0;
+  let scrollRaf = 0;
+  function scrollLoop() {
+    const diff = targetP - lastP;
+    if (Math.abs(diff) > 0.00035) {
+      lastP += diff * 0.14;
       render(lastP);
-      ticking = false;
-    });
+      scrollRaf = requestAnimationFrame(scrollLoop);
+    } else {
+      lastP = targetP;
+      render(lastP);
+    }
+  }
+  function onScroll() {
+    if (!wrap) return;
+    const total = wrap.offsetHeight - window.innerHeight;
+    targetP = total > 0 ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total)) : 0;
+    // Restart the ease loop on every scroll tick — cancel + reschedule keeps
+    // exactly one pending frame and can never wedge on a stale flag.
+    cancelAnimationFrame(scrollRaf);
+    scrollRaf = requestAnimationFrame(scrollLoop);
   }
 
   // ── Drag to rotate, snap the nearest strand header to dead center ──
