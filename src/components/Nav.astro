@@ -9,9 +9,10 @@ const navLinks: NavLink[] = [
   {
     label: 'Research', href: '/research',
     sub: [
-      { label: 'Experimental', href: '/research#experimental' },
-      { label: 'Simulation',   href: '/research#simulation' },
-      { label: 'Publication',  href: '/research#publication' },
+      { label: 'System Engineering', href: '/research#experimental' },
+      { label: 'Thermal Simulation', href: '/research#simulation' },
+      { label: 'ALD',                href: '/research#ald' },
+      { label: 'Publication',        href: '/research#publication' },
     ],
   },
   {
@@ -249,12 +250,12 @@ function isActive(href: string): boolean {
   }
   .top-nav-sub-link[aria-current="true"] {
     background-color: var(--accent);
-    color: #FFFFFF;
+    color: #0A0A0A;
     font-weight: 700;
   }
   .top-nav-sub-link[aria-current="true"]:hover {
     background-color: var(--accent-dk);
-    color: #FFFFFF;
+    color: #0A0A0A;
   }
 
   /* Chevron next to has-sub triggers — rotates with dropdown state, not hover */
@@ -280,11 +281,11 @@ function isActive(href: string): boolean {
     if (!nav) return;
     if (window.scrollY > 20) {
       nav.style.backdropFilter = 'blur(8px)';
-      nav.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
-      nav.style.borderBottom = '1px solid #E5E5E5';
+      nav.style.backgroundColor = 'rgba(10, 10, 10, 0.85)';
+      nav.style.borderBottom = '1px solid var(--border)';
     } else {
       nav.style.backdropFilter = 'none';
-      nav.style.backgroundColor = '#FFFFFF';
+      nav.style.backgroundColor = 'var(--bg)';
       nav.style.borderBottom = 'none';
     }
   }, { passive: true });

@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectDetail from '../../components/ProjectDetail.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+// Static pages already exist for some slugs — excluded here to avoid route
+// collisions. Every OTHER research entry gets a page automatically.
+export async function getStaticPaths() {
+  const entries = await getCollection('research');
+  return entries
+    .filter((entry) => !['sbh-experiment'].includes(entry.slug))
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props:  { entry },
+    }));
+}
+
+type Props = { entry: CollectionEntry<'research'> };
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+const { title, summary, tags, date, images } = entry.data;
+---
+
+<BaseLayout title={`${title} — Inseok Lee`} description={summary} section="research">
+  <ProjectDetail
+    backHref="/research"
+    backLabel="Research"
+    title={title}
+    summary={summary}
+    date={date}
+    tags={tags}
+    images={images}
+  >
+    <Content />
+  </ProjectDetail>
+</BaseLayout>

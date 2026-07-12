@@ -106,6 +106,7 @@ function projectEntry(slug: string | null) {
 <BaseLayout
   title="Code — Inseok Lee"
   description="Engineering tools, automation frameworks, productivity systems, and dashboards."
+  section="development"
 >
   <div class="container-site py-16">
     <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
@@ -134,10 +135,13 @@ function projectEntry(slug: string | null) {
         <section data-view-panel="workflow" hidden aria-labelledby="cn-ai-trigger">
           <h2 class="view-title">AI · Workflow</h2>
           <div class="flex flex-col max-w-2xl">
-            {workflowItems.map((p) => (
-              <div class="card flex flex-col gap-3">
-                <h4 class="card-title">{p.title}</h4>
-                <p class="text-base" style="color: var(--body);">{p.summary}</p>
+            {workflowItems.map((p, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-3 min-w-0">
+                  <h4 class="card-title">{p.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -147,10 +151,13 @@ function projectEntry(slug: string | null) {
         <section data-view-panel="harness" hidden aria-labelledby="cn-ai-trigger">
           <h2 class="view-title">AI · Harness Engineering</h2>
           <div class="flex flex-col max-w-2xl">
-            {harnessItems.map((p) => (
-              <div class="card flex flex-col gap-3">
-                <h4 class="card-title">{p.title}</h4>
-                <p class="text-base" style="color: var(--body);">{p.summary}</p>
+            {harnessItems.map((p, i) => (
+              <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-3 min-w-0">
+                  <h4 class="card-title">{p.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -160,20 +167,24 @@ function projectEntry(slug: string | null) {
         <section data-view-panel="project" hidden aria-labelledby="cn-project-trigger">
           <h2 class="view-title">Project</h2>
           <div class="flex flex-col max-w-2xl">
-            {projectItems.map((p) => {
+            {projectItems.map((p, i) => {
               const real = projectEntry(p.existingSlug);
+              const num = String(i + 1).padStart(2, '0');
 
               if (real) {
                 return (
-                  <a href={`/development/${real.slug}`} class="card flex flex-col gap-3 group">
-                    <h4 class="card-title">{real.data.title}</h4>
-                    <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
-                    {real.data.tags && (
-                      <div class="flex flex-wrap mt-1">
-                        {real.data.tags.map(tag => <span class="chip">{tag}</span>)}
-                      </div>
-                    )}
-                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  <a href={`/development/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                    <span class="row-num" aria-hidden="true">{num}</span>
+                    <div class="flex flex-col gap-3 min-w-0">
+                      <h4 class="card-title">{real.data.title}</h4>
+                      <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                      {real.data.tags && (
+                        <div class="flex flex-wrap mt-1">
+                          {real.data.tags.map(tag => <span class="chip">{tag}</span>)}
+                        </div>
+                      )}
+                      <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                    </div>
                   </a>
                 );
               }
@@ -183,12 +194,17 @@ function projectEntry(slug: string | null) {
               return (
                 <a
                   href={href}
-                  class="card flex flex-col gap-3 group"
+                  class="card flex gap-5 group"
+                  data-reveal
+                  style={`transition-delay: ${i * 70}ms`}
                   {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
-                  <h4 class="card-title">{p.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
-                  <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  <span class="row-num" aria-hidden="true">{num}</span>
+                  <div class="flex flex-col gap-3 min-w-0">
+                    <h4 class="card-title">{p.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  </div>
                 </a>
               );
             })}

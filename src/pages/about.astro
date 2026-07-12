@@ -1,41 +1,255 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const focusChips = [
+  'Process & Energy Systems',
+  'Thermal Management',
+  'Simulation & Optimization',
+  'AI for Engineering',
+  'ALD — Synthesis & LCA',
+];
+
+const pillars = [
+  {
+    title: 'System Engineering',
+    body: 'Designed, built, and operated an integrated bench-scale energy system end-to-end — reactor, balance-of-plant, fuel-cell integration, thermal limits, and scale-up constraints. Hydrogen was the chemistry; the transferable skill is making a real system run.',
+    href: '/research#experimental',
+  },
+  {
+    title: 'Thermal & Process Simulation',
+    body: 'Thermal-management simulation and multi-objective optimization — physics-based thermal solvers across heat-recovery configurations, Aspen Plus process models, NSGA-II with ML surrogates.',
+    href: '/research#simulation',
+  },
+  {
+    title: 'AI-Driven Engineering',
+    body: 'AI applied to the engineering workflow itself — simulation automation pipelines, surrogate modeling, and multi-agent orchestration that compress weeks of manual iteration into hours.',
+    href: '/development',
+  },
+  {
+    title: 'ALD — Process & LCA',
+    body: 'Atomic layer deposition on two tracks: catalyst synthesis with atomic-scale precision (ongoing), and life-cycle assessment of ALD processes — precursor use, energy intensity, and environmental footprint.',
+    href: '/research#ald',
+  },
+];
+
+const skills = [
+  {
+    tier: 'Core',
+    note: 'Daily, production-level',
+    items: ['Process Simulation — Aspen Plus', 'Python', 'Multi-objective Optimization — NSGA-II', 'Thermal-management modeling'],
+  },
+  {
+    tier: 'Proficient',
+    note: 'Confident, applied in real projects',
+    items: ['ML surrogate modeling', 'Multi-agent AI orchestration', 'Integrated system operation — SBH / PEMFC', 'Data analysis & visualization'],
+  },
+  {
+    tier: 'Working',
+    note: 'Functional, actively growing',
+    items: ['ALD — catalyst synthesis', 'Life-cycle assessment (LCA)', 'R — statistical analysis', 'Web development — Astro / Tailwind'],
+  },
+];
+
+const timeline = [
+  {
+    period: '2025.03 – Present',
+    org: 'Korea University',
+    role: 'MSc, Chemical & Biological Engineering',
+    detail: 'Graduate studies in chemical and biological engineering — process systems, thermal simulation, optimization, and ALD.',
+  },
+  {
+    period: '2025.03 – Present',
+    org: 'Korea Institute of Science and Technology (KIST)',
+    role: 'Student Researcher · dispatched (파견)',
+    detail: 'Research conducted on-site at KIST — integrated SBH energy-system engineering, LOHC–CCPP simulation & optimization, and ALD catalyst synthesis with LCA.',
+  },
+  {
+    period: '2018.03 – 2025.02',
+    org: 'Konkuk University',
+    role: 'BSc, Chemical Engineering',
+    detail: 'Undergraduate studies in chemical engineering.',
+  },
+];
 ---
 
 <BaseLayout
   title="About — Inseok Lee"
-  description="MSc Chemical Engineering at Korea University · KIST student researcher · hydrogen × AI"
+  description="Process systems engineer — system engineering, thermal simulation, AI-driven tooling, and ALD processes. MSc at Korea University · KIST."
 >
   <div class="container-site py-16">
-    <!-- Page header -->
-    <header class="mb-16 border-b pb-8" style="border-color: var(--border);">
+
+    <!-- ============================================================
+         Header
+         ============================================================ -->
+    <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
       <span class="section-label">About</span>
-      <h1 class="text-section mt-3" style="color: var(--ink);">Hi, I'm Inseok.</h1>
+      <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Hi, I'm Inseok.</h1>
+      <p class="mt-4 text-xl max-w-2xl" style="color: var(--body); line-height: 1.5;">
+        I engineer process systems — hands-on hardware, thermal simulation, AI tooling, and ALD processes.
+      </p>
     </header>
 
-    <!-- Placeholder content -->
-    <div class="max-w-2xl">
-      <p class="text-base mb-8" style="color: var(--body);">
-        [About page — content coming in Day 3. Will include: intro paragraph (~150 words),
-        affiliations, research focus chips, Skills tier grid, and Vertical Timeline.]
+    <!-- ============================================================
+         Intro
+         ============================================================ -->
+    <section class="max-w-2xl mb-20">
+      <p class="text-base mb-5" style="color: var(--body); line-height: 1.8;">
+        I'm a graduate researcher who works on <span class="highlight">process systems end-to-end</span> —
+        from hardware on a bench to simulation, optimization, and the AI tooling that ties it together.
+        I'm pursuing an MSc in Chemical & Biological Engineering at Korea University, with my research
+        carried out at the Korea Institute of Science and Technology (KIST).
       </p>
+      <p class="text-base mb-5" style="color: var(--body); line-height: 1.8;">
+        My starting point was an integrated hydrogen energy system that I helped design, build, and operate —
+        reactor, balance-of-plant, fuel-cell integration, and the thermal management that keeps it all alive.
+        That project taught me what simulation alone can't: how a system behaves when real thermal limits,
+        purity tolerances, and scale-up constraints push back. On the computational side, I build
+        physics-based thermal solvers and Aspen Plus process models, and drive them with multi-objective
+        optimization — NSGA-II with machine-learning surrogates. And I develop the AI-assisted engineering
+        tooling that makes all of this faster: automation pipelines and multi-agent orchestration.
+      </p>
+      <p class="text-base" style="color: var(--body); line-height: 1.8;">
+        My current work extends into <span class="highlight">atomic layer deposition (ALD)</span> on two
+        tracks: synthesizing catalysts with atomic-scale precision, and quantifying the life-cycle footprint
+        of ALD processes — precursor consumption, energy intensity, and emissions. It's the same
+        engineering discipline, applied at the opposite end of the length scale.
+      </p>
+    </section>
 
-      <div class="card p-6 mb-6">
-        <p class="text-xs uppercase tracking-widest mb-2" style="color: var(--accent);">Affiliation</p>
-        <p style="color: var(--body);">Korea University · MSc Chemical Engineering</p>
-        <p style="color: var(--body);">Korea Institute of Science and Technology (KIST) · Student Researcher</p>
+    <!-- ============================================================
+         Affiliations + Focus
+         ============================================================ -->
+    <section class="grid md:grid-cols-2 gap-12 mb-20 max-w-4xl">
+      <div>
+        <p class="section-label mb-4">Affiliation</p>
+        <div class="flex flex-col gap-3">
+          <div>
+            <p class="text-base" style="color: var(--ink); font-weight: 600;">Korea University</p>
+            <p class="text-sm" style="color: var(--muted);">MSc Chemical & Biological Engineering</p>
+          </div>
+          <div>
+            <p class="text-base" style="color: var(--ink); font-weight: 600;">KIST</p>
+            <p class="text-sm" style="color: var(--muted);">Student Researcher (dispatched)</p>
+          </div>
+        </div>
       </div>
 
-      <div class="flex flex-wrap gap-2 mb-8">
-        {['Hydrogen', 'Energy Systems', 'Process Systems', 'Optimization', 'AI for Engineering'].map(chip => (
-          <span class="chip">{chip}</span>
+      <div>
+        <p class="section-label mb-4">Research Focus</p>
+        <div class="flex flex-col gap-2">
+          {focusChips.map(chip => (
+            <span class="text-base" style="color: var(--body);">{chip}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         What I do — three pillars
+         ============================================================ -->
+    <section class="mb-20">
+      <p class="section-label mb-2">What I do</p>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px max-w-6xl" style="background-color: var(--border);">
+        {pillars.map(p => (
+          <a
+            href={p.href}
+            class="group flex flex-col gap-3 p-6"
+            style="background-color: var(--bg); transition: background-color 150ms ease;"
+            onmouseover="this.style.backgroundColor='var(--surface)';"
+            onmouseout="this.style.backgroundColor='var(--bg)';"
+          >
+            <h3 class="text-xl" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{p.title}</h3>
+            <p class="text-sm" style="color: var(--body); line-height: 1.7;">{p.body}</p>
+            <span class="text-sm mt-auto pt-2" style="color: var(--accent-dk);">Explore →</span>
+          </a>
         ))}
       </div>
+    </section>
 
-      <div class="flex gap-6">
-        <a href="/research" class="cta-link">See research →</a>
-        <a href="/contact" class="cta-link" style="color: var(--muted);">Get in touch →</a>
+    <!-- ============================================================
+         Skills — tier grid
+         ============================================================ -->
+    <section class="mb-20">
+      <p class="section-label mb-6">Skills</p>
+      <div class="grid md:grid-cols-3 gap-10 max-w-5xl">
+        {skills.map(group => (
+          <div>
+            <div class="flex items-baseline gap-3 mb-4 pb-2 border-b" style="border-color: var(--border);">
+              <h3 class="text-lg" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{group.tier}</h3>
+              <span class="text-xs" style="color: var(--muted);">{group.note}</span>
+            </div>
+            <ul class="flex flex-col gap-2">
+              {group.items.map(item => (
+                <li class="text-sm flex gap-2" style="color: var(--body);">
+                  <span style="color: var(--accent);" aria-hidden="true">—</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
-    </div>
+    </section>
+
+    <!-- ============================================================
+         Timeline
+         ============================================================ -->
+    <section class="mb-20">
+      <p class="section-label mb-6">Timeline</p>
+      <ol class="timeline max-w-2xl">
+        {timeline.map(t => (
+          <li class="timeline-item">
+            <span class="section-label timeline-date">{t.period}</span>
+            <h3 class="text-lg mt-1" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{t.org}</h3>
+            <p class="text-sm mt-0.5" style="color: var(--accent-dk); font-weight: 600;">{t.role}</p>
+            <p class="text-sm mt-2" style="color: var(--muted); line-height: 1.7;">{t.detail}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="text-sm mt-8 max-w-2xl">
+        <a href="/recognition" class="cta-link">See awards, presentations & certifications</a>
+      </p>
+    </section>
+
+    <!-- ============================================================
+         CTA
+         ============================================================ -->
+    <section class="border-t pt-10 flex flex-wrap gap-8" style="border-color: var(--border);">
+      <a href="/research" class="cta-link">See research →</a>
+      <a href="/cv.en.pdf" class="cta-link" download>Download CV →</a>
+      <a href="/contact" class="cta-link" style="color: var(--muted);">Get in touch →</a>
+    </section>
+
   </div>
 </BaseLayout>
+
+<style>
+  /* Vertical timeline — left rail with dot markers */
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    padding: 0 0 2.5rem 1.75rem;
+  }
+  .timeline-item:last-child {
+    padding-bottom: 0;
+  }
+  /* Dot marker sitting on the rail */
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0.35rem;
+    width: 9px;
+    height: 9px;
+    background-color: var(--accent);
+    border: 2px solid var(--bg);
+  }
+  .timeline-date {
+    display: block;
+  }
+</style>

@@ -1,266 +1,846 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// Helix hero cards — generated from content collections, so new content
+// (certifications, publications, dev projects) automatically joins the spiral.
+const certs = await getCollection('recognition-certifications');
+const pubs = await getCollection('publications');
+const devs = await getCollection('development');
+
+type HelixCard =
+  | { kind: 'photo'; img: string; alt: string; href: string }
+  | { kind: 'text'; tag: string; label: string; href: string }
+  | { kind: 'head'; label: string; href: string; color: string; count: number };
+
+// ── Triple helix: each strand tells ONE story ────────────────────
+// Strand 0 (cyan)  = Research   — experiments, simulation, publications
+// Strand 1 (white) = Code       — development projects & tools
+// Strand 2 (gray)  = Recognition — certifications, awards, activities
+// Colors must match STRAND_COLORS in the script below.
+
+const research = await getCollection('research');
+const engineering = await getCollection('engineering');
+const awards = await getCollection('recognition-awards');
+const presentations = await getCollection('recognition-presentations');
+
+const strandResearch: HelixCard[] = [
+  { kind: 'photo', img: '/images/home/01-researcher.png', alt: 'Researcher', href: '/research/' },
+  ...research.map((r): HelixCard => ({
+    kind: 'text',
+    tag: r.data.tags?.[0] ?? 'Research',
+    label: r.data.title,
+    href: r.data.tags?.includes('ALD') ? '/research#ald' : '/research#experimental',
+  })),
+  { kind: 'photo', img: '/images/home/02-engineer.png', alt: 'Engineer', href: '/research#simulation' },
+  ...engineering.map((e): HelixCard => ({ kind: 'text', tag: 'Simulation', label: e.data.title, href: '/research#simulation' })),
+  ...pubs.map((p): HelixCard => ({ kind: 'text', tag: 'Publication', label: p.data.title, href: '/research#publication' })),
+];
+
+const strandCode: HelixCard[] = [
+  { kind: 'photo', img: '/images/home/03-developer.png', alt: 'Developer', href: '/development/' },
+  ...devs.map((d): HelixCard => ({ kind: 'text', tag: 'Development', label: d.data.title, href: `/development/${d.slug}/` })),
+];
+
+const strandRecognition: HelixCard[] = [
+  { kind: 'photo', img: '/recognition/marathon/bib-medal.jpg', alt: 'Sunset Marathon — bib and medal', href: '/recognition/activities/' },
+  ...certs.map((c): HelixCard => ({ kind: 'text', tag: c.data.issuer, label: c.data.title, href: '/recognition/certifications/' })),
+  ...awards.map((a): HelixCard => ({ kind: 'text', tag: 'Award', label: a.data.title, href: '/recognition/awards/' })),
+  ...presentations.map((p): HelixCard => ({ kind: 'text', tag: p.data.conference, label: p.data.title, href: '/recognition/presentations/' })),
+  { kind: 'photo', img: '/recognition/marathon/photo-certificate.jpg', alt: 'Sunset Marathon — photo certificate', href: '/recognition/activities/' },
+];
+
+// Level 0 of each strand is a category header card; content follows below.
+// Shorter strands pad with blank placeholder cards — they fill automatically
+// as new markdown files land in the collections.
+// Header labels rest at silver/white and bloom to their section accent as the
+// strand swings to front-center (Research=cyan, Code=pink, Recognition=green).
+// SSR paints silver first; JS recolors the centered strand on load.
+const STRAND_HEX = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
+const strandDefs = [
+  { label: 'Research', href: '/research/', cards: strandResearch },
+  { label: 'Code', href: '/development/', cards: strandCode },
+  { label: 'Recognition', href: '/recognition/', cards: strandRecognition },
+];
+
+type Slot = HelixCard | { kind: 'blank' };
+const STRANDS = 3;
+const levels = 1 + Math.max(...strandDefs.map((s) => s.cards.length));
+const slotItems: { card: Slot; level: number; strand: number }[] = [];
+strandDefs.forEach((def, strand) => {
+  slotItems.push({
+    card: { kind: 'head', label: def.label, href: def.href, color: STRAND_HEX[strand], count: def.cards.length },
+    level: 0,
+    strand,
+  });
+  for (let k = 1; k < levels; k++) {
+    slotItems.push({ card: def.cards[k - 1] ?? { kind: 'blank' }, level: k, strand });
+  }
+});
+
+// Scroll runway — hero → keyword carousel → spiral descent. Tuned so every card
+// gets a short, EQUAL dwell at center before advancing (see HOLD in render).
+const runwayVh = 480;
 ---
 
 <BaseLayout
-  title="Inseok Lee — Hydrogen × AI"
-  description="MSc Chemical Engineering · KIST researcher · hydrogen × AI"
+  title="Inseok Lee — Systems · Simulation · AI · ALD"
+  description="Process systems engineer — hands-on system engineering, thermal simulation, AI-driven engineering tools, and ALD processes."
 >
   <!-- ============================================================
-       Stage 00 — Hero
+       Helix home — the entire page is one scroll-driven spiral.
+       The runway height scales with content; the viewport is sticky.
+       Scroll progress (0 → 1) rotates every asset around the headline.
        ============================================================ -->
-  <section
-    class="snap-section relative flex items-center justify-center"
-    style="background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%); padding-top: var(--nav-h);"
-  >
-    <div class="container-site w-full">
-      <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-0 py-16">
-        <!-- Left copy (overlaps photo from the left) -->
-        <div class="flex-1 lg:text-right lg:relative lg:z-10 lg:-mr-20 xl:-mr-24">
-          <h1 class="text-6xl lg:text-9xl font-bold leading-none" style="color: var(--ink);">
-            Hi, I'm Inseok.
-          </h1>
-        </div>
+  <section id="helix-hero" class="relative" style={`height: ${runwayVh}vh; background: linear-gradient(180deg, #0A0A0A 0%, #0D1117 100%);`}>
+    <div
+      id="helix-stage"
+      class="sticky top-0 h-screen overflow-hidden flex items-center justify-center"
+      style="perspective: 1200px; padding-top: var(--nav-h); cursor: grab; touch-action: pan-y;"
+    >
+      <!-- Strand backbones — SVG lines connecting consecutive cards per strand -->
+      <svg id="helix-links" class="absolute inset-0 w-full h-full" aria-hidden="true"></svg>
 
-        <!-- Center photo (sits behind text edges) -->
-        <div class="flex-shrink-0 lg:relative lg:z-0">
-          <img
-            src="/images/home/me.png"
-            alt="Inseok Lee"
-            class="home-photo w-96 lg:w-[600px] h-[690px] lg:h-[840px] object-cover"
-            loading="eager"
-            decoding="async"
-            fetchpriority="high"
-          />
-        </div>
+      <!-- Triple-helix cards -->
+      <div id="helix-ring" class="absolute left-1/2 top-1/2" style="transform-style: preserve-3d;" data-levels={levels} aria-hidden="true">
+        {slotItems.map(({ card, level, strand }) =>
+          card.kind === 'head' ? (
+            <a
+              href={card.href}
+              tabindex="-1"
+              data-level={level}
+              data-strand={strand}
+              class="helix-card helix-head absolute flex flex-col items-center justify-center"
+              style="width: 340px; height: 210px; left: -170px; top: -105px;"
+            >
+              <span class="helix-head__count">{card.count} items ↓</span>
+              <span class="helix-head__label" style={`color: ${card.color};`}>{card.label}</span>
+            </a>
+          ) : card.kind === 'photo' ? (
+            <a
+              href={card.href}
+              tabindex="-1"
+              data-level={level}
+              data-strand={strand}
+              data-title={card.alt}
+              class="helix-card absolute block overflow-hidden"
+              style="width: 216px; height: 288px; left: -108px; top: -144px; border: 1px solid var(--border); background: var(--surface);"
+            >
+              <img src={encodeURI(card.img)} alt={card.alt} class="w-full h-full object-cover" loading="eager" decoding="async" />
+            </a>
+          ) : card.kind === 'text' ? (
+            <a
+              href={card.href}
+              tabindex="-1"
+              data-level={level}
+              data-strand={strand}
+              data-tag={card.tag}
+              data-title={card.label}
+              class="helix-card absolute flex flex-col justify-between p-5"
+              style="width: 288px; height: 168px; left: -144px; top: -84px; background: var(--surface); border: 1px solid var(--border);"
+            >
+              <span class="section-label">{card.tag}</span>
+              <span class="leading-snug" style="color: var(--ink); font-weight: 600; font-size: 1.05rem;">{card.label}</span>
+            </a>
+          ) : (
+            <div
+              data-level={level}
+              data-strand={strand}
+              class="helix-card absolute"
+              style="width: 216px; height: 288px; left: -108px; top: -144px; border: 1px dashed var(--border); background: rgba(22, 22, 22, 0.6);"
+            />
+          )
+        )}
 
-        <!-- Right copy (overlaps photo from the right) -->
-        <div class="flex-1 lg:text-left lg:relative lg:z-10 lg:-ml-20 xl:-ml-24">
-          <h2 class="text-4xl lg:text-6xl font-bold leading-tight" style="color: var(--ink);">
-            I am a researcher and also an engineer.
-          </h2>
-        </div>
+        <!-- Manual reflection of the single focused card — mirrored + skewed
+             toward the lower-left, driven by JS (see render()). -->
+        <div id="helix-reflect" class="helix-card" style="opacity: 0; visibility: hidden; pointer-events: none;" aria-hidden="true"></div>
       </div>
-    </div>
 
-  </section>
-
-  <!-- ============================================================
-       Stage 01 — Researcher (photo left)
-       ============================================================ -->
-  <section
-    class="snap-section relative flex items-center"
-    style="background: linear-gradient(180deg, #FAFAFA 0%, #F5F7FA 100%);"
-  >
-    <div class="container-site w-full">
-      <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
-        <!-- Photo — LEFT -->
-        <div class="flex-shrink-0 order-2 lg:order-1">
-          <img
-            src="/images/home/01-researcher.png"
-            alt="Inseok Lee as researcher"
-            class="home-photo w-96 lg:w-[570px] h-[690px] lg:h-[780px] object-cover"
-            loading="eager"
-            decoding="async"
-          />
-        </div>
-
-        <!-- Text block — RIGHT -->
-        <div class="flex-1 order-1 lg:order-2 flex flex-col gap-6">
-          <h2 class="text-section" style="color: var(--ink);">
-            Experiments.
-          </h2>
-          <p class="text-base max-w-lg" style="color: var(--body); line-height: 1.7;">
-            Bench-scale experiments on sodium borohydride (SBH) hydrolysis for on-demand
-            hydrogen generation. Investigating catalyst performance, thermal behaviour,
-            and process scalability for portable energy systems.
-          </p>
-          <div class="flex flex-wrap gap-2 mt-2">
-            {['SBH Hydrolysis', 'Catalyst', 'Hydrogen', 'Bench-scale'].map(chip => (
-              <span class="chip">{chip}</span>
-            ))}
-          </div>
-          <span class="block w-24 h-px mt-6" style="background-color: var(--accent);" aria-hidden="true"></span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Stage 02 — Engineer (photo right)
-       ============================================================ -->
-  <section
-    class="snap-section relative flex items-center"
-    style="background: linear-gradient(180deg, #F5F7FA 0%, #F0F8FA 100%);"
-  >
-    <div class="container-site w-full">
-      <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
-        <!-- Text block — LEFT -->
-        <div class="flex-1 flex flex-col gap-6">
-          <h2 class="text-section" style="color: var(--ink);">
-            Simulation. Optimization.
-          </h2>
-          <p class="text-base max-w-lg" style="color: var(--body); line-height: 1.7;">
-            Process simulation and multi-objective optimization (MOO) for hydrogen
-            liquefaction and LOHC carrier systems. NSGA-II Pareto-front analysis across
-            efficiency, cost, and carbon metrics using Aspen Plus + Python.
-          </p>
-          <div class="flex flex-wrap gap-2 mt-2">
-            {['CCPP-LOHC', 'Aspen Plus', 'NSGA-II', 'MOO'].map(chip => (
-              <span class="chip">{chip}</span>
-            ))}
-          </div>
-          <span class="block w-24 h-px mt-6" style="background-color: var(--accent);" aria-hidden="true"></span>
-        </div>
-
-        <!-- Photo — RIGHT -->
-        <div class="flex-shrink-0">
-          <img
-            src="/images/home/02-engineer.png"
-            alt="Inseok Lee as engineer"
-            class="home-photo w-96 lg:w-[570px] h-[690px] lg:h-[780px] object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Stage 03 — Developer (photo left)
-       ============================================================ -->
-  <section
-    class="snap-section relative flex items-center"
-    style="background: linear-gradient(180deg, #F0F8FA 0%, #F5FAFC 100%);"
-  >
-    <div class="container-site w-full">
-      <div class="flex flex-col lg:flex-row items-center gap-16 py-24">
-        <!-- Photo — LEFT -->
-        <div class="flex-shrink-0 order-2 lg:order-1">
-          <img
-            src="/images/home/03-developer.png"
-            alt="Inseok Lee as developer"
-            class="home-photo w-96 lg:w-[570px] h-[690px] lg:h-[780px] object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-
-        <!-- Text block — RIGHT -->
-        <div class="flex-1 order-1 lg:order-2 flex flex-col gap-6">
-          <h2 class="text-section" style="color: var(--ink);">
-            Tools. Automation. AI.
-          </h2>
-          <p class="text-base max-w-lg" style="color: var(--body); line-height: 1.7;">
-            Aspen Plus automation frameworks, SBH thermal solvers, and engineering
-            productivity systems built on multi-agent AI. Custom dashboards for
-            real-time process monitoring and optimization result visualization.
-          </p>
-          <div class="flex flex-wrap gap-2 mt-2">
-            {['Python', 'Aspen Automation', 'AI Agents', 'Dashboards'].map(chip => (
-              <span class="chip">{chip}</span>
-            ))}
-          </div>
-          <span class="block w-24 h-px mt-6" style="background-color: var(--accent);" aria-hidden="true"></span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Stage 04 — Closing CTA
-       ============================================================ -->
-  <section
-    class="snap-section relative flex items-center"
-    style="background: linear-gradient(180deg, #F5FAFC 0%, #FFFFFF 100%);"
-  >
-    <div class="container-site w-full py-24">
-      <div class="flex flex-col items-start gap-8 max-w-2xl">
-        <h2 class="text-section" style="color: var(--ink);">
-          Want to talk?
-        </h2>
-        <p class="text-base" style="color: var(--body);">
-          Open to research collaborations, engineering roles, and conversations
-          about hydrogen energy systems and AI tooling.
+      <!-- Center headline (line-reveal on load, fades away as you descend) -->
+      <div id="helix-title" class="relative z-10 text-center pointer-events-none px-6">
+        <h1 class="hero-line text-6xl lg:text-9xl font-bold leading-none" style="color: var(--ink);">
+          <span class="hero-line__inner">Hi, I'm Inseok.</span>
+        </h1>
+        <p class="hero-line mt-6 text-lg lg:text-2xl" style="color: var(--muted);">
+          <span class="hero-line__inner">Systems Engineering · Thermal Simulation · AI · ALD</span>
         </p>
+        <p id="helix-hint" class="hero-line mt-12 text-xs uppercase tracking-widest" style="color: var(--muted);">
+          <span class="hero-line__inner">Drag to rotate · Scroll ↓</span>
+        </p>
+      </div>
 
-        <div class="flex flex-col sm:flex-row gap-4 mt-2">
-          <a
-            href="mailto:inseok888@gmail.com"
-            class="inline-flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-widest font-medium transition-colors duration-150"
-            style="background-color: var(--accent); color: #FFFFFF;"
-          >
-            Email <span>→</span>
-          </a>
-          <a
-            href="https://www.linkedin.com/in/inseok-lee-9085563a7"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-widest transition-colors duration-150"
-            style="border: 1px solid var(--border); color: var(--body);"
-            onmouseover="this.style.borderColor='var(--accent)';"
-            onmouseout="this.style.borderColor='var(--border)';"
-          >
-            LinkedIn <span>→</span>
-          </a>
-          <a
-            href="https://github.com/LEE-Inseok"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-widest transition-colors duration-150"
-            style="border: 1px solid var(--border); color: var(--body);"
-            onmouseover="this.style.borderColor='var(--accent)';"
-            onmouseout="this.style.borderColor='var(--border)';"
-          >
-            GitHub <span>→</span>
-          </a>
-        </div>
+      <!-- Active strand indicator -->
+      <div
+        id="helix-active"
+        class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 text-xs uppercase tracking-widest pointer-events-none transition-opacity duration-300"
+        style="color: var(--muted); opacity: 0;"
+      >
+        <span id="helix-active-dot" style="width: 8px; height: 8px; background: #22D3EE; display: inline-block;"></span>
+        <span id="helix-active-label">Research</span>
+      </div>
+
+      <!-- Right-side detail for the focused card (paired with the left card). -->
+      <div id="helix-detail" class="absolute z-10 pointer-events-none">
+        <span id="helix-detail-tag" class="section-label"></span>
+        <h2 id="helix-detail-title"></h2>
       </div>
     </div>
   </section>
+
 </BaseLayout>
 
 <!--
-  Global snap-scroll — applied only on the home page render.
-  Astro's <style is:global> ships these rules in the HTML for / only;
-  navigating to another page renders that page's CSS without these rules,
-  so snap-scroll never leaks to research/code/recognition/etc.
+  Helix home styles — shipped only on the / render, never leaks to other pages.
 -->
 <style is:global>
-  /* Home page photos — transparent PNG, blends into section gradient */
-  .home-photo {
-    display: block;
-    background-color: transparent;
-    border: none;
-    /* Black & white treatment — comment out if you want original colors */
-    /* filter: grayscale(100%); */
-  }
-
   html {
-    scroll-snap-type: y mandatory;
-    scroll-padding-top: var(--nav-h);
-    /* override globals.css scroll-behavior: smooth for crisp section-to-section snap */
+    /* free scrolling for the helix runway */
     scroll-behavior: auto;
   }
 
-  /* Each home-page section is exactly one viewport tall and snaps to its top */
-  main > .snap-section {
-    height: 100vh;
-    height: 100dvh; /* dynamic viewport for mobile browser chrome */
-    min-height: 100vh;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+  /* Hero line-reveal — each line rides up from behind an overflow mask.
+     JS adds .is-in one frame after load to trigger the staggered reveal. */
+  .hero-line { overflow: hidden; }
+  .hero-line__inner {
+    display: block;
+    transform: translateY(115%);
+    transition: transform var(--dur-hero) var(--ease-expo);
+    will-change: transform;
   }
+  #helix-title.is-in .hero-line__inner { transform: translateY(0); }
+  #helix-title.is-in .hero-line:nth-child(1) .hero-line__inner { transition-delay: 60ms; }
+  #helix-title.is-in .hero-line:nth-child(2) .hero-line__inner { transition-delay: 180ms; }
+  #helix-title.is-in .hero-line:nth-child(3) .hero-line__inner { transition-delay: 320ms; }
 
-  /* Footer sits naturally at the end — also a snap point so it doesn't get cut off */
-  body > footer {
-    scroll-snap-align: end;
-  }
-
-  /* Respect users who prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    html { scroll-snap-type: none; }
-    main > .snap-section { height: auto; min-height: 100vh; }
+    .hero-line__inner { transform: none !important; transition: none !important; }
   }
+
+  /* Strand header — big typographic label with a mirrored reflection below.
+     No box/border: the type itself is the object. Color is driven by JS
+     (silver at rest → section accent when it swings to front-center). */
+  .helix-head__count {
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.55rem;
+  }
+  .helix-head__label {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 4.8rem;
+    font-weight: 600;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    color: #FFFFFF;
+    -webkit-box-reflect: below 0.12em
+      linear-gradient(to bottom, transparent 42%, rgba(255, 255, 255, 0.32));
+  }
+
+  /* Manual reflection of the focused card: flipped + skewed toward the
+     lower-left, faded with a mask so it reads clearly as a reflection. */
+  #helix-reflect {
+    /* Element is flipped with scaleY(-1); the mask runs "to top" in local
+       space so the reflection is strongest next to the card and fades away. */
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0) 70%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0) 70%);
+  }
+
+  /* Description paired with the focused card. The spiral is offset to the LEFT
+     during the descent, so the card sits at left-center and this text lives in
+     the right half — vertically centered, no overlap. */
+  #helix-detail {
+    left: 57%;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 37%;
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease-expo);
+  }
+  #helix-detail-title {
+    font-family: 'Fraunces', Georgia, serif;
+    color: var(--ink);
+    font-size: clamp(1.5rem, 2.3vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-top: 0.5rem;
+  }
+
+  /* Helix card rendering hints */
+  .helix-card {
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+    pointer-events: auto;
+    user-select: none;
+  }
+  .helix-card img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+  #helix-stage.is-dragging {
+    cursor: grabbing;
+  }
+
+  /* Reduced motion: collapse the scroll runway, show a calm static composition */
+  @media (prefers-reduced-motion: reduce) {
+    #helix-hero { height: 100vh !important; min-height: 100vh; }
+  }
+
+  /* Mobile keeps the SAME desktop composition (card left · description right),
+     just scaled down in JS (uiScale). Keyword type stays the desktop size and
+     is shrunk by the card transform, so we don't override its font here. The
+     description stays on the right; we only give it a touch more width and a
+     smaller title so it reads on a narrow screen. */
+  @media (max-width: 700px) {
+    .helix-head__count { font-size: 0.6rem; margin-bottom: 0.4rem; }
+    #helix-detail {
+      left: 52%;
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: 44%;
+    }
+    #helix-detail-title { font-size: clamp(1.05rem, 3.4vw, 1.5rem); margin-top: 0.35rem; }
+  }
+
 </style>
+
+<script>
+  // Scroll-driven TRIPLE helix: three strands offset 120° share one tall
+  // spiral column. Scrolling moves the camera DOWN the column — cards above
+  // rise out of view, cards below wind up from underneath on all 3 strands.
+  const wrap = document.getElementById('helix-hero');
+  const ring = document.getElementById('helix-ring');
+  const hint = document.getElementById('helix-hint');
+  const title = document.getElementById('helix-title');
+  const svg = document.getElementById('helix-links');
+  const reflectEl = document.getElementById('helix-reflect') as HTMLElement | null;
+  const cards = ring
+    ? (Array.from(ring.children).filter((el) => el.id !== 'helix-reflect') as HTMLElement[])
+    : [];
+  const levels = ring ? Number(ring.dataset.levels) || 1 : 1;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const stage = document.getElementById('helix-stage');
+  const activeBox = document.getElementById('helix-active');
+  const activeDot = document.getElementById('helix-active-dot');
+  const activeLabel = document.getElementById('helix-active-label');
+  const detailBox = document.getElementById('helix-detail');
+  const detailTag = document.getElementById('helix-detail-tag');
+  const detailTitle = document.getElementById('helix-detail-title');
+
+  const STRAND_OFFSET = (Math.PI * 2) / 3; // 120° between strands
+  const STRAND_LABELS = ['Research', 'Code', 'Recognition'];
+  const stepAngle = Math.PI / 5; // twist per level as the column descends
+  const PERSP = 1200; // must match the container's CSS perspective
+  const TWO_PI = Math.PI * 2;
+  let radius = 320;
+  let stepY = 380; // vertical drop between consecutive levels (wide gaps: a
+                   // card fully fades before the next arrives at center)
+  // Global card scale so narrow (mobile) screens render the SAME desktop
+  // composition — card on the left, description on the right — just zoomed out,
+  // instead of a different mobile layout. 1 on desktop, shrinks on small widths.
+  let uiScale = 1;
+
+  // ── Three-act choreography boundaries (shared by render + snap geometry) ──
+  //   Act 1 hero  · Act 2 keyword carousel (held) · Act 3 spiral descent
+  const HERO_OUT = 0.08; // headline gone / keywords fade in
+  const KW_IN = 0.14;    // keyword carousel fully present
+  const KW_OUT = 0.28;   // camera starts descending into the content
+  const smooth01 = (v: number) => { const s = Math.min(1, Math.max(0, v)); return s * s * (3 - 2 * s); };
+  // Act 3 progress: 0 while the carousel is held, 0→1 through the descent.
+  const spiralProg = (p: number) => Math.min(1, Math.max(0, (p - KW_OUT) / (1 - KW_OUT)));
+  // Camera depth down the column. Sits at 0 during the carousel (headers at
+  // eye level, on the ring), then descends level-by-level through Act 3.
+  const cameraAt = (sp: number) => sp * (levels + 0.5);
+
+  // ── Drag-to-rotate & strand selection ──────────────────────────
+  // `spin` is a user-controlled rotation added to every card's angle.
+  // The strand whose header card sits closest to the front is "active":
+  // it renders at full strength, the other two recede into the background.
+  let spin = 0; // start with the Research keyword facing front-center
+  let activeStrand = 0;
+  let lastP = 0;
+
+  function normAngle(a: number) {
+    return ((a % TWO_PI) + TWO_PI + Math.PI) % TWO_PI - Math.PI; // → [-π, π)
+  }
+
+  // On-screen ring angle of a strand's header card at scroll position p.
+  // Mirrors render()'s geometry (camera = cameraAt(spiralProg)), so angle 0 ===
+  // front-center. Selection/snapping happens while the carousel is held
+  // (spiralProg 0 → camera 0 → header at eye level), where this is exact.
+  function headerAngle(s: number, sp: number, p: number) {
+    const camera = cameraAt(spiralProg(p));
+    const d = 0 - camera; // header sits at level 0
+    return d * stepAngle + s * STRAND_OFFSET + sp;
+  }
+
+  function computeActive() {
+    let best = 0;
+    let bestAbs = Infinity;
+    for (let s = 0; s < 3; s++) {
+      const abs = Math.abs(normAngle(headerAngle(s, spin, lastP)));
+      if (abs < bestAbs) { bestAbs = abs; best = s; }
+    }
+    if (best !== activeStrand) {
+      activeStrand = best;
+      if (activeLabel) activeLabel.textContent = STRAND_LABELS[best];
+    }
+  }
+
+  // Strand colors are IDENTITY-based: each strand permanently owns its section
+  // accent. Research=cyan, Code=pink, Recognition=green. Whichever strand is at
+  // the front blooms to full color; the others dim toward their OWN dark hue
+  // (keeping their identity legible) rather than collapsing to gray.
+  const STRAND_RGB = [
+    [18, 173, 199],   // Research    #12ADC7 (cyan)
+    [219, 79, 148],   // Code        #DB4F94 (pink)
+    [46, 169, 106],   // Recognition #2EA96A (green)
+  ];
+  // Dimmed companion — same hue, darkened (used for the backbone lines).
+  const STRAND_DIM = STRAND_RGB.map((c) => c.map((v) => Math.round(v * 0.42 + 10)));
+  // Header labels rest at silver/white and bloom to their accent at front.
+  const SILVER = [214, 216, 222];
+  const rgbStr = (c: number[]) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+
+  // Strand backbones: one polyline segment between consecutive cards of the
+  // same strand, drawn in screen space using the same perspective projection.
+  type Seg = { el: SVGLineElement; strand: number; level: number };
+  const segs: Seg[] = [];
+  if (svg) {
+    const NS = 'http://www.w3.org/2000/svg';
+    for (let s = 0; s < 3; s++) {
+      // Start at k=1: skip the header→first-card segment (it would run behind
+      // the big header text and read as a stray line).
+      for (let k = 1; k < levels - 1; k++) {
+        const line = document.createElementNS(NS, 'line') as SVGLineElement;
+        line.setAttribute('stroke', rgbStr(STRAND_DIM[s]));
+        line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(line);
+        segs.push({ el: line, strand: s, level: k });
+      }
+    }
+  }
+
+  // Header cards (level 0) per strand — recolored when the active strand changes
+  const headerEls: (HTMLElement | undefined)[] = [];
+  for (const el of cards) {
+    if (el.dataset.level === '0') headerEls[Number(el.dataset.strand)] = el;
+  }
+
+  // Deepest level that actually holds a card (has a title) per strand — the
+  // descent stops here so a short strand doesn't scroll through empty padding.
+  const strandMaxLevel = [0, 0, 0];
+  for (const el of cards) {
+    if (!el.dataset.title) continue; // skip headers + blank placeholders
+    const s = Number(el.dataset.strand);
+    const lv = Number(el.dataset.level);
+    if (lv > strandMaxLevel[s]) strandMaxLevel[s] = lv;
+  }
+
+  // Continuous intensity blend: a strand blooms to its full identity color as
+  // its header card nears front-center. Full within ~20° of front, resting
+  // beyond ~57°. Header labels rest at SILVER; backbone lines rest at dim hue.
+  const ZONE_IN = 0.35;  // rad — inside this: 100% full color
+  const ZONE_OUT = 1.0;  // rad — beyond this: 100% resting
+
+  // Blend two RGB triples by weight w∈[0,1].
+  function mix(a: number[], b: number[], w: number) {
+    const r = Math.round(a[0] + (b[0] - a[0]) * w);
+    const g = Math.round(a[1] + (b[1] - a[1]) * w);
+    const bl = Math.round(a[2] + (b[2] - a[2]) * w);
+    return `rgb(${r}, ${g}, ${bl})`;
+  }
+
+  function updateStrandColors() {
+    for (let s = 0; s < 3; s++) {
+      const a = Math.abs(normAngle(headerAngle(s, spin, lastP)));
+      let w = a <= ZONE_IN ? 1 : a >= ZONE_OUT ? 0 : 1 - (a - ZONE_IN) / (ZONE_OUT - ZONE_IN);
+      w = w * w * (3 - 2 * w); // smoothstep — soft landing at both ends
+      // NOTE: header label color is driven inside render() (accent on the
+      // Act 2 title screen, cooling to silver as the word joins the helix),
+      // so it is intentionally NOT set here.
+      // Descending stem for this strand carries the accent: dim hue → full
+      // accent as the strand swings to front-center.
+      for (const seg of segs) {
+        if (seg.strand === s) seg.el.setAttribute('stroke', mix(STRAND_DIM[s], STRAND_RGB[s], w));
+      }
+    }
+    // Bottom indicator dot mirrors the active strand's full identity color.
+    if (activeDot) activeDot.style.background = rgbStr(STRAND_RGB[activeStrand]);
+  }
+
+  function measure() {
+    // Proportional zoom: at/above ~760px this is 1 (full desktop); below it the
+    // whole composition scales down so phones show the SAME layout, smaller.
+    uiScale = Math.min(1, Math.max(0.5, window.innerWidth / 760));
+    radius = Math.min(400, Math.max(180, window.innerWidth * 0.3));
+    // Wide vertical gap between levels so each content card fully fades out
+    // before the next climbs into center — tightened a little on small screens.
+    stepY = Math.max(300, window.innerHeight * 0.52) * (0.6 + 0.4 * uiScale);
+    if (svg) svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
+  }
+
+  // Where active-strand cards cross eye level once the descent is underway:
+  // pinned to the LEFT so the focused card sits left and its detail text can
+  // live on the right half.
+  const THETA_LEFT = -0.62; // rad → x ≈ -0.58 × radius (left of center, paired with right text)
+  function descentRamp(p: number) {
+    // 0 at the top (header snaps dead-center), eases to 1 by ~15% scroll
+    const t = Math.min(1, Math.max(0, (p - 0.03) / 0.12));
+    return t * t * (3 - 2 * t);
+  }
+
+  // Drives the two extras tied to the single focused card:
+  //   1) the right-side detail text (tag + title)
+  //   2) the manual mirrored reflection (flipped + skewed to the lower-left)
+  function updateFocusExtras(
+    focus: { el: HTMLElement; x: number; y: number; z: number; scl: number; h: number } | null,
+    intro: number,
+    descending: boolean,
+  ) {
+    const on = !!focus && descending && intro > 0.02;
+    // "Settle" = how centered the focused card is vertically (1 at eye level).
+    // The text + reflection fade in only once the card has arrived, not while
+    // it is still sliding up into place.
+    let settle = 0;
+    if (focus) {
+      const s = Math.max(0, 1 - Math.abs(focus.y) / (window.innerHeight * 0.24));
+      settle = s * s * (3 - 2 * s);
+    }
+
+    if (detailBox) {
+      if (on && focus) {
+        if (detailTag) {
+          detailTag.textContent = focus.el.dataset.tag || '';
+          detailTag.style.color = rgbStr(STRAND_RGB[activeStrand]);
+        }
+        if (detailTitle) detailTitle.textContent = focus.el.dataset.title || '';
+        detailBox.style.opacity = String(Math.min(1, intro * settle));
+      } else {
+        detailBox.style.opacity = '0';
+      }
+    }
+
+    if (reflectEl) {
+      if (on && focus) {
+        const key = `${focus.el.dataset.strand}-${focus.el.dataset.level}`;
+        if (reflectEl.dataset.key !== key) {
+          reflectEl.dataset.key = key;
+          reflectEl.innerHTML = focus.el.innerHTML;
+          reflectEl.style.width = focus.el.style.width;
+          reflectEl.style.height = focus.el.style.height;
+          reflectEl.style.left = focus.el.style.left;
+          reflectEl.style.top = focus.el.style.top;
+          reflectEl.className = `${focus.el.className} helix-card`; // match card look
+        }
+        const yR = focus.y + focus.h * focus.scl; // butt the reflection to the card's bottom
+        // Straight-down mirror (no skew) so every reflection on the page reads
+        // the same way as the keyword box-reflects.
+        reflectEl.style.transform =
+          `translate3d(${focus.x.toFixed(1)}px, ${yR.toFixed(1)}px, ${focus.z.toFixed(1)}px)` +
+          ` scale(${focus.scl.toFixed(3)}) scaleY(-1)`;
+        reflectEl.style.opacity = (0.5 * intro * settle).toFixed(3);
+        reflectEl.style.visibility = 'visible';
+        reflectEl.style.zIndex = '6';
+      } else {
+        reflectEl.style.opacity = '0';
+        reflectEl.style.visibility = 'hidden';
+        reflectEl.dataset.key = '';
+      }
+    }
+  }
+
+  function render(p: number) {
+    // ── Three-act choreography ─────────────────────────────────────
+    //   Act 1 · hero       "Hi, I'm Inseok." alone
+    //   Act 2 · keywords   Research / Code / Recognition on a horizontal ring —
+    //                      DRAG to rotate/select, nearest snaps to front-center
+    //   Act 3 · descent    Selected keyword slides to LEFT-center and holds for
+    //                      ~one screen, then its content cards wind DOWN the
+    //                      spiral, each dwelling at left-center (description text
+    //                      to the right) before the next takes its place.
+    const kwIn = smooth01((p - HERO_OUT) / (KW_IN - HERO_OUT));   // 0→1 keyword fade-in
+    const spiralP = spiralProg(p);                               // Act 3 progress
+    // Shift-to-left + tighten: completes fast so the keyword snaps to the left
+    // and everything after it lives in the left column.
+    const shiftT = smooth01(Math.min(1, spiralP / 0.04));
+
+    // Act 3 opens with a short hold: the selected keyword slides to left-center
+    // and lingers briefly (spiralP 0 → KHOLD), then the camera descends.
+    const KHOLD = 0.11;
+    const descP = Math.max(0, (spiralP - KHOLD) / (1 - KHOLD)); // 0 during hold, 0→1 through descent
+    const contentGate = smooth01(Math.min(1, descP / 0.03));    // content fades in as the descent begins
+    const descending = spiralP > 0.004;
+
+    // Camera advances one card at a time with a UNIFORM rhythm: every card holds
+    // dead-center (perfectly still + aligned) for HOLD of its scroll cell, then
+    // eases to the next over the rest. Identical scroll distance for every card,
+    // all the way down. The descent spans only the active strand's real cards,
+    // and the last card arrives a touch early so it gets a full dwell too.
+    const lastLevel = Math.max(1, strandMaxLevel[activeStrand]);
+    const arrive = 0.9; // whole strand centered by 90% of the descent, then last card holds
+    const rawP = Math.min(1, descP / arrive);
+    const raw = rawP * lastLevel;
+    const kBase = Math.min(lastLevel - 1, Math.floor(raw));
+    const frac = raw - kBase;
+    const HOLD = 0.5; // fraction of each card's cell spent perfectly centered (the dwell)
+    const moveRaw = frac <= HOLD ? 0 : (frac - HOLD) / (1 - HOLD);
+    const camera = kBase + smooth01(moveRaw);
+
+    const fadeDist = window.innerHeight * 0.9;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    // Spiral axis slides left and the ring tightens, so the whole helix sits in
+    // the left half and the right half is free for the description text.
+    const axisX = -radius * 0.52 * shiftT;
+    const rEff = radius * (1 - 0.3 * shiftT);
+
+    let focus: { el: HTMLElement; x: number; y: number; z: number; scl: number; h: number } | null = null;
+    let bestNear = 0.001; // focus = the active content card closest to center
+    // pts[strand][level] = projected screen position + visibility
+    const pts: { sx: number; sy: number; vis: number }[][] = [[], [], []];
+
+    for (const el of cards) {
+      const level = Number(el.dataset.level);
+      const strand = Number(el.dataset.strand);
+      const isHead = level === 0;
+      const isActive = strand === activeStrand;
+      const hasTitle = !!el.dataset.title;
+      const d = level - camera; // signed distance from camera (0 = at eye level)
+      const a = d * stepAngle + strand * STRAND_OFFSET + spin;
+      const x = Math.sin(a) * rEff + axisX;
+      const z = Math.cos(a) * rEff - radius * 0.3;
+      const y = d * stepY;
+      const front = (Math.cos(a) + 1) / 2; // 1 = facing the viewer
+
+      const vis = Math.max(0, 1 - Math.abs(y) / fadeDist); // fade with vertical distance
+      // Non-active strands recede once the descent has started.
+      const recede = spiralP > 0.02 && !isActive ? 0.22 : 1;
+      // Centeredness: 1 when a card sits exactly at eye level, 0 by one level
+      // away. Drives both the enlargement and which card owns the description.
+      const near = Math.max(0, 1 - Math.abs(d));
+      const nearS = near * near * (3 - 2 * near);
+
+      // Scale capped at ~1.0 (native) so rasters never upscale → no pixelation.
+      let scl;
+      if (recede < 1) scl = 0.56 + front * 0.10;                       // other strands, small
+      else if (isActive && descending) scl = 0.6 + 0.36 * nearS + 0.04 * front; // grows AT center
+      else scl = 0.78 + front * 0.20;                                   // Act 2 carousel
+      scl *= uiScale; // proportional shrink on small screens (desktop = ×1)
+
+      let op: number;
+      if (isHead) {
+        // Keyword header — big white type. Rides the ring in Act 2, slides to
+        // left-center and holds in Act 3, then climbs out as the cards descend.
+        // Only the SELECTED keyword is bright; the other two stay well dimmed so
+        // they never fight the centered word even where the type overlaps.
+        const headDim = isActive ? 1 : 0.2;
+        const count = el.querySelector('.helix-head__count') as HTMLElement | null;
+        if (count) count.style.opacity = ((0.4 + 0.5 * front) * headDim).toFixed(3);
+        op = kwIn * vis * (0.3 + 0.7 * front) * headDim;
+      } else {
+        // Content cards: held behind the keyword in Act 2, then wind down the
+        // spiral. The centered card is brightest; siblings stay readable.
+        const dim = isActive && descending ? (0.4 + 0.6 * nearS) : 1;
+        op = vis * (0.35 + 0.65 * front) * recede * contentGate * dim;
+      }
+
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) scale(${scl.toFixed(3)})`;
+      el.style.opacity = op.toFixed(3);
+      const zBoost = isActive && descending ? Math.round(nearS * 9) : 0;
+      el.style.zIndex = String((isHead ? 9 : isActive ? 8 : 1) + Math.round(front * 6) + zBoost);
+      const hidden = isHead ? op <= 0.01 : (op <= 0.01 || contentGate <= 0.02);
+      el.style.visibility = hidden ? 'hidden' : 'visible';
+
+      // The most-centered active content card owns the right-side description.
+      if (isActive && descending && hasTitle && near > bestNear) {
+        bestNear = near;
+        focus = { el, x, y, z, scl, h: parseFloat(el.style.height) || 168 };
+      }
+
+      // Same perspective projection the browser applies to the 3D cards
+      const proj = PERSP / (PERSP - z);
+      pts[strand][level] = { sx: cx + x * proj, sy: cy + y * proj, vis };
+    }
+
+    updateFocusExtras(focus, contentGate, descending);
+
+    // Strand backbone segments — appear with the content in Act 3.
+    for (const seg of segs) {
+      const p1 = pts[seg.strand][seg.level];
+      const p2 = pts[seg.strand][seg.level + 1];
+      if (!p1 || !p2) continue;
+      const recedeSeg = spiralP > 0.02 && seg.strand !== activeStrand ? 0.25 : 1;
+      const o = Math.min(p1.vis, p2.vis) * 0.45 * recedeSeg * contentGate;
+      if (o <= 0.02) {
+        seg.el.setAttribute('stroke-opacity', '0');
+        continue;
+      }
+      seg.el.setAttribute('x1', p1.sx.toFixed(1));
+      seg.el.setAttribute('y1', p1.sy.toFixed(1));
+      seg.el.setAttribute('x2', p2.sx.toFixed(1));
+      seg.el.setAttribute('y2', p2.sy.toFixed(1));
+      seg.el.setAttribute('stroke-opacity', o.toFixed(3));
+    }
+
+    updateStrandColors();
+
+    if (title) {
+      // Headline holds through Act 1, then clears cleanly before the keywords
+      // arrive (fully gone by HERO_OUT, so the two never overlap).
+      const tFade = Math.max(0, 1 - (p - 0.02) / 0.06);
+      title.style.opacity = String(tFade);
+      title.style.transform = `translateY(${(-40 * (1 - tFade)).toFixed(1)}px)`;
+      title.style.visibility = tFade <= 0.01 ? 'hidden' : 'visible';
+    }
+    if (hint) hint.style.opacity = p > 0.03 ? '0' : '1';
+    if (activeBox) activeBox.style.opacity = spiralP > 0.02 ? '1' : '0';
+  }
+
+  let ticking = false;
+  function onScroll() {
+    if (ticking || !wrap) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const total = wrap.offsetHeight - window.innerHeight;
+      lastP = total > 0 ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total)) : 0;
+      render(lastP);
+      ticking = false;
+    });
+  }
+
+  // ── Drag to rotate, snap the nearest strand header to dead center ──
+  // Whichever header sits closest to the front is pulled to angle 0 (screen
+  // center). Released exactly between two boxes → the nearer one always wins.
+  let snapRaf = 0;
+  function snapToNearest() {
+    computeActive(); // refresh the nearest strand from the current spin
+    const off = normAngle(headerAngle(activeStrand, spin, lastP));
+    if (Math.abs(off) < 0.0008) { render(lastP); return; } // already centered
+    const from = spin;
+    const to = spin - off; // rotate the active header exactly to the front
+    const t0 = performance.now();
+    const DUR = 620;
+    // Damped spring blended with a plain settle. TENSION scales how much of the
+    // springy overshoot survives (1 = full spring, 0 = no overshoot). At 0.67
+    // the bounce is ~2/3 of the full-spring feel.
+    //   DAMPING lower → more / longer bounce · FREQ higher → more oscillations
+    const DAMPING = 5.6;
+    const FREQ = 2.35;
+    const TENSION = 0.42;
+    cancelAnimationFrame(snapRaf);
+    function step(now: number) {
+      const t = Math.min(1, (now - t0) / DUR);
+      const spring = 1 - Math.exp(-DAMPING * t) * Math.cos(FREQ * Math.PI * t);
+      const settle = 1 - Math.pow(1 - t, 4); // easeOutQuart, no overshoot
+      const ease = t >= 1 ? 1 : settle + (spring - settle) * TENSION;
+      spin = from + (to - from) * ease;
+      computeActive();
+      render(lastP);
+      if (t < 1) snapRaf = requestAnimationFrame(step);
+    }
+    snapRaf = requestAnimationFrame(step);
+  }
+
+  if (stage && !reduced) {
+    let dragging = false;
+    let moved = 0;
+    let lastX = 0;
+    let targetSpin = spin;
+    let smoothRaf = 0;
+    let smoothing = false;
+
+    // The pointer drives targetSpin; the visible spin eases toward it every
+    // frame (critically damped lerp) so rotation feels weighty, not twitchy.
+    function smoothLoop() {
+      const diff = targetSpin - spin;
+      if (Math.abs(diff) > 0.0004) {
+        spin += diff * 0.1;
+        computeActive();
+        render(lastP);
+        smoothRaf = requestAnimationFrame(smoothLoop);
+      } else {
+        spin = targetSpin;
+        computeActive();
+        render(lastP);
+        smoothing = false;
+        if (!dragging) snapToNearest();
+      }
+    }
+    function startSmoothing() {
+      if (!smoothing) {
+        smoothing = true;
+        smoothRaf = requestAnimationFrame(smoothLoop);
+      }
+    }
+
+    // Links are natively draggable — that hijacks pointer events and the
+    // strand stays "grabbed". Kill native drag inside the stage entirely.
+    stage.addEventListener('dragstart', (e) => e.preventDefault());
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return; // left button / touch only
+      dragging = true;
+      moved = 0;
+      lastX = e.clientX;
+      cancelAnimationFrame(snapRaf);
+      targetSpin = spin;
+      stage.classList.add('is-dragging');
+      // Capture the pointer: pointerup is guaranteed to reach us even if
+      // the cursor leaves the stage or the window.
+      stage.setPointerCapture(e.pointerId);
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      lastX = e.clientX;
+      moved += Math.abs(dx);
+      targetSpin += dx * 0.0028; // drag sensitivity (lower = calmer)
+      startSmoothing();
+    });
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      stage!.classList.remove('is-dragging');
+      if (moved > 6) {
+        // Real drag: swallow the click so card links don't fire
+        stage!.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); }, { capture: true, once: true });
+      }
+      // Snap to the nearest header IMMEDIATELY on release — kill any leftover
+      // drag-inertia lerp so there's no wait before the spring kicks in.
+      smoothing = false;
+      cancelAnimationFrame(smoothRaf);
+      snapToNearest();
+    }
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    window.addEventListener('blur', endDrag);
+  }
+
+  if (wrap && cards.length > 0) {
+    measure();
+    computeActive();
+    if (reduced) {
+      // Static composition, no scroll listener — land in the formed helix
+      // (past the keyword title screen) so content is visible at rest.
+      render(0.55);
+      if (hint) hint.style.opacity = '0';
+    } else {
+      render(0);
+      // Fire the hero line-reveal one frame after first paint so the CSS
+      // transition runs from the masked start state. (Reduced motion skips
+      // this — the CSS media query shows the lines immediately.)
+      requestAnimationFrame(() => title?.classList.add('is-in'));
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', () => { measure(); onScroll(); }, { passive: true });
+    }
+  }
+</script>

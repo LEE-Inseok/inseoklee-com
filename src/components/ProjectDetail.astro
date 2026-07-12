@@ -1,0 +1,80 @@
+---
+/**
+ * ProjectDetail — the ONE template every project/research detail page uses.
+ *
+ * Layout, top to bottom:
+ *   1. Header: back link · title · one-line summary · date
+ *   2. Photo strip: always 3 slots (4:3). Missing photos render as
+ *      dashed placeholders, so pages look consistent before content lands.
+ *   3. Body: markdown content following the standard section format
+ *      (see src/content/&#42;/_TEMPLATE.md — Overview / My Role / Approach /
+ *      Results / What I Learned)
+ *   4. Tags
+ */
+export interface Props {
+  backHref: string;
+  backLabel: string;
+  title: string;
+  summary: string;
+  date?: string;
+  tags?: string[];
+  images?: string[];
+}
+
+const { backHref, backLabel, title, summary, date, tags, images = [] } = Astro.props;
+const photoSlots = [0, 1, 2].map((i) => images[i] ?? null);
+---
+
+<div class="container-site py-16">
+  <!-- 1. Header -->
+  <header class="mb-10 border-b pb-8" style="border-color: var(--border);">
+    <a
+      href={backHref}
+      class="section-label transition-colors"
+      style="color: var(--muted);"
+      onmouseover="this.style.color='var(--accent)';"
+      onmouseout="this.style.color='var(--muted)';"
+    >← {backLabel}</a>
+    <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">{title}</h1>
+    <p class="mt-3 text-base max-w-2xl" style="color: var(--muted);">{summary}</p>
+    {date && <p class="mt-3 section-label">{date}</p>}
+  </header>
+
+  <!-- 2. Photo strip — always 3 slots -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-5xl mb-14">
+    {photoSlots.map((img, i) =>
+      img ? (
+        <figure class="m-0" data-reveal style={`transition-delay: ${i * 70}ms`}>
+          <img
+            src={encodeURI(img)}
+            alt={`${title} — photo ${i + 1}`}
+            class="w-full object-cover"
+            style="aspect-ratio: 4 / 3; border: 1px solid var(--border); background: var(--surface);"
+            loading={i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        </figure>
+      ) : (
+        <div
+          class="flex items-center justify-center"
+          data-reveal
+          style={`aspect-ratio: 4 / 3; border: 1px dashed var(--border); transition-delay: ${i * 70}ms`}
+        >
+          <span class="text-xs uppercase tracking-widest" style="color: var(--muted);">Photo {i + 1} — coming soon</span>
+        </div>
+      )
+    )}
+  </div>
+
+  <!-- 3. Body — markdown following the standard section format -->
+  <article class="article max-w-2xl">
+    <slot />
+  </article>
+
+  <!-- 4. Tags -->
+  {tags && tags.length > 0 && (
+    <div class="flex flex-wrap mt-12 max-w-2xl">
+      {tags.map((tag) => <span class="chip">{tag}</span>)}
+    </div>
+  )}
+</div>

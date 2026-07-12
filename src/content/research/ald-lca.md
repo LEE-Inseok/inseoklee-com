@@ -1,0 +1,12 @@
+---
+title: ALD Life-Cycle Assessment
+status: draft
+summary: Cradle-to-gate LCA of atomic layer deposition processes — quantifying precursor consumption, energy intensity, and emissions per functional unit for sustainable semiconductor processing.
+date: "2026-07"
+tags: [ALD, LCA, Sustainability]
+---
+
+## Overview
+
+Life-cycle assessment of ALD processes — building the inventory model for precursors, carrier gases,
+and energy use, toward a defensible per-layer environmental footprint. Ongoing work; details to follow.

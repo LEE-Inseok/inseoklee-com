@@ -8,6 +8,7 @@ const research = defineCollection({
     title:    z.string(),
     status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
     summary:  z.string(),
+    images:   z.array(z.string()).max(3).default([]), // up to 3 photos, shown in the detail-page photo strip
     chapters: z.array(
       z.object({
         number: z.number(),
@@ -25,6 +26,7 @@ const engineering = defineCollection({
     title:    z.string(),
     status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
     summary:  z.string(),
+    images:   z.array(z.string()).max(3).default([]),
     chapters: z.array(
       z.object({
         number: z.number(),
@@ -42,6 +44,7 @@ const development = defineCollection({
     title:   z.string(),
     type:    z.enum(['framework', 'productivity', 'dashboard', 'tool']),
     summary: z.string(),
+    images:  z.array(z.string()).max(3).default([]),
     date:    z.string().optional(),
     tags:    z.array(z.string()).optional(),
   }),

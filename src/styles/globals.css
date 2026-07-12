@@ -4,36 +4,72 @@
 @tailwind utilities;
 
 /* ============================================================
-   Warm Paper design system — adhamdannaway-inspired
-   (warm cream bg + dark warm text + mustard accent + serif headings)
+   Monochrome + section-accent design system
+   Base is fully achromatic (near-black bg, white→gray text ramp).
+   Each section owns ONE accent that flows through every accented
+   element (eyebrow, rule, chip hover, CTA, link underline, focus)
+   via a single inherited variable: --sec.
    ============================================================ */
 
 :root {
-  /* Background scale — pure white base with subtle gray/cyan tints per stage */
-  --bg:        #FFFFFF;
-  --bg-warm:   #FAFAFA;
-  --bg-cool:   #F5F7FA;
-  --bg-cyan:   #F0F8FA;
+  /* ---- Achromatic base (dark) ---- */
+  --bg:        #0A0A0A;   /* page background */
+  --bg-raise:  #101010;   /* very subtly raised panels (formerly --bg-warm) */
+  --surface:   #161616;   /* cards / code / inputs */
+  --border:    #2A2A2A;   /* hairlines & dividers */
 
-  /* Surface & border */
-  --surface:   #F5F5F5;
-  --border:    #E5E5E5;
+  /* ---- Text ramp (white → gray; hierarchy by lightness, not weight) ---- */
+  --ink:       #F5F5F5;   /* headings / primary */
+  --body:      #D4D4D4;   /* body copy */
+  --muted:     #8A8A8A;   /* labels / secondary */
 
-  /* Text — black + gray scale */
-  --ink:       #0A0A0A;
-  --body:      #1F1F1F;
-  --muted:     #6B6B6B;
+  /* ---- Section identity accents ---- */
+  --c-research:    #12ADC7;  /* cyan  · Research / Experiments */
+  --c-engineering: #E0A400;  /* amber · Engineering / Simulation */
+  --c-development: #DB4F94;  /* pink  · Development / Tools & AI */
+  --c-recognition: #2EA96A;  /* green · Recognition / Contact */
 
-  /* Accent — cyan */
-  --accent:    #06B6D4;
-  --accent-dk: #0891B2;
+  /* Darker companions (hover / pressed / underline-rest) */
+  --c-research-dk:    #0E8CA1;
+  --c-engineering-dk: #B98600;
+  --c-development-dk: #B93B78;
+  --c-recognition-dk: #248954;
+
+  /* ---- Current section accent — the whole site reads from --sec ----
+     Sections override --sec/--sec-dk via [data-sec="…"] on <body>.
+     --accent / --accent-dk are kept as aliases so existing markup that
+     references them automatically inherits the active section color. */
+  --sec:       var(--c-research);
+  --sec-dk:    var(--c-research-dk);
+  --accent:    var(--sec);
+  --accent-dk: var(--sec-dk);
 
   /* Utility */
-  --critical:  #DC2626;
+  --critical:  #EF4444;
 
   /* Spacing */
   --nav-h:     64px;
+
+  /* ---- Motion ----
+     One easing family, applied everywhere. Expo = soft, weighty decel;
+     quart = slightly snappier for small UI moves. Durations live long
+     (400–900ms) so transitions read as motion, not as a hard cut. */
+  --ease-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --dur-fast:   280ms;
+  --dur-base:   520ms;
+  --dur-slow:   760ms;
+  --dur-hero:   900ms;
 }
+
+/* ============================================================
+   Section accent scopes — set [data-sec] on <body> (via BaseLayout).
+   Everything downstream inherits the right --sec automatically.
+   ============================================================ */
+[data-sec="research"]    { --sec: var(--c-research);    --sec-dk: var(--c-research-dk); }
+[data-sec="engineering"] { --sec: var(--c-engineering); --sec-dk: var(--c-engineering-dk); }
+[data-sec="development"] { --sec: var(--c-development); --sec-dk: var(--c-development-dk); }
+[data-sec="recognition"] { --sec: var(--c-recognition); --sec-dk: var(--c-recognition-dk); }
 
 /* ============================================================
    Base typography & background
@@ -57,7 +93,7 @@
     position: relative;
   }
 
-  /* Noise overlay disabled on clean white — keep crisp */
+  /* Noise overlay hook — disabled by default (kept crisp) */
   body::after {
     content: '';
     position: fixed;
@@ -98,7 +134,7 @@
     border-radius: 0 !important;
   }
 
-  /* Scrollbar — warm tone */
+  /* Scrollbar — achromatic */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -205,9 +241,9 @@
     font-weight: 500;
   }
 
-  /* Inline highlight — yellow marker style (adhamdannaway-inspired) */
+  /* Inline highlight — marker underlay in the active section accent */
   .highlight {
-    background: linear-gradient(180deg, transparent 60%, var(--accent) 60%);
+    background: linear-gradient(180deg, transparent 60%, var(--sec) 60%);
     padding: 0 0.1em;
   }
 }
@@ -357,14 +393,14 @@
 .category-nav__item[aria-current="page"],
 .category-nav__trigger[aria-current="page"] {
   background-color: var(--accent);
-  color: #FFFFFF;
+  color: #0A0A0A;
   font-weight: 700;
   border-left-color: var(--accent);
 }
 .category-nav__item[aria-current="page"]:hover,
 .category-nav__trigger[aria-current="page"]:hover {
   background-color: var(--accent-dk);
-  color: #FFFFFF;
+  color: #0A0A0A;
 }
 
 /* Chevron — only on expand-type groups */
@@ -399,6 +435,41 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   z-index: 1;
+}
+
+/* ============================================================
+   Scroll reveal — add data-reveal to any element; BaseLayout's
+   IntersectionObserver adds .is-revealed when it enters the viewport.
+   ============================================================ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--dur-slow) var(--ease-expo),
+              transform var(--dur-slow) var(--ease-expo);
+}
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Editorial row number — large muted serif index beside list entries */
+.row-num {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--surface);
+  -webkit-text-stroke: 1px var(--muted);
+  flex-shrink: 0;
+  width: 4rem;
+  user-select: none;
 }
 
 /* ============================================================

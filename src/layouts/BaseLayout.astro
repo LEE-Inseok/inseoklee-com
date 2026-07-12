@@ -7,12 +7,16 @@ export interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  /* Section accent identity — drives --sec across the page.
+     Omit for neutral pages (falls back to the cyan default). */
+  section?: 'research' | 'engineering' | 'development' | 'recognition';
 }
 
 const {
   title,
-  description = 'Inseok Lee — MSc Chemical Engineering · KIST researcher · hydrogen × AI',
+  description = 'Inseok Lee — process systems engineer. Hands-on system engineering, thermal simulation & optimization, AI-driven engineering tools, and ALD processes.',
   ogImage = '/og-default.png',
+  section,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://inseoklee.com');
@@ -61,11 +65,32 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://inseokle
       })} />
     )}
   </head>
-  <body>
+  <body data-sec={section}>
     <Nav />
     <main class="page-wrapper">
       <slot />
     </main>
     <Footer />
+
+    <script>
+      // Site-wide scroll reveal for [data-reveal] elements
+      const revealEls = document.querySelectorAll('[data-reveal]');
+      if (revealEls.length && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+        revealEls.forEach((el) => io.observe(el));
+      } else {
+        revealEls.forEach((el) => el.classList.add('is-revealed'));
+      }
+    </script>
   </body>
 </html>

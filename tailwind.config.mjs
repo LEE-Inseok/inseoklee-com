@@ -4,19 +4,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Clean White design tokens — white + black + gray + cyan
-        'bg-base':   '#FFFFFF',
-        'bg-warm':   '#FAFAFA',
-        'bg-cool':   '#F5F7FA',
-        'bg-cyan':   '#F0F8FA',
-        surface:     '#F5F5F5',
-        border:      '#E5E5E5',
-        ink:         '#0A0A0A',
-        body:        '#1F1F1F',
-        muted:       '#6B6B6B',
-        accent:      '#06B6D4',
-        'accent-dk': '#0891B2',
-        critical:    '#DC2626',
+        // Monochrome base (dark) — must mirror the CSS variables in globals.css.
+        // These are static fallbacks for Tailwind utilities; the live source of
+        // truth for anything section-aware is the --sec CSS variable.
+        'bg-base':  '#0A0A0A',
+        'bg-raise': '#101010',
+        surface:    '#161616',
+        border:     '#2A2A2A',
+        ink:        '#F5F5F5',
+        body:       '#D4D4D4',
+        muted:      '#8A8A8A',
+        critical:   '#EF4444',
+
+        // Section identity accents
+        research:    '#12ADC7', // cyan
+        engineering: '#E0A400', // amber
+        development: '#DB4F94', // pink
+        recognition: '#2EA96A', // green
+
+        // Accent utilities resolve to the active section accent at runtime.
+        accent:      'var(--sec)',
+        'accent-dk': 'var(--sec-dk)',
       },
       fontFamily: {
         serif: ['Fraunces', 'Georgia', 'serif'],

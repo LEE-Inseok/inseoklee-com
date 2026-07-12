@@ -28,8 +28,9 @@ const navGroups = [
     label: 'Area',
     trigger: 'expand' as const,
     items: [
-      { view: 'experimental', label: 'Experimental' },
-      { view: 'simulation',   label: 'Simulation' },
+      { view: 'experimental', label: 'System Engineering' },
+      { view: 'simulation',   label: 'Thermal Simulation' },
+      { view: 'ald',          label: 'ALD' },
     ],
   },
   {
@@ -41,10 +42,15 @@ const navGroups = [
 ];
 
 const experimentalPlaceholders = [
-  { title: 'SBH Hydrogen Energy System — Small scale', summary: 'Bench-scale integrated testbed converting sodium borohydride hydrolysis into electricity via PEM fuel cell.', existingSlug: 'sbh-experiment' },
-  { title: 'SBH Hydrogen Energy System — Large scale', summary: 'Scale-up study toward armoured-vehicle-class SBH system with full coolant loop redesign.', existingSlug: null },
-  { title: 'SBH Hydrogen Energy System — Regulatory Approval', summary: 'Certification and safety review track for portable SBH-based power systems.', existingSlug: null },
-  { title: 'PEMFC', summary: 'Proton-exchange-membrane fuel cell characterization — IV curves, EIS, and CO sensitivity.', existingSlug: null },
+  { title: 'Integrated Energy System — Bench scale', summary: 'Designed, built, and operated an integrated system end-to-end — SBH hydrolysis reactor, balance-of-plant, and PEM fuel cell delivering electricity on demand.', existingSlug: 'sbh-experiment' },
+  { title: 'Integrated Energy System — Scale-up', summary: 'Scale-up engineering toward a vehicle-class system — coolant-loop redesign, thermal envelope, and safety constraints.', existingSlug: null },
+  { title: 'Regulatory Approval Track', summary: 'Certification and safety review for portable power systems — engineering a system that must pass, not just work.', existingSlug: null },
+  { title: 'PEMFC Characterization', summary: 'Proton-exchange-membrane fuel cell testing — IV curves, EIS, and CO sensitivity.', existingSlug: null },
+];
+
+const aldPlaceholders = [
+  { title: 'ALD Catalyst Synthesis', summary: 'Atomic layer deposition for precision catalyst synthesis — atomic-scale control of active sites and film composition. Ongoing.', existingSlug: null },
+  { title: 'ALD Life-Cycle Assessment', summary: 'Cradle-to-gate LCA of ALD processes — precursor consumption, energy intensity, and emissions per functional unit. Ongoing.', existingSlug: null },
 ];
 
 const simulationPlaceholders = [
@@ -66,13 +72,14 @@ function simulationEntry(slug: string | null) {
 <BaseLayout
   title="Research — Inseok Lee"
   description="Research on hydrogen energy systems — experimental work, simulation, optimization, and publications."
+  section="research"
 >
   <div class="container-site py-16">
     <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
       <span class="section-label">Research</span>
       <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Research.</h1>
       <p class="mt-3 text-base max-w-xl" style="color: var(--muted);">
-        Hydrogen energy systems — experimental, simulation, optimization, and publications.
+        Process systems, end-to-end — hands-on system engineering, thermal simulation & optimization, ALD processes, and publications.
       </p>
     </header>
 
@@ -92,23 +99,30 @@ function simulationEntry(slug: string | null) {
 
         <!-- Experimental — all items are active/in-progress, rendered in full color -->
         <section data-view-panel="experimental" hidden aria-labelledby="cn-area-trigger">
-          <h2 class="view-title">Area · Experimental</h2>
+          <h2 class="view-title">Area · System Engineering</h2>
           <div class="flex flex-col max-w-2xl">
-            {experimentalPlaceholders.map((p) => {
+            {experimentalPlaceholders.map((p, i) => {
               const real = experimentalEntry(p.existingSlug);
+              const num = String(i + 1).padStart(2, '0');
               if (real) {
                 return (
-                  <a href={`/research/${real.slug}`} class="card flex flex-col gap-3 group">
-                    <h4 class="card-title">{real.data.title}</h4>
-                    <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
-                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  <a href={`/research/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                    <span class="row-num" aria-hidden="true">{num}</span>
+                    <div class="flex flex-col gap-3 min-w-0">
+                      <h4 class="card-title">{real.data.title}</h4>
+                      <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                      <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                    </div>
                   </a>
                 );
               }
               return (
-                <div class="card flex flex-col gap-3">
-                  <h4 class="card-title">{p.title}</h4>
-                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                <div class="card flex gap-5" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <span class="row-num" aria-hidden="true">{num}</span>
+                  <div class="flex flex-col gap-3 min-w-0">
+                    <h4 class="card-title">{p.title}</h4>
+                    <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                  </div>
                 </div>
               );
             })}
@@ -117,27 +131,51 @@ function simulationEntry(slug: string | null) {
 
         <!-- Simulation -->
         <section data-view-panel="simulation" hidden aria-labelledby="cn-area-trigger">
-          <h2 class="view-title">Area · Simulation</h2>
+          <h2 class="view-title">Area · Thermal Simulation</h2>
           <div class="flex flex-col max-w-2xl">
-            {simulationPlaceholders.map((p) => {
+            {simulationPlaceholders.map((p, i) => {
               const real = simulationEntry(p.existingSlug);
+              const num = String(i + 1).padStart(2, '0');
               if (real) {
                 return (
-                  <a href={`/engineering/${real.slug}`} class="card flex flex-col gap-3 group">
-                    <h4 class="card-title">{real.data.title}</h4>
-                    <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
-                    <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                  <a href={`/engineering/${real.slug}`} class="card flex gap-5 group" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                    <span class="row-num" aria-hidden="true">{num}</span>
+                    <div class="flex flex-col gap-3 min-w-0">
+                      <h4 class="card-title">{real.data.title}</h4>
+                      <p class="text-base" style="color: var(--body);">{real.data.summary}</p>
+                      <span class="text-sm mt-1" style="color: var(--accent-dk);">View project →</span>
+                    </div>
                   </a>
                 );
               }
               return (
-                <div class="card flex flex-col gap-3" data-stub="true">
-                  <span class="section-label" style="color: var(--muted);">In preparation</span>
-                  <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
-                  <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+                <div class="card flex gap-5" data-stub="true" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <span class="row-num" aria-hidden="true">{num}</span>
+                  <div class="flex flex-col gap-3 min-w-0">
+                    <span class="section-label" style="color: var(--muted);">In preparation</span>
+                    <h4 class="card-title" style="color: var(--muted);">{p.title}</h4>
+                    <p class="text-base" style="color: var(--muted);">{p.summary}</p>
+                  </div>
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        <!-- ALD -->
+        <section data-view-panel="ald" hidden aria-labelledby="cn-area-trigger">
+          <h2 class="view-title">Area · ALD</h2>
+          <div class="flex flex-col max-w-2xl">
+            {aldPlaceholders.map((p, i) => (
+              <div class="card flex gap-5" data-stub="true" data-reveal style={`transition-delay: ${i * 70}ms`}>
+                <span class="row-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex flex-col gap-3 min-w-0">
+                  <span class="section-label" style="color: var(--accent-dk);">In progress</span>
+                  <h4 class="card-title">{p.title}</h4>
+                  <p class="text-base" style="color: var(--body);">{p.summary}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -145,17 +183,21 @@ function simulationEntry(slug: string | null) {
         <section data-view-panel="publication" hidden aria-labelledby="cn-publication-trigger">
           <h2 class="view-title">Publication</h2>
           <div class="flex flex-col max-w-2xl">
-            {publications.map((pub) => {
+            {publications.map((pub, i) => {
               const isPending = pub.data.status === 'in-preparation' || pub.data.status === 'draft';
+              const num = String(i + 1).padStart(2, '0');
               return (
-                <div class="card flex flex-col gap-3" data-pending={isPending ? 'true' : undefined}>
-                  <div class="flex items-center justify-between">
-                    <span class="section-label" style={isPending ? 'color: var(--muted);' : 'color: var(--accent-dk);'}>{statusLabel[pub.data.status] ?? pub.data.status}</span>
-                    {pub.data.date && <span class="section-label">{pub.data.date}</span>}
+                <div class="card flex gap-5" data-pending={isPending ? 'true' : undefined} data-reveal style={`transition-delay: ${i * 70}ms`}>
+                  <span class="row-num" aria-hidden="true">{num}</span>
+                  <div class="flex flex-col gap-3 min-w-0 flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="section-label" style={isPending ? 'color: var(--muted);' : 'color: var(--accent-dk);'}>{statusLabel[pub.data.status] ?? pub.data.status}</span>
+                      {pub.data.date && <span class="section-label">{pub.data.date}</span>}
+                    </div>
+                    <h3 class="card-title" style={isPending ? 'color: var(--muted);' : undefined}>{pub.data.title}</h3>
+                    <p class="text-base" style={isPending ? 'color: var(--muted);' : 'color: var(--body);'}>{pub.data.summary}</p>
+                    {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
                   </div>
-                  <h3 class="card-title" style={isPending ? 'color: var(--muted);' : undefined}>{pub.data.title}</h3>
-                  <p class="text-base" style={isPending ? 'color: var(--muted);' : 'color: var(--body);'}>{pub.data.summary}</p>
-                  {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
                 </div>
               );
             })}

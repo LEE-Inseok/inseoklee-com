@@ -1,10 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectDetail from '../../components/ProjectDetail.astro';
-import { getEntry } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
-const entry = await getEntry('engineering', 'ccpp-lohc');
-if (!entry) throw new Error('Entry ccpp-lohc not found');
+export async function getStaticPaths() {
+  const entries = await getCollection('engineering');
+  // Static pages already exist for these slugs — avoid route collisions.
+  return entries
+    .filter((entry) => !['sbh-thermal', 'ccpp-lohc'].includes(entry.slug))
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props:  { entry },
+    }));
+}
+
+type Props = { entry: CollectionEntry<'engineering'> };
+const { entry } = Astro.props;
 const { Content } = await entry.render();
 const { title, summary, tags, date, images } = entry.data;
 ---
