@@ -21,7 +21,7 @@ A single-file, client-side dashboard for exploring the CCPP–LOHC dehydrogenati
 ## Highlights
 
 - **Zero backend** — Excel parsing (SheetJS), thermodynamic post-processing, and charting (Chart.js) all run in the browser; uploaded files never leave your machine
-- **Trial dataset included** — 10 evenly-spaced operating points per extraction line (Lines 5, 6, 9), sampled from the full 100-case v14 LHS study; the complete dataset accompanies the paper (in preparation)
+- **Trial dataset included** — 15 evenly-spaced operating points per extraction line (Lines 5, 6, 9), sampled from the full 100-case v14 LHS study; the complete dataset accompanies the paper (in preparation)
 - **Flexible column mapping** — alias-based schema matching tolerates renamed Aspen variables across model revisions
 - **Line comparison mode** — picks the nearest matching operating point per line and compares five KPIs plus a normalized radar chart
 - **Part of a pipeline** — consumes output from the [Aspen Automation Framework](/development/aspen-automation) powering the [CCPP-LOHC optimization study](/research/ccpp-lohc)
