@@ -4,6 +4,10 @@ title: Selective CO-to-Hydrocarbon Conversion in Formic Acid-Promoted Sodium Bor
 date: "2026-06"
 type: oral
 status: presented
+images:
+  - /recognition/kmts-2026/slide-title.jpg
+  - /recognition/kmts-2026/slide-summary.jpg
+  - /recognition/kmts-2026/slide-conclusion.jpg
 summary: Oral presentation delivered at the Korea Military Technology Society 2026 meeting. Reframes the SBH-CO selectivity work for defense logistics — on-demand high-purity hydrogen generation from chemical hydride hydrolysis suited to field-portable and remote power systems.
 ---
 

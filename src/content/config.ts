@@ -93,6 +93,10 @@ const recognitionPresentations = defineCollection({
     status:     z.enum(['scheduled', 'presented']).optional(),
     summary:    z.string(),
     image:      z.string().optional(),
+    // Slide/poster images shown as a photo gallery on the card (same lightbox
+    // as Activities). Blur any figures/numbers that shouldn't be public before
+    // adding files here.
+    images:     z.array(z.string()).optional(),
   }),
 });
 
