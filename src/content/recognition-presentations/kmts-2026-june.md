@@ -5,6 +5,7 @@ date: "2026-06"
 type: oral
 status: presented
 images:
+  - /recognition/kmts-2026/venue.jpg
   - /recognition/kmts-2026/slide-title.jpg
   - /recognition/kmts-2026/slide-summary.jpg
   - /recognition/kmts-2026/slide-conclusion.jpg

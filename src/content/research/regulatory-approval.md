@@ -3,6 +3,9 @@ title: Regulatory Approval Track
 section: system-engineering
 status: coming-soon
 summary: Certification and safety review for portable hydrogen power systems — centered on the CO purification unit I was responsible for.
+images:
+  - /images/research/regulatory-approval/purifier-rig.jpg
+  - /images/research/regulatory-approval/purifier-cad.png
 ---
 
 ## What it is

@@ -3,6 +3,9 @@ title: PEMFC Characterization
 section: system-engineering
 status: coming-soon
 summary: PEM fuel cell work on two fronts — lab-scale single-cell characterization (IV, EIS, CO sensitivity) and stack operation for the regulatory approval track.
+images:
+  - /images/research/pemfc-characterization/pemfc-station.jpg
+  - /images/research/pemfc-characterization/pemfc-cell.jpg
 ---
 
 ## What it is

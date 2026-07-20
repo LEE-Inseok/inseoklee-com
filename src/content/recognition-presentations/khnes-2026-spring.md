@@ -5,6 +5,7 @@ date: "2026-05"
 type: poster
 status: presented
 images:
+  - /recognition/khnes-2026/venue.jpg
   - /recognition/khnes-2026/poster.jpg
 summary: Poster presented at the Korea Hydrogen and New Energy Society 2026 spring meeting. Reports a selective catalytic pathway that converts CO impurities into hydrocarbons during formic-acid-promoted SBH hydrolysis, yielding fuel-cell-grade hydrogen (CO < 10 ppm) without a separate CO-removal stage.
 ---

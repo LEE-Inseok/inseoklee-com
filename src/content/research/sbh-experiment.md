@@ -3,6 +3,8 @@ title: SBH Hydrogen Energy System
 section: system-engineering
 status: published
 summary: Bench-scale testbed converting sodium borohydride hydrolysis into electricity via a PEM fuel cell — designed, built, and operated end-to-end.
+images:
+  - /images/research/sbh-experiment/sbh-setup.jpg
 date: "2024"
 tags:
   - SBH
