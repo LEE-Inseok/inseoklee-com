@@ -3,6 +3,8 @@ issuer: Korea IT Academy
 title: R Data Analysis
 date: "2024"
 pdf: /recognition/korea-it-academy/r-analysis.pdf
+images:
+  - /recognition/korea-it-academy/r-analysis.jpg
 summary: 30-hour course on R for statistical analysis and visualisation — tidyverse data wrangling, ggplot2 publication-quality charts, and core statistical modeling.
 ---
 

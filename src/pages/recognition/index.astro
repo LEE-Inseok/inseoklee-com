@@ -90,20 +90,29 @@ const navGroups = [
                   </div>
                   <h4 class="card-title">{c.data.title}</h4>
                   <p class="text-base" style="color: var(--body);">{c.data.summary}</p>
-                  {(c.data.verifyUrl || c.data.pdf || c.data.pdfs) && (
-                    <div class="flex flex-wrap gap-4 mt-1 text-sm">
-                      {c.data.verifyUrl && (
-                        <a href={c.data.verifyUrl} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Verify →</a>
-                      )}
-                      {c.data.pdf && (
-                        <a href={encodeURI(c.data.pdf)} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Certificate (PDF) →</a>
-                      )}
-                      {c.data.pdfs?.map((doc) => (
-                        <a href={encodeURI(doc.href)} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">{doc.label} (PDF) →</a>
-                      ))}
-                    </div>
-                  )}
                 </div>
+                {c.data.images && c.data.images.length > 0 && (
+                  <div class="cert-thumbs" data-gallery>
+                    {c.data.images.map((src, j) => (
+                      <button
+                        type="button"
+                        class="activity-photo-btn cert-thumb-btn"
+                        data-photo-src={src}
+                        data-photo-index={j}
+                        aria-label={`Open certificate ${j + 1} of ${c.data.title}`}
+                      >
+                        <img
+                          src={src}
+                          alt={`${c.data.title} — certificate ${j + 1}`}
+                          class="cert-photo"
+                          style={`max-height: ${c.data.images!.length > 1 ? '6.5rem' : '9.5rem'};`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -282,6 +291,38 @@ const navGroups = [
   }
   .activity-photo-btn:hover .activity-photo {
     transform: scale(1.02);
+  }
+
+  /* Certificate previews — small right-side thumbnails on certification
+     cards, sized to sit within the card's height. Mixed aspect ratios
+     (landscape Anthropic, portrait A4) both fit via max-height + auto width. */
+  .cert-thumbs {
+    flex-shrink: 0;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    max-width: 11rem;
+  }
+  .cert-thumb-btn {
+    width: auto;
+  }
+  .cert-photo {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    transition: transform 200ms ease;
+  }
+  .cert-thumb-btn:hover .cert-photo {
+    transform: scale(1.03);
+  }
+  @media (max-width: 640px) {
+    .cert-thumbs { max-width: 7.5rem; }
+    .cert-photo { max-height: 6rem !important; }
   }
 
   /* Lightbox */

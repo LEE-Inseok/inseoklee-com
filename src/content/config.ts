@@ -82,6 +82,10 @@ const recognitionCertifications = defineCollection({
     // For certifications issued as multiple documents (e.g. a course series):
     // each entry renders as its own labelled "<label> (PDF)" link.
     pdfs:      z.array(z.object({ label: z.string(), href: z.string() })).optional(),
+    // Certificate images shown as small right-side previews on the card;
+    // clicking opens the shared lightbox. (pdf/pdfs above are kept as source
+    // documents but are no longer rendered as links.)
+    images:    z.array(z.string()).optional(),
     summary:   z.string(),
   }),
 });

@@ -5,6 +5,8 @@ date: "2026-04"
 certId: qkzuumcm3eaz
 verifyUrl: https://verify.skilljar.com/c/qkzuumcm3eaz
 pdf: /recognition/anthropic/anthropic-claude-code-101.pdf
+images:
+  - /recognition/anthropic/anthropic-claude-code-101.jpg
 summary: Anthropic official introductory course on Claude Code — CLI fundamentals, slash commands, permissions, file editing patterns, and the core agentic-coding workflow.
 ---
 

@@ -5,6 +5,8 @@ date: "2026-04"
 certId: uankgivu2jje
 verifyUrl: https://verify.skilljar.com/c/uankgivu2jje
 pdf: /recognition/anthropic/anthropic-claude-cowork.pdf
+images:
+  - /recognition/anthropic/anthropic-claude-cowork.jpg
 summary: Anthropic official course on Claude Cowork — collaborative agent workflows, role-based plugin setup, shared task coordination, and team-style human-AI cooperation patterns.
 ---
 
