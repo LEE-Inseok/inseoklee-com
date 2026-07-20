@@ -2,6 +2,20 @@
 title: SBH Thermal Simulation
 section: simulation
 status: draft
+images:
+  - src: /images/research/sbh-thermal/thermal-model.png
+    full: /images/research/sbh-thermal/thermal-model-full.png
+    captionTitle: Reduced-Order Thermal Model
+    caption: >-
+      Lumped-parameter control volumes — SBH H₂ generator, G/L separator, heat
+      exchanger, and CO purifier — coupled through gas, fluid, and heat flows.
+  - src: /images/research/sbh-thermal/heat-recovery-cases.png
+    full: /images/research/sbh-thermal/heat-recovery-cases-full.png
+    captionTitle: Heat-Recovery Configurations
+    caption: >-
+      Four heat-exchange layouts compared: external line-wrapped, internal
+      line, purifier inside the SBH reactor, and purifier with lines inside
+      the reactor.
 summary: Physics-based thermal study comparing 5 heat-recovery configurations for the SBH hydrogen system — from simple retrofit to fully integrated design.
 date: "2024"
 tags:
