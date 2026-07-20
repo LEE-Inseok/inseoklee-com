@@ -68,6 +68,26 @@ const navGroups = [
                   <h4 class="card-title">{a.data.title}</h4>
                   <p class="text-base" style="color: var(--body);">{a.data.summary}</p>
                 </div>
+                {a.data.image && (
+                  <div class="cert-thumbs" data-gallery>
+                    <button
+                      type="button"
+                      class="activity-photo-btn cert-thumb-btn"
+                      data-photo-src={a.data.image}
+                      data-photo-index={0}
+                      aria-label={`Open award certificate of ${a.data.title}`}
+                    >
+                      <img
+                        src={a.data.image}
+                        alt={`${a.data.title} — award certificate`}
+                        class="cert-photo"
+                        style="max-height: 9.5rem;"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

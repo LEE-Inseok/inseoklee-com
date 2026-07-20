@@ -2,6 +2,7 @@
 title: Defense R&D Idea Competition
 year: 2025
 prize: Encouragement Prize
+image: /recognition/awards/defense-rd.jpg
 summary: Proposed a compact, on-demand hydrogen generation module based on chemical hydride technology, targeting mobile power supply applications in field environments where conventional fuel logistics are constrained.
 ---
 
