@@ -2181,13 +2181,6 @@
                   min="${epsMin}" max="${epsMax}" step="0.1" value="${sel.epsilon}" />
               </div>
               <div class="control-group">
-                <label>MCH Feed (tons/hr)</label>
-                <div class="control-value" id="mch-disp-${lineId}">${fmt(sel.mchFlow, 1)} tons/hr</div>
-                <input type="range" id="mch-slider-${lineId}"
-                  min="${mchMin}" max="${mchMax}" step="${((mchMax-mchMin)/200).toFixed(4)}"
-                  value="${sel.mchFlow}" />
-              </div>
-              <div class="control-group">
                 <label>Temp Upper (\u00B0C)</label>
                 <div class="control-value" id="temp-hi-disp-${lineId}">400\u00B0C</div>
                 <input type="range" id="temp-hi-${lineId}"
@@ -2201,19 +2194,6 @@
                   min="100" max="500" step="10" value="300" />
                 <div class="info-note" style="margin-top:2px;font-size:10px;">Min. conversion temp</div>
               </div>
-            </div>
-            <div class="controls">
-              <div class="control-group">
-                <label>h\u2080 (J/kg)</label>
-                <input type="number" id="h0-${lineId}" value="0" step="1000" placeholder="0"
-                  style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-input);color:var(--text-main);font-size:13px;" />
-              </div>
-              <div class="control-group">
-                <label>s\u2080 (J/kg\u00B7K)</label>
-                <input type="number" id="s0-${lineId}" value="0" step="10" placeholder="0"
-                  style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-input);color:var(--text-main);font-size:13px;" />
-              </div>
-              <div class="info-note">Aspen NBS: H\u2080=S\u2080=0 at 25\u00B0C</div>
             </div>
           </div>
         </div>
@@ -2243,9 +2223,6 @@
 
     _attachLineListeners(lineId) {
       const epsSlider = document.getElementById(`eps-slider-${lineId}`);
-      const mchSlider = document.getElementById(`mch-slider-${lineId}`);
-      const h0Input   = document.getElementById(`h0-${lineId}`);
-      const s0Input   = document.getElementById(`s0-${lineId}`);
 
       const data = AppState.lines[lineId];
       const mchKey = 'mch_input';
@@ -2257,44 +2234,15 @@
         const snapped = epsilons[nearestIdx(epsilons, rawEps)] ?? rawEps;
         AppState.selection[lineId].epsilon = snapped;
         document.getElementById(`eps-disp-${lineId}`).textContent = fmt(snapped, 1) + '%';
-        // Update MCH slider range for this epsilon
+        // Track the MCH value belonging to this epsilon (LHS data: one point per epsilon)
         const candidates = data.computed.filter(r => Math.abs(r.epsilon - snapped) < 0.001);
         const mchVals = uniqueSorted(candidates.map(r => r[mchKey]));
         if (mchVals.length) {
-          mchSlider.min   = mchVals[0];
-          mchSlider.max   = mchVals[mchVals.length - 1];
-          mchSlider.step  = ((mchVals[mchVals.length-1] - mchVals[0]) / 200).toFixed(4);
-          // Clamp current MCH selection
-          const nearMch = mchVals[nearestIdx(mchVals, AppState.selection[lineId].mchFlow)] ?? mchVals[0];
-          AppState.selection[lineId].mchFlow = nearMch;
-          mchSlider.value = nearMch;
-          document.getElementById(`mch-disp-${lineId}`).textContent = fmt(nearMch, 1) + ' tons/hr';
+          AppState.selection[lineId].mchFlow =
+            mchVals[nearestIdx(mchVals, AppState.selection[lineId].mchFlow)] ?? mchVals[0];
         }
         this.renderLinePanel(lineId);
       });
-
-      mchSlider?.addEventListener('input', () => {
-        const rawMch = parseFloat(mchSlider.value);
-        const selEps = AppState.selection[lineId].epsilon;
-        const candidates = data.computed.filter(r => Math.abs(r.epsilon - selEps) < 0.001);
-        const mchVals = uniqueSorted(candidates.map(r => r[mchKey]));
-        const snapped = mchVals[nearestIdx(mchVals, rawMch)] ?? rawMch;
-        AppState.selection[lineId].mchFlow = snapped;
-        document.getElementById(`mch-disp-${lineId}`).textContent = fmt(snapped, 1) + ' tons/hr';
-        this.renderLinePanel(lineId);
-      });
-
-      const recompute = () => {
-        const h0 = parseFloat(h0Input?.value) || 0;
-        const s0 = parseFloat(s0Input?.value) || 0;
-        AppState.lines[lineId].h0 = h0;
-        AppState.lines[lineId].s0 = s0;
-        AppState.lines[lineId].computed = Calculator.computeAll(data.clean, data.columnMap, h0, s0);
-        this.renderLinePanel(lineId);
-      };
-
-      h0Input?.addEventListener('change', recompute);
-      s0Input?.addEventListener('change', recompute);
 
       // Temperature threshold sliders
       const tempHiSlider = document.getElementById(`temp-hi-${lineId}`);
