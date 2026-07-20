@@ -2,6 +2,11 @@
 issuer: Korea IT Academy
 title: Python-based AI
 date: "2022"
+pdfs:
+  - label: Projects 1–4 (120 h)
+    href: /recognition/korea-it-academy/python-ai-projects-1-4.pdf
+  - label: Projects 5–6 (60 h)
+    href: /recognition/korea-it-academy/python-ai-projects-5-6.pdf
 summary: 180-hour course series on Python AI fundamentals — NumPy / Pandas data handling, scikit-learn classical ML, and PyTorch / Keras deep learning across CNN and RNN architectures.
 ---
 

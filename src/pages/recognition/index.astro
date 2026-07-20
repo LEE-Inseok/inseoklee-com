@@ -90,7 +90,7 @@ const navGroups = [
                   </div>
                   <h4 class="card-title">{c.data.title}</h4>
                   <p class="text-base" style="color: var(--body);">{c.data.summary}</p>
-                  {(c.data.verifyUrl || c.data.pdf) && (
+                  {(c.data.verifyUrl || c.data.pdf || c.data.pdfs) && (
                     <div class="flex flex-wrap gap-4 mt-1 text-sm">
                       {c.data.verifyUrl && (
                         <a href={c.data.verifyUrl} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Verify →</a>
@@ -98,6 +98,9 @@ const navGroups = [
                       {c.data.pdf && (
                         <a href={encodeURI(c.data.pdf)} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">Certificate (PDF) →</a>
                       )}
+                      {c.data.pdfs?.map((doc) => (
+                        <a href={encodeURI(doc.href)} target="_blank" rel="noopener noreferrer" style="color: var(--accent-dk); text-decoration: underline;">{doc.label} (PDF) →</a>
+                      ))}
                     </div>
                   )}
                 </div>

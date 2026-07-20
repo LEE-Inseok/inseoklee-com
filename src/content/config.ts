@@ -79,6 +79,9 @@ const recognitionCertifications = defineCollection({
     certId:    z.string().optional(),
     verifyUrl: z.string().url().optional(),
     pdf:       z.string().optional(),
+    // For certifications issued as multiple documents (e.g. a course series):
+    // each entry renders as its own labelled "<label> (PDF)" link.
+    pdfs:      z.array(z.object({ label: z.string(), href: z.string() })).optional(),
     summary:   z.string(),
   }),
 });
