@@ -2,6 +2,22 @@ import { defineCollection, z } from 'astro:content';
 
 // slug is auto-generated from the markdown filename — must NOT be declared in schemas.
 
+// A detail-page image is either a bare path or a path + caption. When any image
+// carries a caption, ProjectDetail switches from the small 3-up photo strip to a
+// larger, stacked figure layout with the caption shown beneath each figure —
+// better for diagrams and architecture drawings that need to be read.
+// `full` optionally points at a high-resolution original; clicking the figure
+// opens it in a lightbox with a download link.
+const imageEntry = z.union([
+  z.string(),
+  z.object({
+    src:          z.string(),
+    captionTitle: z.string().optional(), // short subtitle shown on the "Fig. N" line
+    caption:      z.string().optional(), // one-or-two-sentence explanation below it
+    full:         z.string().optional(),
+  }),
+]);
+
 const research = defineCollection({
   type: 'content',
   schema: z.object({
@@ -10,7 +26,7 @@ const research = defineCollection({
     section:  z.enum(['system-engineering', 'simulation', 'ald']),
     status:   z.enum(['published', 'draft', 'coming-soon']).default('draft'),
     summary:  z.string(),
-    images:   z.array(z.string()).max(3).default([]), // up to 3 photos, shown in the detail-page photo strip
+    images:   z.array(imageEntry).max(3).default([]), // up to 3 photos, shown in the detail-page photo strip
     chapters: z.array(
       z.object({
         number: z.number(),
@@ -34,7 +50,7 @@ const development = defineCollection({
     // unlinked stubs and get no detail page.
     status:  z.enum(['published', 'draft', 'coming-soon']).default('published'),
     summary: z.string(),
-    images:  z.array(z.string()).max(3).default([]),
+    images:  z.array(imageEntry).max(3).default([]),
     // When set, the project card links here (e.g. a GitHub repo) instead of
     // to a generated detail page.
     externalUrl: z.string().url().optional(),
