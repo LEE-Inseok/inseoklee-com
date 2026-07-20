@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Dashboard</title>
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --bg-card: #1c2128;
+    --bg-hover: #262c36;
+    --border-default: #30363d;
+    --border-muted: #21262d;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --accent-blue: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-red: #f85149;
+    --accent-orange: #d29922;
+    --accent-purple: #bc8cff;
+    --accent-pink: #f778ba;
+    --accent-cyan: #39d3f7;
+    --accent-teal: #20c9a0;
+    --accent-yellow: #e3b341;
+    --accent-indigo: #818cf8;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+    --transition: 0.2s ease;
+    --sidebar-width: 220px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-default);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    animation: slideInLeft 0.4s ease;
+  }
+
+  .sidebar-logo {
+    padding: 0 16px 20px;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 12px;
+  }
+
+  .sidebar-logo .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-logo h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .sidebar-logo p {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .nav-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 16px 4px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+    transition: all var(--transition);
+    cursor: pointer;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+    border-left-color: var(--accent-blue);
+  }
+
+  .nav-link .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-link .nav-count {
+    margin-left: auto;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ── Search bar ── */
+  .search-container {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 8px;
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 6px 10px 6px 28px;
+    color: var(--text-primary);
+    font-size: 12px;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236e7681' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    transition: border-color var(--transition);
+  }
+
+  .search-input:focus { border-color: var(--accent-blue); }
+  .search-input::placeholder { color: var(--text-muted); }
+
+  /* ── Main content ── */
+  .main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 32px 36px;
+    max-width: calc(100vw - var(--sidebar-width));
+    animation: fadeInUp 0.5s ease;
+  }
+
+  /* ── Header ── */
+  .dashboard-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .dashboard-header .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+
+  .dashboard-header p.subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  .last-updated {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .last-updated strong { color: var(--accent-green); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    transition: all var(--transition);
+  }
+
+  .stat-pill:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-tertiary);
+    transform: translateY(-1px);
+  }
+
+  .stat-pill .stat-num {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-blue);
+  }
+
+  .stat-pill .stat-label { color: var(--text-secondary); }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 40px;
+    animation: fadeInUp 0.4s ease both;
+  }
+
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.10s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.20s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.30s; }
+  .section:nth-child(7) { animation-delay: 0.35s; }
+  .section:nth-child(8) { animation-delay: 0.40s; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .section-header:hover .section-title { color: var(--accent-blue); }
+
+  .section-icon { font-size: 18px; }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color var(--transition);
+  }
+
+  .section-badge {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .section-toggle {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+    transition: transform var(--transition);
+  }
+
+  .section-toggle.collapsed { transform: rotate(-90deg); }
+
+  .section-body {
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .section-body.collapsed {
+    display: none;
+  }
+
+  /* ── Agent Group ── */
+  .agent-group {
+    margin-bottom: 24px;
+  }
+
+  .agent-group-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+
+  .agent-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-left: 3px solid var(--card-color, var(--accent-blue));
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .agent-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--card-color, var(--accent-blue)), transparent);
+    opacity: 0.5;
+  }
+
+  .agent-card:hover {
+    border-color: var(--card-color, var(--accent-blue));
+    box-shadow: 0 0 0 1px var(--card-color, var(--accent-blue)) inset, var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .agent-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .agent-emoji { font-size: 16px; }
+
+  .agent-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+
+  .model-badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .model-opus { background: rgba(188,140,255,0.15); color: var(--accent-purple); border: 1px solid rgba(188,140,255,0.3); }
+  .model-sonnet { background: rgba(88,166,255,0.15); color: var(--accent-blue); border: 1px solid rgba(88,166,255,0.3); }
+  .model-haiku { background: rgba(63,185,80,0.15); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.3); }
+  .model-custom { background: rgba(110,118,129,0.15); color: var(--text-muted); border: 1px solid rgba(110,118,129,0.3); }
+
+  .agent-role {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .tools-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .tool-tag {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 2px 7px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    transition: all var(--transition);
+  }
+
+  .tool-tag:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    border-color: var(--accent-blue);
+  }
+
+  .tool-tag.special {
+    color: var(--accent-orange);
+    border-color: rgba(210,153,34,0.3);
+    background: rgba(210,153,34,0.08);
+  }
+
+  /* ── Rules Box ── */
+  .rules-box {
+    background: rgba(88,166,255,0.05);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-top: 8px;
+  }
+
+  .rules-box h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+  }
+
+  .rule-item:last-child { border-bottom: none; }
+  .rule-arrow { color: var(--accent-blue); font-weight: bold; flex-shrink: 0; }
+
+  /* ── Commands / Skills ── */
+  .command-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .command-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: all var(--transition);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .command-card:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-hover);
+    transform: translateY(-1px);
+  }
+
+  .command-icon { font-size: 22px; flex-shrink: 0; }
+
+  .command-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    margin-bottom: 3px;
+  }
+
+  .command-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+
+  .command-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* Skills */
+  .skill-group { margin-bottom: 16px; }
+  .skill-group-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .skill-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .skill-pill {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: all var(--transition);
+    cursor: default;
+  }
+
+  .skill-pill:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+
+  /* ── Settings ── */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .settings-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 16px;
+  }
+
+  .settings-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .settings-card h4 .settings-icon { font-size: 14px; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .cmd-tag {
+    background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.25);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--accent-green);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+
+  .tool-allow-tag {
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.25);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--accent-blue);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+
+  .domain-tag {
+    background: rgba(188,140,255,0.1);
+    border: 1px solid rgba(188,140,255,0.25);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--accent-purple);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+
+  .mcp-tag {
+    background: rgba(210,153,34,0.1);
+    border: 1px solid rgba(210,153,34,0.25);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--accent-yellow);
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+
+  .mcp-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  /* ── Memory ── */
+  .memory-accordion { display: flex; flex-direction: column; gap: 8px; }
+
+  .memory-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .memory-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background var(--transition);
+    user-select: none;
+  }
+
+  .memory-group-header:hover { background: var(--bg-hover); }
+
+  .memory-group-icon { font-size: 16px; }
+  .memory-group-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .memory-group-count {
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .memory-group-toggle { margin-left: auto; color: var(--text-muted); font-size: 12px; transition: transform var(--transition); }
+  .memory-group-toggle.open { transform: rotate(90deg); }
+
+  .memory-group-body { padding: 0 0 8px 0; }
+
+  .memory-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-muted);
+    transition: background var(--transition);
+  }
+
+  .memory-item:hover { background: var(--bg-hover); }
+
+  .memory-type-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+
+  .memory-filename {
+    font-size: 12px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    color: var(--accent-blue);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .memory-desc { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── Templates ── */
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .template-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: all var(--transition);
+  }
+
+  .template-card:hover {
+    border-color: var(--accent-indigo);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .template-name {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    color: var(--accent-indigo);
+    margin-bottom: 4px;
+  }
+
+  .template-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* CLAUDE.md rules */
+  .claude-rules { display: flex; flex-direction: column; gap: 8px; }
+
+  .claude-rule-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .rule-num {
+    width: 24px;
+    height: 24px;
+    background: rgba(88,166,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+  }
+
+  .rule-content { flex: 1; }
+  .rule-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .rule-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ── Workspaces ── */
+  .workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .workspace-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    transition: all var(--transition);
+  }
+
+  .workspace-card:hover {
+    border-color: var(--accent-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 0 16px rgba(57,211,247,0.1);
+  }
+
+  .workspace-icon { font-size: 24px; margin-bottom: 8px; }
+  .workspace-name { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+
+  .workspace-path {
+    font-size: 11px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    word-break: break-all;
+  }
+
+  .workspace-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.5; }
+
+  .workspace-memory {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.25);
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-size: 11px;
+    color: var(--accent-green);
+  }
+
+  /* ── Hooks ── */
+  .hooks-empty {
+    background: var(--bg-card);
+    border: 1px dashed var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 32px;
+    text-align: center;
+  }
+
+  .hooks-empty .hooks-empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .hooks-empty p { color: var(--text-muted); font-size: 13px; }
+  .hooks-empty .hooks-tip { margin-top: 8px; color: var(--accent-blue); font-size: 12px; }
+
+  /* ── Changelog ── */
+  .changelog-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .changelog-table thead tr { background: var(--bg-tertiary); }
+  .changelog-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .changelog-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-muted);
+  }
+
+  .changelog-table tr:last-child td { border-bottom: none; }
+  .changelog-table tr:hover td { background: var(--bg-hover); }
+
+  .changelog-date {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    color: var(--accent-green);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .changelog-badge {
+    display: inline-block;
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 11px;
+    color: var(--accent-blue);
+    margin-right: 6px;
+  }
+
+  /* ── Footer ── */
+  .dashboard-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .footer-tip code {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 1px 6px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    color: var(--accent-blue);
+    font-size: 12px;
+  }
+
+  .footer-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-purple);
+    text-decoration: none;
+    font-size: 12px;
+    padding: 8px 14px;
+    background: rgba(188,140,255,0.08);
+    border: 1px solid rgba(188,140,255,0.2);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+  }
+
+  .footer-link:hover {
+    background: rgba(188,140,255,0.15);
+    border-color: var(--accent-purple);
+    transform: translateY(-1px);
+  }
+
+  /* ── Searchable hidden ── */
+  .search-hidden { display: none !important; }
+
+  /* ── Animations ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; padding: 20px 16px; max-width: 100vw; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .section-body.collapsed { display: block !important; }
+    .agent-card:hover, .command-card:hover { transform: none; }
+  }
+
+
+  /* ── File Label Badges ── */
+  .file-open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+
+  /* ── Concepts ── */
+  .concepts-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 20px;
+  }
+
+  .concepts-tabs input[type="radio"] { display: none; }
+
+  .concepts-tabs label {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition);
+    user-select: none;
+  }
+
+  .concepts-tabs label:hover { color: var(--text-secondary); }
+
+  .concept-tab-content { display: none; }
+
+  #tab-definitions:checked ~ .concepts-tabs label[for="tab-definitions"],
+  #tab-workflow:checked ~ .concepts-tabs label[for="tab-workflow"],
+  #tab-compare:checked ~ .concepts-tabs label[for="tab-compare"] {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  #tab-definitions:checked ~ #content-definitions,
+  #tab-workflow:checked ~ #content-workflow,
+  #tab-compare:checked ~ #content-compare {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+  }
+
+  /* Definitions grid */
+  .def-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .def-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-left: 3px solid var(--card-accent, var(--accent-blue));
+    border-radius: var(--radius-md);
+    padding: 16px;
+    transition: background var(--transition);
+  }
+
+  .def-card:hover { background: var(--bg-hover); }
+
+  .def-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .def-card-icon { font-size: 20px; }
+
+  .def-card-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--card-accent, var(--text-primary));
+  }
+
+  .def-card-layer {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .def-card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .def-card-desc strong { color: var(--text-primary); }
+
+  .def-card-metaphor {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .def-card-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .def-card-examples code {
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .def-card-relation {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-muted);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .def-card-relation span {
+    color: var(--accent-blue);
+    font-weight: 600;
+  }
+
+  /* Workflow timeline */
+  .workflow-timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .workflow-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-default);
+  }
+
+  .wf-phase {
+    margin-bottom: 24px;
+  }
+
+  .wf-phase-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--phase-color, var(--text-muted));
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .wf-phase-label::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--phase-color, var(--text-muted));
+    box-shadow: 0 0 0 3px var(--bg-primary);
+  }
+
+  .wf-step {
+    position: relative;
+    padding: 10px 16px;
+    margin-bottom: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: background var(--transition);
+  }
+
+  .wf-step:hover { background: var(--bg-hover); }
+
+  .wf-step::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 16px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border-default);
+  }
+
+  .wf-step-num {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: var(--bg-tertiary);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-right: 8px;
+  }
+
+  .wf-step-highlight {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .wf-step-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+
+  /* Compare section */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+
+  .compare-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .compare-card-title {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .compare-card-title .vs {
+    color: var(--text-muted);
+    font-weight: 400;
+    margin: 0 6px;
+  }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .compare-col {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .compare-col:first-child {
+    border-right: 1px solid var(--border-default);
+  }
+
+  .compare-col-header {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .compare-col-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .compare-item {
+    margin-bottom: 4px;
+    padding-left: 12px;
+    position: relative;
+  }
+
+  .compare-item::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 900px) {
+    .def-grid { grid-template-columns: repeat(2, 1fr); }
+    .compare-grid { grid-template-columns: 1fr; }
+    .compare-row { grid-template-columns: 1fr; }
+    .compare-col:first-child { border-right: none; border-bottom: 1px solid var(--border-default); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⚡</div>
+    <h2>Claude Code<br>Dashboard</h2>
+    <p>v2026.04.05</p>
+  </div>
+
+  <div class="search-container">
+    <input class="search-input" type="text" id="globalSearch" placeholder="검색 (에이전트, 명령어...)" oninput="handleSearch(this.value)">
+  </div>
+
+  <span class="nav-section-label">구성</span>
+  <a class="nav-link" href="#section-concepts" onclick="setActive(this)"><span class="nav-icon">📚</span> 개념 정리</a>
+  <a class="nav-link active" href="#section-agents" onclick="setActive(this)"><span class="nav-icon">🤖</span> 에이전트<span class="nav-count">11</span></a>
+  <a class="nav-link" href="#section-commands" onclick="setActive(this)"><span class="nav-icon">⚡</span> Commands &amp; Skills<span class="nav-count">36</span></a>
+  <a class="nav-link" href="#section-settings" onclick="setActive(this)"><span class="nav-icon">⚙️</span> 설정 &amp; 권한</a>
+
+  <span class="nav-section-label">데이터</span>
+  <a class="nav-link" href="#section-templates" onclick="setActive(this)"><span class="nav-icon">📄</span> 템플릿 &amp; 규칙</a>
+
+  <span class="nav-section-label">기타</span>
+  <a class="nav-link" href="#section-plugins" onclick="setActive(this)"><span class="nav-icon">🔌</span> 플러그인<span class="nav-count">2</span></a>
+  <a class="nav-link" href="#section-hooks" onclick="setActive(this)"><span class="nav-icon">🪝</span> Hooks</a>
+</nav>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main class="main">
+
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-top">
+      <div>
+        <h1>Claude Code Dashboard</h1>
+        <p class="subtitle">내 Claude Code에 설정된 모든 커스텀 구성을 한 눈에 확인합니다.</p>
+      </div>
+      <div class="last-updated">마지막 업데이트 <strong>2026-07-20</strong></div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill"><span class="stat-num">11</span><span class="stat-label">Agents</span></div>
+      <div class="stat-pill"><span class="stat-num">6</span><span class="stat-label">Commands</span></div>
+      <div class="stat-pill"><span class="stat-num">30</span><span class="stat-label">Skills</span></div>
+      <div class="stat-pill"><span class="stat-num">2</span><span class="stat-label">Plugins</span></div>
+    </div>
+  </header>
+
+  <!-- ═══ SECTION 0: Concepts ═══ -->
+  <section class="section" id="section-concepts">
+    <div class="section-header" onclick="toggleSection('concepts-body', this)">
+      <span class="section-icon">📚</span>
+      <h2 class="section-title">개념 정리</h2>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="concepts-body">
+
+      <!-- Radio tabs -->
+      <input type="radio" name="concept-tab" id="tab-definitions" checked>
+      <input type="radio" name="concept-tab" id="tab-workflow">
+      <input type="radio" name="concept-tab" id="tab-compare">
+
+      <div class="concepts-tabs">
+        <label for="tab-definitions">📖 정의</label>
+        <label for="tab-workflow">🔄 워크플로</label>
+        <label for="tab-compare">⚖️ 비교</label>
+      </div>
+
+      <!-- ── TAB 1: Definitions ── -->
+      <div class="concept-tab-content" id="content-definitions">
+        <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13px">
+          Claude Code 생태계를 구성하는 8가지 핵심 개념. 위에서 아래로 추상화 수준이 높아진다.
+        </p>
+        <div class="def-grid">
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-blue)">
+            <div class="def-card-header">
+              <span class="def-card-icon">🔧</span>
+              <span class="def-card-name" style="color:var(--accent-blue)">Tool</span>
+              <span class="def-card-layer">Layer 1</span>
+            </div>
+            <div class="def-card-desc">Claude가 직접 쓰는 <strong>내장 도구 하나</strong>. 파일 읽기, 코드 수정, 검색, 쉘 실행 등 가장 작은 실행 단위.</div>
+            <div class="def-card-metaphor">🏗️ 망치, 드라이버, 펜치 같은 개별 공구</div>
+            <div class="def-card-examples"><code>Read</code> <code>Edit</code> <code>Write</code> <code>Bash</code> <code>Grep</code> <code>Glob</code></div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-cyan)">
+            <div class="def-card-header">
+              <span class="def-card-icon">🔌</span>
+              <span class="def-card-name" style="color:var(--accent-cyan)">MCP Tool</span>
+              <span class="def-card-layer">Layer 1+</span>
+            </div>
+            <div class="def-card-desc"><strong>외부 서비스</strong>와 연결하는 도구. MCP 서버가 중간 다리 역할을 해서 Notion, Gmail 등을 Claude가 직접 조작할 수 있게 함.</div>
+            <div class="def-card-metaphor">🔌 USB 허브에 외장장치를 꽂는 것</div>
+            <div class="def-card-examples"><code>Notion</code> <code>Gmail</code> <code>Chrome</code> <code>Claude Preview</code></div>
+            <div class="def-card-relation"><span>↔ Tool과의 차이:</span> Tool은 내장, MCP Tool은 외부 서버 경유</div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-pink)">
+            <div class="def-card-header">
+              <span class="def-card-icon">📡</span>
+              <span class="def-card-name" style="color:var(--accent-pink)">API</span>
+              <span class="def-card-layer">Layer 1+</span>
+            </div>
+            <div class="def-card-desc"><strong>외부 AI 모델</strong>을 직접 호출. Codex CLI를 통해 GPT-5.4/5.3에게 교차 검증 수행. Proxima MCP는 보조용.</div>
+            <div class="def-card-metaphor">📞 다른 전문가에게 전화해서 의견 묻기</div>
+            <div class="def-card-examples"><code>ask_chatgpt</code> <code>ask_gemini</code> <code>ask_all_ais</code></div>
+            <div class="def-card-relation"><span>↔ MCP Tool과의 차이:</span> MCP Tool은 서비스 조작, API는 AI 모델 호출</div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-green)">
+            <div class="def-card-header">
+              <span class="def-card-icon">📖</span>
+              <span class="def-card-name" style="color:var(--accent-green)">Skill</span>
+              <span class="def-card-layer">Layer 2</span>
+            </div>
+            <div class="def-card-desc"><code>/명령어</code>로 실행하는 <strong>재사용 프롬프트 템플릿</strong>. 여러 Tool을 조합해 특정 작업을 수행하는 레시피.</div>
+            <div class="def-card-metaphor">📖 요리 레시피 — 도구들의 조합법이 적혀 있음</div>
+            <div class="def-card-examples"><code>/commit</code> <code>/recap</code> <code>/pdf</code> <code>/dashboard</code></div>
+            <div class="def-card-relation"><span>↑ Tool을 조합:</span> Skill = Tool + Tool + ... 의 실행 순서</div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-purple)">
+            <div class="def-card-header">
+              <span class="def-card-icon">📦</span>
+              <span class="def-card-name" style="color:var(--accent-purple)">Plugin</span>
+              <span class="def-card-layer">Layer 3</span>
+            </div>
+            <div class="def-card-desc"><strong>스킬 번들 팩</strong>. 하나의 플러그인이 관련된 여러 스킬을 묶어서 제공. 마켓플레이스에서 설치.</div>
+            <div class="def-card-metaphor">📦 앱 스토어에서 받는 앱 번들 (설치하면 여러 기능이 한번에)</div>
+            <div class="def-card-examples"><code>design</code> → 7개 스킬 · <code>anthropic-skills</code> → 6개 스킬</div>
+            <div class="def-card-relation"><span>↑ Skill을 묶음:</span> Plugin = Skill + Skill + ... 를 하나의 패키지로</div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-orange)">
+            <div class="def-card-header">
+              <span class="def-card-icon">👤</span>
+              <span class="def-card-name" style="color:var(--accent-orange)">Agent</span>
+              <span class="def-card-layer">Layer 4</span>
+            </div>
+            <div class="def-card-desc">특정 역할의 <strong>독립 실행 주체</strong>. 자체 도구 세트와 모델을 가지고 자율적으로 판단하며 작업 수행.</div>
+            <div class="def-card-metaphor">👤 팀원 — 각자 전문 분야와 도구를 가진 독립 인격</div>
+            <div class="def-card-examples"><code>developer</code> <code>debugger</code> <code>researcher</code> <code>tester</code></div>
+            <div class="def-card-relation"><span>↑ Tool+Skill을 자율 사용:</span> 스스로 판단해서 어떤 도구를 쓸지 결정</div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-yellow)">
+            <div class="def-card-header">
+              <span class="def-card-icon">🪝</span>
+              <span class="def-card-name" style="color:var(--accent-yellow)">Hook</span>
+              <span class="def-card-layer">자동화</span>
+            </div>
+            <div class="def-card-desc">특정 이벤트가 발생할 때 <strong>자동 실행되는 쉘 명령</strong>. Tool 호출 전후, 파일 저장 시 등에 트리거.</div>
+            <div class="def-card-metaphor">🚪 자동 센서 — 문이 열리면 불이 켜지듯, 이벤트가 오면 자동 반응</div>
+            <div class="def-card-examples">pre-commit lint · post-edit format · pre-push test</div>
+            <div class="def-card-relation"><span>↔ Skill과의 차이:</span> Skill은 사용자가 호출, Hook은 이벤트가 자동 트리거</div>
+          </div>
+
+          <div class="def-card searchable" style="--card-accent:var(--accent-teal)">
+            <div class="def-card-header">
+              <span class="def-card-icon">📋</span>
+              <span class="def-card-name" style="color:var(--accent-teal)">CLAUDE.md</span>
+              <span class="def-card-layer">설정</span>
+            </div>
+            <div class="def-card-desc">매 대화 시작 시 <strong>자동으로 읽히는 지시 파일</strong>. 글로벌(~/.claude/)과 프로젝트별(.claude/) 두 레벨 존재.</div>
+            <div class="def-card-metaphor">📋 직원 매뉴얼/사규 — 출근하면 자동으로 숙지하는 규칙</div>
+            <div class="def-card-examples">에이전트 규칙 · 교차 검증 절차 · 응답 스타일</div>
+            <div class="def-card-relation"><span>↔ Hook과의 차이:</span> CLAUDE.md는 정적 지시, Hook은 동적 스크립트 실행</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── TAB 2: Workflow ── -->
+      <div class="concept-tab-content" id="content-workflow">
+        <p style="color:var(--text-secondary);margin-bottom:20px;font-size:13px">
+          Claude Code가 실행될 때 실제로 일어나는 일. 세션 시작부터 결과 출력까지의 전체 흐름.
+        </p>
+
+        <div class="workflow-timeline">
+
+          <div class="wf-phase" style="--phase-color:var(--accent-teal)">
+            <div class="wf-phase-label" style="--phase-color:var(--accent-teal)">세션 시작 (초기화)</div>
+            <div class="wf-step">
+              <span class="wf-step-num">1</span>
+              <span class="wf-step-highlight">CLAUDE.md</span> 읽기 — 글로벌(~/.claude/) → 프로젝트(.claude/) 순서
+              <span class="wf-step-tag" style="background:var(--accent-teal);color:#000">설정</span>
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">2</span>
+              <span class="wf-step-highlight">Memory 파일</span> 로드 — MEMORY.md 인덱스 + 관련 메모리 참조
+              <span class="wf-step-tag" style="background:var(--accent-teal);color:#000">설정</span>
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">3</span>
+              <span class="wf-step-highlight">settings.json</span> 적용 — 허용된 도구, Bash 명령어, MCP 서버 목록
+              <span class="wf-step-tag" style="background:var(--accent-teal);color:#000">설정</span>
+            </div>
+          </div>
+
+          <div class="wf-phase" style="--phase-color:var(--accent-blue)">
+            <div class="wf-phase-label" style="--phase-color:var(--accent-blue)">사용자 메시지 수신 (실행)</div>
+            <div class="wf-step">
+              <span class="wf-step-num">4</span>
+              <span class="wf-step-highlight">Orchestrator</span>(Claude)가 작업 분석 — 무엇을 해야 하는지 판단
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">5</span>
+              <span class="wf-step-highlight">Tool / MCP Tool</span> 직접 사용 — 파일 읽기, Notion 조회 등
+              <span class="wf-step-tag" style="background:var(--accent-blue);color:#000">도구</span>
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">6</span>
+              또는 <span class="wf-step-highlight">Skill</span> 호출 — /commit, /pdf 등 프롬프트 템플릿 실행
+              <span class="wf-step-tag" style="background:var(--accent-green);color:#000">스킬</span>
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">7</span>
+              또는 <span class="wf-step-highlight">Agent</span> 위임 — developer, debugger 등 서브에이전트에게 작업 분배
+              <span class="wf-step-tag" style="background:var(--accent-orange);color:#000">에이전트</span>
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">8</span>
+              필요 시 <span class="wf-step-highlight">Codex CLI 교차 검증</span> — /codex:rescue로 GPT-5.4에게 검증 요청
+              <span class="wf-step-tag" style="background:var(--accent-orange);color:#000">Codex</span>
+            </div>
+          </div>
+
+          <div class="wf-phase" style="--phase-color:var(--accent-green)">
+            <div class="wf-phase-label" style="--phase-color:var(--accent-green)">작업 완료 (마무리)</div>
+            <div class="wf-step">
+              <span class="wf-step-num">9</span>
+              <span class="wf-step-highlight">Hook</span> 트리거 — 설정된 경우 자동 실행 (lint, format, test 등)
+              <span class="wf-step-tag" style="background:var(--accent-yellow);color:#000">훅</span>
+            </div>
+            <div class="wf-step">
+              <span class="wf-step-num">10</span>
+              <span class="wf-step-highlight">결과 출력</span> — 사용자에게 결과 전달, Memory 업데이트 (필요 시)
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── TAB 3: Compare ── -->
+      <div class="concept-tab-content" id="content-compare">
+        <p style="color:var(--text-secondary);margin-bottom:20px;font-size:13px">
+          헷갈리기 쉬운 개념들을 나란히 비교. 핵심 차이점에 집중.
+        </p>
+
+        <div class="compare-grid">
+
+          <div class="compare-card">
+            <div class="compare-card-title">Tool <span class="vs">vs</span> MCP Tool</div>
+            <div class="compare-row">
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-blue)"></span> Tool</div>
+                <div class="compare-item">내장 도구, 항상 사용 가능</div>
+                <div class="compare-item">로컬 파일 시스템 작업</div>
+                <div class="compare-item">네트워크 불필요</div>
+                <div class="compare-item">예: Read, Edit, Bash</div>
+              </div>
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-cyan)"></span> MCP Tool</div>
+                <div class="compare-item">외부 서비스 연결</div>
+                <div class="compare-item">MCP 서버가 중간 다리</div>
+                <div class="compare-item">네트워크/인증 필요</div>
+                <div class="compare-item">예: Notion, Gmail, Chrome</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare-card">
+            <div class="compare-card-title">Skill <span class="vs">vs</span> Plugin</div>
+            <div class="compare-row">
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-green)"></span> Skill</div>
+                <div class="compare-item">단일 /명령어</div>
+                <div class="compare-item">하나의 특정 작업 수행</div>
+                <div class="compare-item">개별 설치/생성 가능</div>
+                <div class="compare-item">예: /commit, /pdf</div>
+              </div>
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-purple)"></span> Plugin</div>
+                <div class="compare-item">여러 Skill의 묶음</div>
+                <div class="compare-item">관련 기능을 패키지로</div>
+                <div class="compare-item">마켓플레이스에서 설치</div>
+                <div class="compare-item">예: design (7개 스킬)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare-card">
+            <div class="compare-card-title">Agent <span class="vs">vs</span> Skill</div>
+            <div class="compare-row">
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-orange)"></span> Agent</div>
+                <div class="compare-item">자율적으로 판단하며 실행</div>
+                <div class="compare-item">자체 도구 + 모델 보유</div>
+                <div class="compare-item">복잡한 작업 독립 처리</div>
+                <div class="compare-item">예: developer, debugger</div>
+              </div>
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-green)"></span> Skill</div>
+                <div class="compare-item">정해진 프롬프트 실행</div>
+                <div class="compare-item">Orchestrator가 도구 사용</div>
+                <div class="compare-item">단일 작업에 특화</div>
+                <div class="compare-item">예: /commit, /recap</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare-card">
+            <div class="compare-card-title">Hook <span class="vs">vs</span> CLAUDE.md</div>
+            <div class="compare-row">
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-yellow)"></span> Hook</div>
+                <div class="compare-item">이벤트 시 동적 실행</div>
+                <div class="compare-item">쉘 스크립트/명령어</div>
+                <div class="compare-item">settings.json에서 설정</div>
+                <div class="compare-item">예: pre-commit lint</div>
+              </div>
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-teal)"></span> CLAUDE.md</div>
+                <div class="compare-item">세션 시작 시 정적 로드</div>
+                <div class="compare-item">마크다운 지시 문서</div>
+                <div class="compare-item">글로벌 + 프로젝트별</div>
+                <div class="compare-item">예: 에이전트 규칙, 스타일</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare-card">
+            <div class="compare-card-title">MCP Tool <span class="vs">vs</span> API</div>
+            <div class="compare-row">
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-cyan)"></span> MCP Tool</div>
+                <div class="compare-item">외부 서비스 조작</div>
+                <div class="compare-item">CRUD 작업 (읽기/쓰기)</div>
+                <div class="compare-item">Notion 페이지 편집 등</div>
+                <div class="compare-item">데이터 + 액션 중심</div>
+              </div>
+              <div class="compare-col">
+                <div class="compare-col-header"><span class="dot" style="background:var(--accent-pink)"></span> API</div>
+                <div class="compare-item">다른 AI 모델 호출</div>
+                <div class="compare-item">질문/검증 (read-only)</div>
+                <div class="compare-item">GPT에게 교차 검증 등</div>
+                <div class="compare-item">지능 + 판단 중심</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ SECTION A: Agents ═══ -->
+  <section class="section" id="section-agents">
+    <div class="section-header" onclick="toggleSection('agents-body', this)">
+      <span class="section-icon">🤖</span>
+      <h2 class="section-title">에이전트 (Agents)</h2>
+      <span class="section-badge">11개</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="agents-body">
+
+      <!-- Dev Group -->
+      <div class="agent-group">
+        <div class="agent-group-label">개발 계열</div>
+        <div class="agent-grid">
+
+          <div class="agent-card searchable" style="--card-color:#58a6ff">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🔵</span>
+              <span class="agent-name">developer</span>
+              <span class="model-badge model-sonnet">sonnet</span>
+            </div>
+            <p class="agent-role">코드 작성, 기능 구현, 버그 수정</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Edit</span><span class="tool-tag">Write</span>
+              <span class="tool-tag">Bash</span><span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#f85149">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🔴</span>
+              <span class="agent-name">debugger</span>
+              <span class="model-badge model-opus">opus</span>
+            </div>
+            <p class="agent-role">에러 분석, 근본 원인 추적, 코드 리뷰</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Edit</span><span class="tool-tag">Bash</span>
+              <span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#e3b341">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🟡</span>
+              <span class="agent-name">tester</span>
+              <span class="model-badge model-sonnet">sonnet</span>
+            </div>
+            <p class="agent-role">테스트 설계, 작성, 실행, 커버리지</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Write</span><span class="tool-tag">Edit</span>
+              <span class="tool-tag">Bash</span><span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Design & Research Group -->
+      <div class="agent-group">
+        <div class="agent-group-label">설계 &amp; 리서치 계열</div>
+        <div class="agent-grid">
+
+          <div class="agent-card searchable" style="--card-color:#39d3f7">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🩵</span>
+              <span class="agent-name">architect</span>
+              <span class="model-badge model-opus">opus</span>
+            </div>
+            <p class="agent-role">시스템 설계, 아키텍처, 기술 스택</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+              <span class="tool-tag">WebSearch</span><span class="tool-tag">WebFetch</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#f778ba">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🩷</span>
+              <span class="agent-name">researcher</span>
+              <span class="model-badge model-opus">opus</span>
+            </div>
+            <p class="agent-role">논문, 기술 문서, 라이브러리 조사</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+              <span class="tool-tag">WebSearch</span><span class="tool-tag">WebFetch</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#20c9a0">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🩵</span>
+              <span class="agent-name">analyst</span>
+              <span class="model-badge model-sonnet">sonnet</span>
+            </div>
+            <p class="agent-role">데이터 전처리, 통계, 시각화</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Write</span><span class="tool-tag">Bash</span>
+              <span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Verification & Docs Group -->
+      <div class="agent-group">
+        <div class="agent-group-label">검증 &amp; 문서 계열</div>
+        <div class="agent-grid">
+
+          <div class="agent-card searchable" style="--card-color:#d29922">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🟠</span>
+              <span class="agent-name">plan-verifier</span>
+              <span class="model-badge model-sonnet">sonnet</span>
+            </div>
+            <p class="agent-role">연구 계획/설계 교차 검증 (Codex CLI → GPT-5.4)</p>
+            <div class="tools-list">
+              <span class="tool-tag">Bash</span><span class="tool-tag">Read</span><span class="tool-tag">Write</span>
+              <span class="tool-tag special">Codex CLI</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#bc8cff">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🟣</span>
+              <span class="agent-name">code-verifier</span>
+              <span class="model-badge model-haiku">haiku</span>
+            </div>
+            <p class="agent-role">코드 교차 검증 (Codex CLI → GPT-5.3-Codex)</p>
+            <div class="tools-list">
+              <span class="tool-tag">Bash</span><span class="tool-tag">Read</span><span class="tool-tag">Write</span>
+              <span class="tool-tag special">Codex CLI</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#818cf8">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🟣</span>
+              <span class="agent-name">tech-writer</span>
+              <span class="model-badge model-sonnet">sonnet</span>
+            </div>
+            <p class="agent-role">README, API 문서, 보고서</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Write</span><span class="tool-tag">Edit</span>
+              <span class="tool-tag">Grep</span><span class="tool-tag">Glob</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Ops Group -->
+      <div class="agent-group">
+        <div class="agent-group-label">운영 계열</div>
+        <div class="agent-grid">
+
+          <div class="agent-card searchable" style="--card-color:#3fb950">
+            <div class="agent-card-top">
+              <span class="agent-emoji">🟢</span>
+              <span class="agent-name">progress-tracker</span>
+              <span class="model-badge model-haiku">haiku</span>
+            </div>
+            <p class="agent-role">작업 체크리스트, 진행상황 추적</p>
+            <div class="tools-list">
+              <span class="tool-tag">Read</span><span class="tool-tag">Write</span>
+              <span class="tool-tag">Edit</span><span class="tool-tag">Glob</span>
+            </div>
+          </div>
+
+          <div class="agent-card searchable" style="--card-color:#8b949e">
+            <div class="agent-card-top">
+              <span class="agent-emoji">⬜</span>
+              <span class="agent-name">research-orchestrator</span>
+              <span class="model-badge model-opus">opus</span>
+            </div>
+            <p class="agent-role">에너지 시스템 연구 코디네이터 (Custom role)</p>
+            <div class="tools-list">
+              <span class="tool-tag special">Custom role</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Rules Box -->
+      <div class="rules-box">
+        <h4>⚡ Agent 호출 규칙</h4>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span>에러/버그 발생 시 <strong>debugger</strong> 먼저 분석 → 수정은 <strong>developer</strong></span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span>새 기능 구현: <strong>architect</strong> → <strong>developer</strong> → <strong>tester</strong> 순</span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span>진행상황 질문 ("지금 어디까지?", "현황", "다음 뭐해?") → <strong>progress-tracker</strong> 즉시</span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span>핵심 로직 변경 → <strong>code-verifier</strong> (GPT 교차 검증)</span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span>연구 계획/설계 검증 → <strong>plan-verifier</strong> (GPT 교차 검증)</span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span>독립 작업 2개 이상 → 병렬 실행 (백그라운드 시 사용자에게 명시)</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ SECTION B: Commands & Skills ═══ -->
+  <section class="section" id="section-commands">
+    <div class="section-header" onclick="toggleSection('commands-body', this)">
+      <span class="section-icon">⚡</span>
+      <h2 class="section-title">Commands &amp; Skills</h2>
+      <span class="section-badge">6 Commands | 12+7+11 Skills</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="commands-body">
+
+      <div class="agent-group-label" style="margin-bottom:12px">커스텀 명령어 (Custom Commands)</div>
+      <div class="command-grid">
+
+        <div class="command-card searchable">
+          <span class="command-icon">📝</span>
+          <div>
+            <div class="command-name">/portfolio-update</div>
+            <div class="command-title">일일 포트폴리오</div>
+            <div class="command-desc">research-portfolio repo에 오늘 작업 기록 (journal + changelog)</div>
+          </div>
+        </div>
+
+        <div class="command-card searchable">
+          <span class="command-icon">🔄</span>
+          <div>
+            <div class="command-name">/recap</div>
+            <div class="command-title">세션 요약</div>
+            <div class="command-desc">지난 채팅 작업 내역 한국어로 빠르게 요약</div>
+          </div>
+        </div>
+
+        <div class="command-card searchable">
+          <span class="command-icon">🔬</span>
+          <div>
+            <div class="command-name">/research-toolkit</div>
+            <div class="command-title">연구 도구</div>
+            <div class="command-desc">시뮬레이션, 체크리스트, 리팩토링, 논문 피겨 생성</div>
+          </div>
+        </div>
+
+        <div class="command-card searchable">
+          <span class="command-icon">📊</span>
+          <div>
+            <div class="command-name">/dashboard</div>
+            <div class="command-title">대시보드</div>
+            <div class="command-desc">이 대시보드 HTML 파일을 최신 상태로 자동 업데이트</div>
+          </div>
+        </div>
+
+        <div class="command-card searchable">
+          <span class="command-icon">📰</span>
+          <div>
+            <div class="command-name">/linkedin-post</div>
+            <div class="command-title">LinkedIn 게시물</div>
+            <div class="command-desc">뉴스/내 작업 추천 → 변형안 생성 → 터미널 출력 (--preview로 HTML)</div>
+          </div>
+        </div>
+
+        <div class="command-card searchable">
+          <span class="command-icon">📑</span>
+          <div>
+            <div class="command-name">/sync-papers</div>
+            <div class="command-title">논문 동기화</div>
+            <div class="command-desc">EndNote → Obsidian 논문 메타 동기화</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="agent-group-label" style="margin-bottom:12px;margin-top:8px">빌트인 스킬 (Built-in Skills — 12개)</div>
+
+      <div class="skill-group">
+        <div class="skill-group-label"><span>📄</span> 문서 처리 (5개)</div>
+        <div class="skill-pills">
+          <span class="skill-pill searchable">pdf</span>
+          <span class="skill-pill searchable">docx</span>
+          <span class="skill-pill searchable">pptx</span>
+          <span class="skill-pill searchable">xlsx</span>
+          <span class="skill-pill searchable">github-to-pptx</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-label"><span>🔧</span> 도구 (4개)</div>
+        <div class="skill-pills">
+          <span class="skill-pill searchable">skill-creator</span>
+          <span class="skill-pill searchable">update-config</span>
+          <span class="skill-pill searchable">keybindings-help</span>
+          <span class="skill-pill searchable">simplify</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-label"><span>⚙️</span> 자동화 (3개)</div>
+        <div class="skill-pills">
+          <span class="skill-pill searchable">loop</span>
+          <span class="skill-pill searchable">schedule</span>
+          <span class="skill-pill searchable">claude-api</span>
+        </div>
+      </div>
+
+      <div class="agent-group-label" style="margin-bottom:12px;margin-top:8px">🏭 사용자 정의 스킬 — Aspen Automation (11개)</div>
+
+      <div class="skill-group">
+        <div class="skill-group-label"><span>🔬</span> 파이프라인 단계 (9개)</div>
+        <div class="skill-pills">
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-scan</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-save</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-doe</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-sim</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-obj</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-exergy</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-preprocess</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-train</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-optimize</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-label"><span>🎛️</span> 제어 (2개)</div>
+        <div class="skill-pills">
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-pipeline</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-green)">/aspen-status</span>
+        </div>
+      </div>
+
+      <div class="agent-group-label" style="margin-bottom:12px;margin-top:8px">🎨 플러그인 스킬 — Design (7개)</div>
+
+      <div class="skill-group">
+        <div class="skill-group-label"><span>🎨</span> Design (7개)</div>
+        <div class="skill-pills">
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">design-critique</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">accessibility-review</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">design-handoff</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">design-system</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">ux-copy</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">research-synthesis</span>
+          <span class="skill-pill searchable" style="border-color:var(--accent-pink)">user-research</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ SECTION C: Settings ═══ -->
+  <section class="section" id="section-settings">
+    <div class="section-header" onclick="toggleSection('settings-body', this)">
+      <span class="section-icon">⚙️</span>
+      <h2 class="section-title">설정 &amp; 권한</h2>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="settings-body">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <span class="file-open-btn">⚙️ settings.json</span>
+        <span class="file-open-btn">🔒 settings.local.json</span>
+      </div>
+      <div class="settings-grid">
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">💻</span> 허용된 Bash 명령어</h4>
+          <div class="tag-list">
+            <span class="cmd-tag">git</span><span class="cmd-tag">node</span><span class="cmd-tag">npm</span>
+            <span class="cmd-tag">npx</span><span class="cmd-tag">python</span><span class="cmd-tag">py</span>
+            <span class="cmd-tag">ls</span><span class="cmd-tag">mkdir</span><span class="cmd-tag">cat</span>
+            <span class="cmd-tag">echo</span><span class="cmd-tag">curl</span><span class="cmd-tag">wc</span>
+            <span class="cmd-tag">tail</span><span class="cmd-tag">netstat</span><span class="cmd-tag">find</span>
+            <span class="cmd-tag">sort</span>
+            <span class="cmd-tag">gh</span><span class="cmd-tag">git add</span><span class="cmd-tag">git commit</span>
+            <span class="cmd-tag">git push</span><span class="cmd-tag">pip install</span><span class="cmd-tag">pytest</span>
+            <span class="cmd-tag">python3</span><span class="cmd-tag">reg query</span>
+          </div>
+        </div>
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">🔑</span> 허용된 도구</h4>
+          <div class="tag-list">
+            <span class="tool-allow-tag">Write</span><span class="tool-allow-tag">Edit</span>
+            <span class="tool-allow-tag">Read</span><span class="tool-allow-tag">WebSearch</span>
+          </div>
+        </div>
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">🌐</span> 허용된 도메인</h4>
+          <div class="tag-list">
+            <span class="domain-tag">austinpublishinggroup.com</span>
+            <span class="domain-tag">github.com</span>
+            <span class="domain-tag">raw.githubusercontent.com</span>
+            <span class="domain-tag">api.github.com</span>
+          </div>
+        </div>
+
+        <div class="settings-card searchable" style="grid-column: span 2;">
+          <h4><span class="settings-icon">🤖</span> MCP 도구 (Proxima) — 40개+ 허용 (보조용, 교차 검증은 Codex CLI 우선)</h4>
+          <p class="mcp-note">Proxima MCP 도구 허용되어 있으나, 교차 검증은 Codex CLI (/codex:rescue)를 우선 사용</p>
+          <div class="tag-list">
+            <span class="mcp-tag">ask_chatgpt</span><span class="mcp-tag">ask_claude</span>
+            <span class="mcp-tag">ask_gemini</span><span class="mcp-tag">ask_all_ais</span>
+            <span class="mcp-tag">compare_ais</span><span class="mcp-tag">smart_query</span>
+            <span class="mcp-tag">deep_search</span><span class="mcp-tag">pro_search</span>
+            <span class="mcp-tag">academic_search</span><span class="mcp-tag">review_code</span>
+            <span class="mcp-tag">analyze_file</span><span class="mcp-tag">debug_code</span>
+            <span class="mcp-tag">fact_check</span><span class="mcp-tag">brainstorm</span>
+            <span class="mcp-tag">translate</span><span class="mcp-tag">+ 25개 more...</span>
+          </div>
+        </div>
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">📂</span> 추가 디렉토리</h4>
+          <div class="tag-list">
+            <span class="domain-tag" style="font-size:11px">연구 프로젝트 디렉토리 2개</span>
+          </div>
+        </div>
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">🔧</span> 기타 설정</h4>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12px;color:var(--text-secondary)"><span style="color:var(--text-muted)">Marketplace:</span> claude-plugins-official</div>
+            <div style="font-size:12px;color:var(--text-secondary)"><span style="color:var(--text-muted)">Auto Updates:</span> <span style="color:var(--accent-green)">latest channel</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION C2: Plugins ═══ -->
+  <section class="section" id="section-plugins">
+    <div class="section-header" onclick="toggleSection('plugins-body', this)">
+      <span class="section-icon">🔌</span>
+      <h2 class="section-title">플러그인 (Plugins)</h2>
+      <span class="section-badge">2개</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="plugins-body">
+      <div class="agent-grid">
+
+        <div class="agent-card searchable" style="--card-color:var(--accent-purple)">
+          <div class="agent-card-top">
+            <span class="agent-emoji">🔌</span>
+            <span class="agent-name">codex</span>
+            <span class="model-badge model-custom">v1.0.2</span>
+          </div>
+          <p class="agent-role">openai-codex — GPT 교차 검증 CLI 플러그인</p>
+          <div class="tools-list">
+            <span class="tool-tag">1 Agent</span>
+            <span class="tool-tag">7 Commands</span>
+            <span class="tool-tag">3 Skills</span>
+          </div>
+        </div>
+
+        <div class="agent-card searchable" style="--card-color:var(--accent-pink)">
+          <div class="agent-card-top">
+            <span class="agent-emoji">🎨</span>
+            <span class="agent-name">frontend-design</span>
+            <span class="model-badge model-custom">latest</span>
+          </div>
+          <p class="agent-role">claude-plugins-official — Generates distinctive, production-grade frontend interfaces that avoid generic AI aesthetics</p>
+          <div class="tools-list">
+            <span class="tool-tag">1 Skill</span>
+            <span class="tool-tag" style="background:rgba(63,185,80,0.15);border-color:rgba(63,185,80,0.3);color:var(--accent-green)">Enabled</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="rules-box" style="margin-top:16px">
+        <h4>🔌 codex (openai-codex) 상세</h4>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span><strong>Status:</strong> Enabled</span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span><strong>Agent:</strong> codex-rescue</span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span><strong>Commands (7):</strong>
+            <span class="tool-tag" style="margin-left:6px">setup</span>
+            <span class="tool-tag">review</span>
+            <span class="tool-tag">adversarial-review</span>
+            <span class="tool-tag">rescue</span>
+            <span class="tool-tag">status</span>
+            <span class="tool-tag">result</span>
+            <span class="tool-tag">cancel</span>
+          </span>
+        </div>
+        <div class="rule-item">
+          <span class="rule-arrow">→</span>
+          <span><strong>Skills (3):</strong> code-review, plan-rescue, adversarial-review</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ SECTION E: Templates ═══ -->
+  <section class="section" id="section-templates">
+    <div class="section-header" onclick="toggleSection('templates-body', this)">
+      <span class="section-icon">📄</span>
+      <h2 class="section-title">템플릿 &amp; CLAUDE.md 규칙</h2>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="templates-body">
+
+      <div class="agent-group-label" style="margin-bottom:12px">
+        템플릿 (3개) — 로컬 템플릿 폴더에서 관리
+      </div>
+      <div class="template-grid">
+
+        <div class="template-card searchable">
+          <div class="template-name">cross-validation-report-template.md</div>
+          <div class="template-desc">GPT 교차 검증 리포트<br>request → report → response → summary 4단계 구조</div>
+        </div>
+
+        <div class="template-card searchable">
+          <div class="template-name">plan_document.md</div>
+          <div class="template-desc">아키텍처 계획서<br>Meta, Summary, Groups, Dependencies, Risks 섹션</div>
+        </div>
+
+        <div class="template-card searchable">
+          <div class="template-name">vr_report.md</div>
+          <div class="template-desc">검증 리포트<br>findings, verdict, confidence 항목 포함</div>
+        </div>
+
+      </div>
+
+      <div class="agent-group-label" style="margin-bottom:12px;margin-top:8px;display:flex;align-items:center;gap:10px">
+        CLAUDE.md 핵심 규칙 (Global — ~/.claude/CLAUDE.md)
+      </div>
+      <div class="claude-rules">
+
+        <div class="claude-rule-item">
+          <div class="rule-num">1</div>
+          <div class="rule-content">
+            <div class="rule-title">서브에이전트 적극 활용</div>
+            <div class="rule-desc">독립 작업 2개+ → 병렬 실행. 10개 에이전트 색상 체계. 전문 영역은 항상 해당 에이전트 사용. 백그라운드 병렬 실행 시 반드시 사용자에게 명시하고 agent별 담당 작업을 표로 안내 (병렬 실행 안내 규칙).</div>
+          </div>
+        </div>
+
+        <div class="claude-rule-item">
+          <div class="rule-num">2</div>
+          <div class="rule-content">
+            <div class="rule-title">GPT 피드백 루프 (Codex CLI — codex-plugin-cc)</div>
+            <div class="rule-desc">Codex CLI를 통해 GPT 교차 검증 수행. 모델 라우팅: code-verifier → <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:11px;color:var(--accent-blue)">/codex:review --model gpt-5.3-codex</code>, plan-verifier → <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:11px;color:var(--accent-blue)">/codex:rescue --model gpt-5.4</code>. 기본 1라운드, critical issue 시 최대 3라운드. 응답: accept / accept with notes / revise. 호출 실패 시 사용자에게 알리고 대기 (자동 fallback 금지).</div>
+          </div>
+        </div>
+
+        <div class="claude-rule-item">
+          <div class="rule-num">3</div>
+          <div class="rule-content">
+            <div class="rule-title">교차 검증 문서 규칙 &amp; 실시간 상태 표시</div>
+            <div class="rule-desc">Claude가 모든 파일 I/O 전담 (Codex sandbox는 로컬 파일 읽기 불가). 요청/응답 파일 작성 후 내용을 프롬프트 인라인으로 전달. 템플릿 양식 필수. 저장 위치: reports/&lt;project&gt;/&lt;work&gt;/YYYY-MM-DD_&lt;session&gt;/. GPT 응답 전 재질문 절대 금지. 각 단계(요청·처리중·수신)마다 상태 메시지 실시간 출력 필수.</div>
+          </div>
+        </div>
+
+        <div class="claude-rule-item">
+          <div class="rule-num">4</div>
+          <div class="rule-content">
+            <div class="rule-title">응답 스타일</div>
+            <div class="rule-desc">진행상황 보고는 progress-tracker를 통해 출력. 불필요한 요약 반복 금지. 작업 완료 후 다음 단계 항상 제시.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:14px;padding:10px 14px;background:rgba(110,118,129,0.1);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:12px;color:var(--text-muted);">
+        글로벌 CLAUDE.md + 프로젝트별 CLAUDE.md 2개 별도 운영
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ SECTION G: Hooks ═══ -->
+  <section class="section" id="section-hooks">
+    <div class="section-header" onclick="toggleSection('hooks-body', this)">
+      <span class="section-icon">🪝</span>
+      <h2 class="section-title">Hooks</h2>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="hooks-body">
+      <div class="section-badge" style="margin-bottom:12px;display:inline-block">PostToolUse — 3개 Hook</div>
+      <div class="settings-grid">
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">📝</span> Write → 띄어쓰기 자동 수정</h4>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:6px">
+            <div><span style="color:var(--text-muted)">Matcher:</span> Write</div>
+            <div><span style="color:var(--text-muted)">Type:</span> command</div>
+            <div><span style="color:var(--text-muted)">동작:</span> 연속 띄어쓰기(2개+) → 1개로 sed 자동 수정</div>
+            <div><span style="color:var(--text-muted)">대상:</span> 모든 Write 파일</div>
+          </div>
+        </div>
+
+        <div class="settings-card searchable">
+          <h4><span class="settings-icon">📰</span> Write → LinkedIn 어투 검사</h4>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:6px">
+            <div><span style="color:var(--text-muted)">Matcher:</span> Write</div>
+            <div><span style="color:var(--text-muted)">Type:</span> prompt (LLM)</div>
+            <div><span style="color:var(--text-muted)">동작:</span> 파일명에 'linkedin' 포함 시 어투 검사</div>
+            <div><span style="color:var(--text-muted)">기준:</span> 학술적 어투 / 도치 금지 / 대화체 금지</div>
+          </div>
+        </div>
+
+        <div class="settings-card searchable" style="grid-column: span 2;">
+          <h4><span class="settings-icon">🔄</span> ExitPlanMode → 교차 검증 자동 시작</h4>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:6px">
+            <div><span style="color:var(--text-muted)">Matcher:</span> ExitPlanMode</div>
+            <div><span style="color:var(--text-muted)">Type:</span> prompt (LLM)</div>
+            <div><span style="color:var(--text-muted)">동작:</span> Plan 확정 → Codex CLI (/codex:rescue --model gpt-5.4)로 교차 검증 자동 실행</div>
+            <div><span style="color:var(--text-muted)">흐름:</span> plan 읽기 → VR_request 작성 → plan-verifier → GPT-5.4 검증 (최대 3라운드) → VR_summary → 코드 작성 허용</div>
+            <div style="margin-top:4px;color:var(--accent-red);font-size:11px">🚫 교차 검증 완료 전 코드 작성 차단</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="dashboard-footer">
+    <div class="footer-tip">
+      💡 Claude Code에서 <code>/dashboard</code> 실행 → 자동 스캔 및 업데이트
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  // ── Section toggle ──
+  function toggleSection(bodyId, headerEl) {
+    const body = document.getElementById(bodyId);
+    const toggle = headerEl.querySelector('.section-toggle');
+    if (!body) return;
+    if (body.classList.contains('collapsed')) {
+      body.classList.remove('collapsed');
+      toggle.classList.remove('collapsed');
+    } else {
+      body.classList.add('collapsed');
+      toggle.classList.add('collapsed');
+    }
+  }
+
+  // ── Memory group toggle ──
+  function toggleMemory(bodyId, headerEl) {
+    const body = document.getElementById(bodyId);
+    const toggle = headerEl.querySelector('.memory-group-toggle');
+    if (!body) return;
+    if (body.style.display === 'none') {
+      body.style.display = 'block';
+      toggle.classList.add('open');
+    } else {
+      body.style.display = 'none';
+      toggle.classList.remove('open');
+    }
+  }
+
+  // ── Active nav ──
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Scroll spy ──
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-80px 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // ── Search ──
+  function handleSearch(query) {
+    const q = query.toLowerCase().trim();
+    const searchableItems = document.querySelectorAll('.searchable');
+
+    if (!q) {
+      searchableItems.forEach(el => el.classList.remove('search-hidden'));
+      return;
+    }
+
+    searchableItems.forEach(el => {
+      const text = el.textContent.toLowerCase();
+      el.classList.toggle('search-hidden', !text.includes(q));
+    });
+  }
+
+  // ── Keyboard shortcut: Ctrl+K to focus search ──
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('globalSearch').focus();
+    }
+  });
+
+  // ── Smooth load animation stagger ──
+  document.querySelectorAll('.section').forEach((s, i) => {
+    s.style.animationDelay = `${i * 0.06}s`;
+  });
+</script>
+</body>
+</html>
