@@ -1,0 +1,2574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOHC-CCPP Grid Sweep Dashboard</title>
+
+  <!-- CDN Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ============================================================
+       CSS CUSTOM PROPERTIES & THEMING
+       ============================================================ */
+    :root {
+      --bg-page:    #f8fafc;
+      --bg-card:    #ffffff;
+      --bg-panel:   #f1f5f9;
+      --bg-input:   #f8fafc;
+      --text-main:  #1e293b;
+      --text-muted: #64748b;
+      --text-label: #475569;
+      --border:     #e2e8f0;
+      --border-focus: #6366f1;
+      --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-lg:  0 4px 16px rgba(0,0,0,.10);
+      --radius:     8px;
+      --radius-lg:  12px;
+      --header-h:   56px;
+
+      /* Line colors */
+      --color-l4: #a855f7;
+      --color-l5: #14b8a6;
+      --color-l6: #f97316;
+      --color-l9: #3b82f6;
+
+      /* Status colors */
+      --ok:   #22c55e;
+      --warn: #f59e0b;
+      --err:  #ef4444;
+
+      --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    html.dark {
+      --bg-page:    #0f172a;
+      --bg-card:    #1e293b;
+      --bg-panel:   #162032;
+      --bg-input:   #0f172a;
+      --text-main:  #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-label: #cbd5e1;
+      --border:     #334155;
+      --shadow:     0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+      --shadow-lg:  0 4px 16px rgba(0,0,0,.4);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html:not(.light) {
+        --bg-page:    #0f172a;
+        --bg-card:    #1e293b;
+        --bg-panel:   #162032;
+        --bg-input:   #0f172a;
+        --text-main:  #e2e8f0;
+        --text-muted: #94a3b8;
+        --text-label: #cbd5e1;
+        --border:     #334155;
+        --shadow:     0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+        --shadow-lg:  0 4px 16px rgba(0,0,0,.4);
+      }
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-page);
+      color: var(--text-main);
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background .2s, color .2s;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-h);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -.2px;
+    }
+
+    header p.subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Theme toggle */
+    #themeToggle {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s, border-color .15s;
+    }
+    #themeToggle:hover { background: var(--border); }
+
+    /* ============================================================
+       MAIN LAYOUT
+       ============================================================ */
+    .page-body {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 20px 40px;
+    }
+
+    /* ============================================================
+       UPLOAD SECTION
+       ============================================================ */
+    #upload {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+      #upload { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      #upload { grid-template-columns: 1fr; }
+    }
+
+    .upload-slot {
+      background: var(--bg-card);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 14px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      position: relative;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .upload-slot:hover,
+    .upload-slot.drag-over {
+      border-color: var(--border-focus);
+      background: var(--bg-panel);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .upload-slot input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-slot .line-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .upload-slot .slot-icon {
+      font-size: 24px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .upload-slot .slot-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .upload-slot .slot-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .upload-slot .slot-status {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .slot-status.ready    { color: var(--text-muted); background: var(--bg-panel); }
+    .slot-status.loaded   { color: #16a34a; background: #f0fdf4; }
+    .slot-status.error    { color: #dc2626; background: #fef2f2; }
+    .slot-status.parsing  { color: #9333ea; background: #fdf4ff; }
+
+    html.dark .slot-status.loaded  { color: #4ade80; background: rgba(74,222,128,.15); }
+    html.dark .slot-status.error   { color: #f87171; background: rgba(248,113,113,.15); }
+    html.dark .slot-status.parsing { color: #c084fc; background: rgba(192,132,252,.15); }
+
+    /* ============================================================
+       TABS
+       ============================================================ */
+    nav#tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border: none;
+      background: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      border-radius: 6px 6px 0 0;
+      transition: color .15s, background .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn .tab-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .tab-btn:hover { color: var(--text-main); background: var(--bg-panel); }
+    .tab-btn.active {
+      color: var(--text-main);
+      border-bottom-color: var(--border-focus);
+      font-weight: 600;
+    }
+
+    .tab-btn[data-tab="compare"] .tab-dot { background: #6366f1; }
+
+    /* Hide panels by default */
+    .line-panel, #compare-panel { display: none; }
+    .line-panel.active, #compare-panel.active { display: block; }
+
+    /* ============================================================
+       LINE PANEL: sidebar layout (charts left, controls right sticky)
+       ============================================================ */
+    .line-panel-layout {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .line-panel-main {
+      min-width: 0; /* prevent grid blowout */
+    }
+
+    .line-panel-sidebar {
+      position: sticky;
+      top: 70px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (max-width: 1000px) {
+      .line-panel-layout { grid-template-columns: 1fr; }
+      .line-panel-sidebar { position: static; max-height: none; }
+    }
+
+    /* ============================================================
+       CONTROLS PANEL
+       ============================================================ */
+    .controls {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-label);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .control-group .control-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      min-height: 20px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--border-focus);
+      cursor: pointer;
+    }
+
+    .number-inputs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .number-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .number-input-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-label);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .number-input-group input[type="number"] {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-family: var(--font);
+      font-size: 13px;
+      transition: border-color .15s;
+    }
+
+    .number-input-group input[type="number"]:focus {
+      outline: none;
+      border-color: var(--border-focus);
+    }
+
+    .info-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      line-height: 1.5;
+      flex-basis: 100%;
+    }
+
+    .info-note strong { color: var(--text-label); }
+
+    /* ============================================================
+       METRIC CARDS
+       ============================================================ */
+    .metric-cards {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      flex: 1;
+      min-width: 140px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+
+    .metric-card:hover { box-shadow: var(--shadow-lg); }
+
+    .metric-card .card-accent {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .metric-card .card-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 8px;
+    }
+
+    .metric-card .card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -.5px;
+      line-height: 1.2;
+    }
+
+    .metric-card .card-value.na {
+      color: var(--text-muted);
+      font-size: 22px;
+    }
+
+    .metric-card .card-unit {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       CHART GRID
+       ============================================================ */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .chart-grid-2x3 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chart-grid-2x3 .chart-wrapper {
+      height: 320px;
+    }
+
+    @media (max-width: 768px) {
+      .chart-grid, .chart-grid-3x2 { grid-template-columns: 1fr; }
+      .metric-cards { flex-direction: column; }
+      .controls { flex-direction: column; }
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-label);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 260px;
+    }
+
+    /* ============================================================
+       SUMMARY PANEL
+       ============================================================ */
+    .summary {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .summary-stat {
+      background: var(--bg-panel);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+
+    .summary-stat .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .summary-stat .stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 2px;
+    }
+
+    .findings {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    .findings h4 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 8px;
+    }
+
+    .finding-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text-main);
+    }
+
+    .finding-item .finding-icon {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ============================================================
+       COMPARE PANEL
+       ============================================================ */
+    #compare-panel {
+      padding: 0;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .compare-grid .chart-wrapper {
+      height: 450px;
+    }
+
+    .compare-grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 1100px) {
+      .compare-grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .compare-grid, .compare-grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .compare-controls {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+      box-shadow: var(--shadow);
+    }
+
+    .compare-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-panel);
+      border-radius: 6px;
+      padding: 4px 10px;
+      align-self: center;
+    }
+
+    /* ============================================================
+       EMPTY STATE
+       ============================================================ */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 12px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      opacity: .4;
+    }
+
+    .empty-state p {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .empty-state small {
+      font-size: 12px;
+    }
+
+    /* ============================================================
+       LOADING SPINNER
+       ============================================================ */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--border-focus);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============================================================
+       TOOLTIP OVERRIDE
+       ============================================================ */
+    .chartjs-tooltip {
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       SCROLLBAR (WebKit)
+       ============================================================ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+
+<body>
+
+<!-- ================================================================
+     HEADER
+     ================================================================ -->
+<header>
+  <div class="header-left">
+    <div class="header-logo">&#9883;</div>
+    <div>
+      <h1>LOHC-CCPP Grid Sweep Dashboard</h1>
+      <p class="subtitle">MCH Dehydrogenation &mdash; Exergy &amp; H<sub>2</sub> Production Analysis</p>
+    </div>
+  </div>
+  <button id="themeToggle" title="Toggle dark / light theme">
+    <span id="themeIcon">&#9788;</span>
+    <span id="themeLabel">Light</span>
+  </button>
+</header>
+
+<!-- ================================================================
+     PAGE BODY
+     ================================================================ -->
+<div class="page-body">
+
+  <!-- DEMO BAR -->
+  <div id="demoBar" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px;margin-bottom:14px;background:var(--bg-card,rgba(20,184,166,0.06));border:1px solid var(--border,rgba(20,184,166,0.35));border-radius:10px;">
+    <button id="loadDemoBtn" style="padding:8px 18px;border:none;border-radius:8px;background:#14b8a6;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">&#9654; Load demo data</button>
+    <span style="font-size:12.5px;color:var(--text-muted,#64748b);line-height:1.5;">
+      Trial dataset &mdash; 10 evenly-spaced points per line (Lines 5 &middot; 6 &middot; 9) sampled from the full 100-case v14 study.
+      Full dataset available upon publication. You can also upload your own files below.
+    </span>
+  </div>
+
+  <!-- UPLOAD SECTION -->
+  <section id="upload">
+    <!-- slots injected by JS -->
+  </section>
+
+  <!-- TABS -->
+  <nav id="tabs">
+    <!-- tabs injected by JS -->
+  </nav>
+
+  <!-- CONTENT -->
+  <main id="content">
+    <!-- empty state shown before any data -->
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon">&#128196;</span>
+      <p>Click &ldquo;Load demo data&rdquo; or upload Excel files to begin</p>
+      <small>Drag-and-drop or click a slot above &mdash; supports Line 4, 5, 6, and 9</small>
+    </div>
+    <!-- line panels and compare panel injected by JS -->
+  </main>
+
+</div><!-- /.page-body -->
+
+
+<!-- ================================================================
+     MAIN APPLICATION SCRIPT (IIFE)
+     ================================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ================================================================
+     CONFIG
+     ================================================================ */
+  const CONFIG = {
+    T0_K: 298.15,
+    MW: { MCH: 98.19, H2: 2.016, TOL: 92.14 },
+    LHV_H2_KJ_KG: 120100,
+    // Chemical exergy values (LHV-based), source: objective_calculator_v13.py
+    CHEM_EXERGY_KJ_KG: { MCH: 46573, H2: 117113, TOL: 42663 },
+
+    LINES: {
+      4: { color: '#a855f7', label: 'Line 4' },
+      5: { color: '#14b8a6', label: 'Line 5' },
+      6: { color: '#f97316', label: 'Line 6' },
+      9: { color: '#3b82f6', label: 'Line 9' },
+    },
+
+    // Epsilon color ramp: blue -> cyan -> green -> yellow -> orange -> red
+    EPSILON_COLORS: ['#3b82f6', '#06b6d4', '#22c55e', '#eab308', '#f97316', '#ef4444'],
+
+    SHEETS: { CLEAN: 'CLEAN_RESULT', ERROR: 'ERROR_RESULT', SUMMARY: 'SUMMARY' },
+
+    // Column schema with alias fallbacks for flexible matching
+    // Aliases ordered by priority: actual Aspen names first, then short aliases
+    COLUMN_SCHEMA: {
+      SR:          { aliases: ['ASPLIT_Input_FRAC_AC8', 'SR', 'Split_Ratio', 'SplitRatio', 'FRAC_AC8'], required: true,  unit: '-' },
+      MCH_INPUT:   { aliases: ['ALMCHIN_Input_TOTFLOW_MIXED', 'MCH_Input', 'TOTFLOW_MIXED'], required: true,  unit: 'tons/hr' },
+      MCH_FLOW:    { aliases: ['ALMCHIN_Output_RES_MASSFLOW', 'MCH_MASSFLOW', 'm_MCH', 'MASSFLOW_MCH'], required: false, unit: 'kg/s' },
+      POWER_OUT:   { aliases: ['AETOT_Output_POWER_OUT', 'AETOT_POWER_OUT', 'POWER_OUT', 'Power_Out'], required: true,  unit: 'kW' },
+      X_MCH:       { aliases: ['ALTOLC_Output_X2_METHY-01', 'x_MCH', 'METHY-01', 'X2_METHY-01'], required: true,  unit: '-' },
+      AE1_POWER:   { aliases: ['AE1_Output_POWER_OUT', 'AE1_POWER_OUT'], required: false, unit: 'kW' },
+      AE2_POWER:   { aliases: ['AE2_Output_POWER_OUT', 'AE2_POWER_OUT'], required: false, unit: 'kW' },
+      AE3_POWER:   { aliases: ['AE3_Output_POWER_OUT', 'AE3_POWER_OUT'], required: false, unit: 'kW' },
+      AE4_POWER:   { aliases: ['AE4_Output_POWER_OUT', 'AE4_POWER_OUT'], required: false, unit: 'kW' },
+      ALTOLH_TEMP: { aliases: ['ALTOLH_Output_RES_TEMP', 'ALTOLH_TEMP'], required: false, unit: 'C' },
+      ACLAST_TEMP: { aliases: ['ACLAST_Output_RES_TEMP', 'ACLAST_TEMP'], required: false, unit: 'C' },
+      GAS_H:       { aliases: ['ALSTIN_Output_STR_MAIN_HMX_MASS_MIXED', 'HMX_MASS_MIXED', 'H_gas', 'Gas_Enthalpy'], required: false, unit: 'J/kg' },
+      GAS_S:       { aliases: ['ALSTIN_Output_SMX_MASS_MIXED', 'SMX_MASS_MIXED', 'S_gas', 'Gas_Entropy'], required: false, unit: 'J/(kg*K)' },
+      GAS_FLOW:    { aliases: ['ALSTIN_Output_RES_MASSFLOW', 'ALSTIN_RES_MASSFLOW', 'm_gas', 'Gas_MassFlow'], required: false, unit: 'kg/s' },
+    },
+    // Conversion: tons/hr → kg/s
+    TONS_HR_TO_KG_S: 1000 / 3600,
+    // Default thermal decomposition threshold (C)
+    DEFAULT_TEMP_THRESHOLD: 400,
+    // Individual turbine colors for power breakdown chart
+    TURBINE_COLORS: {
+      AE1: '#6366f1', AE2: '#8b5cf6', AE3: '#a78bfa', AE4: '#c4b5fd', AETOT: '#1e293b',
+    },
+    TURBINE_COLORS_DARK: {
+      AE1: '#818cf8', AE2: '#a78bfa', AE3: '#c4b5fd', AE4: '#ddd6fe', AETOT: '#e2e8f0',
+    },
+
+    NAN_THRESHOLD: 1e-15,
+    DEBUG_MODE: false, // Set true for console.table validation
+  };
+
+  /* ================================================================
+     APP STATE
+     ================================================================ */
+  const AppState = {
+    lines: {},        // { lineId: { clean, error, summary, computed, columnMap, fileName } }
+    activeTab: null,
+    charts: {},       // { lineId: { etotal, h2, conv, exergy } }
+    compareCharts: {},
+    selection: {},    // { lineId: { epsilon, mchFlow } }
+    theme: 'system',  // 'light' | 'dark' | 'system'
+  };
+
+  /* ================================================================
+     UTILITIES
+     ================================================================ */
+  /**
+   * Safe division — returns NaN when denominator is effectively zero.
+   * Satisfies W8 NaN policy.
+   */
+  function safeDivide(num, den) {
+    return Math.abs(den) > CONFIG.NAN_THRESHOLD ? num / den : NaN;
+  }
+
+  function fmt(val, decimals = 2, fallback = 'N/A') {
+    if (val === null || val === undefined || (typeof val === 'number' && isNaN(val))) return fallback;
+    return Number(val).toFixed(decimals);
+  }
+
+  function fmtPct(val, decimals = 1) { return fmt(val, decimals) + '%'; }
+
+  /** Return sorted unique values from array, filtering NaN/null. */
+  function uniqueSorted(arr) {
+    return [...new Set(arr.filter(v => v !== null && v !== undefined && !isNaN(v)))].sort((a, b) => a - b);
+  }
+
+  /** Clamp a value into [lo, hi] */
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  /** Find index of nearest value in sorted array */
+  function nearestIdx(sorted, val) {
+    if (!sorted.length) return -1;
+    let best = 0, bestDist = Infinity;
+    for (let i = 0; i < sorted.length; i++) {
+      const d = Math.abs(sorted[i] - val);
+      if (d < bestDist) { bestDist = d; best = i; }
+    }
+    return best;
+  }
+
+  /** Interpolate a color between two hex stops, t in [0,1] */
+  function lerpHex(hex1, hex2, t) {
+    const r1 = parseInt(hex1.slice(1,3),16), g1 = parseInt(hex1.slice(3,5),16), b1 = parseInt(hex1.slice(5,7),16);
+    const r2 = parseInt(hex2.slice(1,3),16), g2 = parseInt(hex2.slice(3,5),16), b2 = parseInt(hex2.slice(5,7),16);
+    const r = Math.round(r1 + (r2-r1)*t);
+    const g = Math.round(g1 + (g2-g1)*t);
+    const b = Math.round(b1 + (b2-b1)*t);
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+  }
+
+  /**
+   * Map epsilon fraction [0,1] to a color through the multi-stop ramp.
+   */
+  function epsilonColor(t) {
+    const stops = CONFIG.EPSILON_COLORS;
+    const seg = (stops.length - 1) * clamp(t, 0, 1);
+    const lo = Math.floor(seg), hi = Math.min(lo + 1, stops.length - 1);
+    return lerpHex(stops[lo], stops[hi], seg - lo);
+  }
+
+  /* ================================================================
+     THEME CONTROLLER
+     ================================================================ */
+  const ThemeController = {
+    init() {
+      const saved = localStorage.getItem('lohc_theme');
+      if (saved === 'dark') this.setDark();
+      else if (saved === 'light') this.setLight();
+      else {
+        // respect prefers-color-scheme; class set by CSS, just update button
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this._updateButton(isDark);
+        AppState.theme = 'system';
+      }
+      document.getElementById('themeToggle').addEventListener('click', () => this.toggle());
+    },
+    setDark() {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      this._updateButton(true);
+      AppState.theme = 'dark';
+    },
+    setLight() {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      this._updateButton(false);
+      AppState.theme = 'light';
+    },
+    toggle() {
+      const isDark = document.documentElement.classList.contains('dark') ||
+        (!document.documentElement.classList.contains('light') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) { this.setLight(); localStorage.setItem('lohc_theme', 'light'); }
+      else         { this.setDark();  localStorage.setItem('lohc_theme', 'dark'); }
+      // Re-render charts with new theme colors
+      setTimeout(() => UIController.refreshAllChartColors(), 50);
+    },
+    _updateButton(dark) {
+      document.getElementById('themeIcon').textContent  = dark ? '☀' : '☾';
+      document.getElementById('themeLabel').textContent = dark ? 'Light' : 'Dark';
+    },
+  };
+
+  /* ================================================================
+     DATA PARSER
+     ================================================================ */
+  const DataParser = {
+    /**
+     * Parse an ArrayBuffer (Excel file).
+     * Returns { clean, error, summary, columnMap } or throws.
+     */
+    parse(arrayBuffer) {
+      const wb = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+
+      const cleanSheet = this._findSheet(wb, CONFIG.SHEETS.CLEAN);
+      const errorSheet = this._findSheet(wb, CONFIG.SHEETS.ERROR);
+      const summarySheet = this._findSheet(wb, CONFIG.SHEETS.SUMMARY);
+
+      if (!cleanSheet) throw new Error(`Sheet "${CONFIG.SHEETS.CLEAN}" not found. Available: ${wb.SheetNames.join(', ')}`);
+
+      const cleanRows  = XLSX.utils.sheet_to_json(cleanSheet,  { defval: null });
+      const errorRows  = errorSheet  ? XLSX.utils.sheet_to_json(errorSheet,  { defval: null }) : [];
+      const summaryObj = summarySheet ? XLSX.utils.sheet_to_json(summarySheet, { defval: null, header: 1 }) : [];
+
+      if (!cleanRows.length) throw new Error(`Sheet "${CONFIG.SHEETS.CLEAN}" is empty.`);
+
+      const columnMap = this._mapColumns(cleanRows[0]);
+
+      // Validate required columns
+      for (const [key, schema] of Object.entries(CONFIG.COLUMN_SCHEMA)) {
+        if (schema.required && !columnMap[key]) {
+          throw new Error(
+            `Required column "${key}" not found. Tried aliases: ${schema.aliases.join(', ')}. ` +
+            `Available columns: ${Object.keys(cleanRows[0]).slice(0,10).join(', ')}…`
+          );
+        }
+      }
+
+      // Parse summary sheet into simple key-value object
+      const summary = {};
+      for (const row of summaryObj) {
+        if (row[0] && row[1] !== null && row[1] !== undefined) {
+          summary[String(row[0]).trim()] = row[1];
+        }
+      }
+
+      return { clean: cleanRows, error: errorRows, summary, columnMap };
+    },
+
+    _findSheet(wb, targetName) {
+      // Exact match first
+      if (wb.Sheets[targetName]) return wb.Sheets[targetName];
+      // Case-insensitive match
+      const lower = targetName.toLowerCase();
+      for (const name of wb.SheetNames) {
+        if (name.toLowerCase() === lower) return wb.Sheets[name];
+      }
+      return null;
+    },
+
+    /**
+     * Build columnMap: { schemaKey -> actual_column_name }
+     * Strategy: exact -> alias -> partial (alias is substring of column name)
+     */
+    _mapColumns(sampleRow) {
+      const colNames = Object.keys(sampleRow);
+      const colNamesLower = colNames.map(c => c.toLowerCase());
+      const map = {};
+
+      for (const [key, schema] of Object.entries(CONFIG.COLUMN_SCHEMA)) {
+        let found = null;
+
+        for (const alias of schema.aliases) {
+          // 1. Exact match
+          if (colNames.includes(alias)) { found = alias; break; }
+        }
+
+        if (!found) {
+          for (const alias of schema.aliases) {
+            // 2. Case-insensitive exact match
+            const idx = colNamesLower.indexOf(alias.toLowerCase());
+            if (idx !== -1) { found = colNames[idx]; break; }
+          }
+        }
+
+        if (!found) {
+          for (const alias of schema.aliases) {
+            // 3. Column name contains alias substring (case-insensitive)
+            const aliasLow = alias.toLowerCase();
+            const idx = colNamesLower.findIndex(c => c.includes(aliasLow));
+            if (idx !== -1) { found = colNames[idx]; break; }
+          }
+        }
+
+        if (found) map[key] = found;
+      }
+
+      return map;
+    },
+  };
+
+  /* ================================================================
+     CALCULATOR
+     ================================================================ */
+  const Calculator = {
+    /** ε (extraction ratio, %) */
+    calcEpsilon(SR) { return (1 - SR) * 100; },
+
+    /** α (dehydrogenation conversion, mol-based) */
+    calcAlpha(x_MCH) {
+      // x_MCH is mole fraction of MCH in reactor outlet
+      const den = 1 + 3 * x_MCH;
+      return safeDivide(1 - x_MCH, den);
+    },
+
+    /** H2 mass flow [kg/s] from MCH feed and conversion */
+    calcH2MassFlow(m_MCH_kgs, alpha) {
+      const n_MCH = m_MCH_kgs / CONFIG.MW.MCH;  // kmol/s
+      const n_H2  = n_MCH * alpha * 3;           // kmol H2/s (3 mol H2 per mol MCH)
+      return n_H2 * CONFIG.MW.H2;                // kg/s
+    },
+
+    /** Display unit: kg/hr */
+    calcH2MassFlowPerHour(m_H2_kgs) { return m_H2_kgs * 3600; },
+
+    /** H2 exergy (LHV-based) [kW] */
+    calcExH2(m_H2_kgs) { return m_H2_kgs * CONFIG.LHV_H2_KJ_KG; },
+
+    /** Total energy output [kW] = |P_out| + Ex_H2 */
+    calcEtotal(power_out_kW, ex_H2_kW) {
+      return Math.abs(power_out_kW) + ex_H2_kW;
+    },
+
+    /** Specific physical exergy of a stream [J/kg] */
+    calcSpecificExergy(h, s, h0, s0) {
+      return (h - h0) - CONFIG.T0_K * (s - s0);
+    },
+
+    /** Gas stream exergy [kW] */
+    calcGasExergy(m_gas, h, s, h0, s0) {
+      const ex_sp = this.calcSpecificExergy(h, s, h0, s0);
+      return safeDivide(m_gas * ex_sp, 1000);  // J/s -> kW
+    },
+
+    /** Chemical exergy balance across the dehydrogenation reactor */
+    calcChemExergyBalance(m_MCH_kgs, alpha, m_H2_kgs) {
+      const m_MCH_consumed = alpha * m_MCH_kgs;
+      const m_tol_produced = m_MCH_consumed * CONFIG.MW.TOL / CONFIG.MW.MCH;
+
+      const Ex_mch = m_MCH_consumed * CONFIG.CHEM_EXERGY_KJ_KG.MCH;  // kW
+      const Ex_h2  = m_H2_kgs       * CONFIG.CHEM_EXERGY_KJ_KG.H2;   // kW
+      const Ex_tol = m_tol_produced  * CONFIG.CHEM_EXERGY_KJ_KG.TOL;  // kW
+
+      return {
+        Ex_mch, Ex_h2, Ex_tol,
+        netGain: (Ex_h2 + Ex_tol) - Ex_mch,
+        eta_lohc: safeDivide((Ex_h2 + Ex_tol), Ex_mch) * 100,
+      };
+    },
+
+    /**
+     * Process all rows for a single line.
+     * h0, s0 are reference state offsets (J/kg, J/(kg·K)) for gas exergy.
+     */
+    computeAll(rows, columnMap, h0, s0) {
+      return rows.map(row => {
+        const SR    = row[columnMap.SR];
+        const x_MCH = row[columnMap.X_MCH];
+        const power = row[columnMap.POWER_OUT];
+
+        // MCH mass flow: prefer output RES_MASSFLOW (kg/s), fallback to input (tons/hr → kg/s)
+        let m_MCH;
+        if (columnMap.MCH_FLOW) {
+          m_MCH = row[columnMap.MCH_FLOW]; // kg/s
+        } else if (columnMap.MCH_INPUT) {
+          m_MCH = row[columnMap.MCH_INPUT] * CONFIG.TONS_HR_TO_KG_S; // tons/hr → kg/s
+        } else {
+          m_MCH = NaN;
+        }
+        // MCH input flow for x-axis (sweep variable, tons/hr)
+        const mch_input = columnMap.MCH_INPUT ? row[columnMap.MCH_INPUT] : (m_MCH / CONFIG.TONS_HR_TO_KG_S);
+
+        // Core calculations
+        const epsilon   = this.calcEpsilon(SR);
+        const alpha     = this.calcAlpha(x_MCH);
+        const m_H2_kgs  = this.calcH2MassFlow(m_MCH, alpha);
+        const m_H2_kghr = this.calcH2MassFlowPerHour(m_H2_kgs);
+        const ex_H2_LHV = this.calcExH2(m_H2_kgs);
+        const etotal    = this.calcEtotal(power, ex_H2_LHV);
+        const chemBal   = this.calcChemExergyBalance(m_MCH, alpha, m_H2_kgs);
+
+        // Individual turbine powers (absolute values, kW)
+        const ae1 = columnMap.AE1_POWER ? Math.abs(row[columnMap.AE1_POWER] ?? NaN) : NaN;
+        const ae2 = columnMap.AE2_POWER ? Math.abs(row[columnMap.AE2_POWER] ?? NaN) : NaN;
+        const ae3 = columnMap.AE3_POWER ? Math.abs(row[columnMap.AE3_POWER] ?? NaN) : NaN;
+        const ae4 = columnMap.AE4_POWER ? Math.abs(row[columnMap.AE4_POWER] ?? NaN) : NaN;
+
+        // Temperatures (C)
+        const T_altolh = columnMap.ALTOLH_TEMP ? (row[columnMap.ALTOLH_TEMP] ?? NaN) : NaN;
+        const T_aclast = columnMap.ACLAST_TEMP ? (row[columnMap.ACLAST_TEMP] ?? NaN) : NaN;
+
+        // Optional gas exergy
+        let ex_gas = NaN, eta_gas = NaN;
+        if (columnMap.GAS_H && columnMap.GAS_S && columnMap.GAS_FLOW) {
+          const h = row[columnMap.GAS_H];
+          const s = row[columnMap.GAS_S];
+          const m = row[columnMap.GAS_FLOW];
+          if (h !== null && s !== null && m !== null) {
+            ex_gas  = this.calcGasExergy(m, h, s, h0, s0);
+            eta_gas = safeDivide(chemBal.netGain, ex_gas) * 100;
+          }
+        }
+
+        return {
+          ...row,
+          epsilon,
+          mch_input,
+          alpha,
+          m_H2_kgs,
+          m_H2_kghr,
+          ex_H2_LHV,
+          etotal,
+          power_abs: Math.abs(power),
+          ae1, ae2, ae3, ae4, T_altolh, T_aclast,
+          ...chemBal,
+          ex_gas,
+          eta_gas,
+        };
+      });
+    },
+  };
+
+  /* ================================================================
+     CHART.JS PLUGIN: Temperature danger-zone background
+     Draws a gradient fill from threshold upward.
+     Attach via _plugins option on individual charts.
+     ================================================================ */
+  const tempZonePlugin = {
+    id: 'tempZone',
+    beforeDraw(chart) {
+      const opts = chart.options.plugins?.tempZone;
+      if (!opts) return;
+      const { ctx, chartArea: { left, right, top, bottom }, scales: { y } } = chart;
+
+      // Upper danger zone (red): above threshold (thermal decomposition)
+      if (opts.threshold) {
+        const yPx = y.getPixelForValue(opts.threshold);
+        const dTop = Math.max(top, y.getPixelForValue(y.max));
+        const dBot = Math.min(yPx, bottom);
+        if (dTop < dBot) {
+          ctx.save();
+          const grad = ctx.createLinearGradient(0, dBot, 0, dTop);
+          grad.addColorStop(0, 'rgba(239, 68, 68, 0.08)');
+          grad.addColorStop(0.5, 'rgba(239, 68, 68, 0.18)');
+          grad.addColorStop(1, 'rgba(239, 68, 68, 0.35)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(left, dTop, right - left, dBot - dTop);
+          ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath(); ctx.moveTo(left, yPx); ctx.lineTo(right, yPx); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
+          ctx.font = '600 11px system-ui';
+          ctx.textAlign = 'left';
+          ctx.fillText(opts.threshold + '\u00B0C decomp.', left + 6, yPx - 5);
+          ctx.restore();
+        }
+      }
+
+      // Lower cold zone (blue): below lowThreshold (insufficient conversion)
+      if (opts.lowThreshold) {
+        const yPxLow = y.getPixelForValue(opts.lowThreshold);
+        const dTop = Math.max(yPxLow, top);
+        const dBot = Math.min(bottom, y.getPixelForValue(y.min));
+        if (dTop < dBot) {
+          ctx.save();
+          const grad = ctx.createLinearGradient(0, dTop, 0, dBot);
+          grad.addColorStop(0, 'rgba(59, 130, 246, 0.06)');
+          grad.addColorStop(0.5, 'rgba(59, 130, 246, 0.14)');
+          grad.addColorStop(1, 'rgba(59, 130, 246, 0.25)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(left, dTop, right - left, dBot - dTop);
+          ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath(); ctx.moveTo(left, yPxLow); ctx.lineTo(right, yPxLow); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.8)';
+          ctx.font = '600 11px system-ui';
+          ctx.textAlign = 'left';
+          ctx.fillText(opts.lowThreshold + '\u00B0C min. conv.', left + 6, yPxLow + 14);
+          ctx.restore();
+        }
+      }
+    },
+  };
+
+  /* ================================================================
+     CHART RENDERER
+     ================================================================ */
+  const ChartRenderer = {
+    /**
+     * Build Chart.js datasets for a line's computed data.
+     * Groups rows by epsilon value, each group = one curve.
+     */
+    _buildDatasets(computed, xKey, yKey, selectedEps, selectedMch, lineColor, tempHi, tempLo) {
+      const epsilons = uniqueSorted(computed.map(r => r.epsilon));
+      const epsMin = epsilons[0] ?? 0;
+      const epsMax = epsilons[epsilons.length - 1] ?? 100;
+      const epsRange = epsMax - epsMin || 1;
+      const useTempColor = (tempHi > 0 || tempLo > 0) && computed.some(r => !isNaN(r.T_altolh));
+
+      const datasets = epsilons.map(eps => {
+        const rows = computed
+          .filter(r => Math.abs(r.epsilon - eps) < 0.001)
+          .sort((a, b) => a[xKey] - b[xKey]);
+
+        const t = (eps - epsMin) / epsRange;
+        const color = epsilonColor(t);
+        const isSelected = Math.abs(eps - selectedEps) < 0.001;
+
+        const data = rows.map(r => ({
+          x: r[xKey],
+          y: isNaN(r[yKey]) ? null : r[yKey],
+          _row: r,
+        }));
+
+        // Per-point color: red if T > tempHi, blue if T < tempLo, normal if in between
+        let pointBgColors = color;
+        let pointBdColors = color;
+        let pointRadii = isSelected ? 3 : 1.5;
+        if (useTempColor) {
+          pointBgColors = data.map(d => {
+            const T = d._row?.T_altolh;
+            if (isNaN(T) || (T >= tempLo && T <= tempHi)) return color;
+            if (T > tempHi) {
+              const sev = Math.min((T - tempHi) / 400, 1);
+              return `rgba(239, 68, 68, ${(0.5 + sev * 0.5).toFixed(2)})`;
+            }
+            // T < tempLo
+            const sev = Math.min((tempLo - T) / 200, 1);
+            return `rgba(59, 130, 246, ${(0.4 + sev * 0.4).toFixed(2)})`;
+          });
+          pointBdColors = data.map(d => {
+            const T = d._row?.T_altolh;
+            if (isNaN(T) || (T >= tempLo && T <= tempHi)) return color;
+            return T > tempHi ? '#ef4444' : '#3b82f6';
+          });
+          pointRadii = data.map(d => {
+            const T = d._row?.T_altolh;
+            if (isNaN(T) || (T >= tempLo && T <= tempHi)) return isSelected ? 3 : 1.5;
+            return isSelected ? 5 : 3.5;
+          });
+        }
+
+        return {
+          label: `\u03B5 = ${eps.toFixed(1)}%`,
+          data,
+          borderColor: color,
+          backgroundColor: color + '22',
+          borderWidth: isSelected ? 2.5 : 1.5,
+          pointRadius: pointRadii,
+          pointBackgroundColor: pointBgColors,
+          pointBorderColor: pointBdColors,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          spanGaps: false,
+          fill: false,
+          _eps: eps,
+          _isSelected: isSelected,
+        };
+      });
+
+      return datasets;
+    },
+
+    /** Add/update the highlighted operating-point marker */
+    _buildHighlightDataset(computed, xKey, yKey, selectedEps, selectedMch, lineColor) {
+      // Find the specific operating point
+      const candidates = computed.filter(r => Math.abs(r.epsilon - selectedEps) < 0.001);
+      if (!candidates.length) return null;
+
+      const mchVals = uniqueSorted(candidates.map(r => r[xKey]));
+      const nearestMch = mchVals[nearestIdx(mchVals, selectedMch)];
+      const pt = candidates.find(r => Math.abs(r[xKey] - nearestMch) < 1e-9);
+      if (!pt) return null;
+
+      return {
+        label: 'Selected',
+        data: [{ x: pt[xKey], y: isNaN(pt[yKey]) ? null : pt[yKey], _row: pt }],
+        borderColor: lineColor,
+        backgroundColor: lineColor,
+        pointRadius: 9,
+        pointHoverRadius: 11,
+        pointStyle: 'circle',
+        borderWidth: 2.5,
+        showLine: false,
+        tension: 0,
+        spanGaps: false,
+        _isHighlight: true,
+      };
+    },
+
+    /** Build error-case dataset (hollow cross markers) */
+    _buildErrorDataset(errorRows, xKey, yKey, columnMap) {
+      if (!errorRows || !errorRows.length) return null;
+      // Error rows are raw (not computed). Map xKey='mch_input' → MCH_INPUT column.
+      const xCol = xKey === 'mch_input' ? (columnMap.MCH_INPUT || columnMap.MCH_FLOW) : (columnMap[xKey] || xKey);
+      const data = errorRows.map(r => {
+        const x = r[xCol] ?? r[xKey];
+        const y = r[columnMap[yKey]] ?? r[yKey];
+        return (x !== null && y !== null && !isNaN(x) && !isNaN(y)) ? { x, y } : null;
+      }).filter(Boolean);
+
+      if (!data.length) return null;
+
+      return {
+        label: 'Error cases',
+        data,
+        borderColor: '#9ca3af',
+        backgroundColor: 'transparent',
+        pointRadius: 5,
+        pointStyle: 'crossRot',
+        showLine: false,
+        borderWidth: 1.5,
+        _isError: true,
+      };
+    },
+
+    /** Create or update a single Chart.js chart */
+    createOrUpdate(canvasId, existingChart, datasets, xLabel, yLabel, title, lineColor) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return null;
+
+      const isDark = document.documentElement.classList.contains('dark') ||
+        (!document.documentElement.classList.contains('light') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      if (existingChart) {
+        existingChart.data.datasets = datasets;
+        existingChart.options.scales.x.title.text = xLabel;
+        existingChart.options.scales.y.title.text = yLabel;
+        existingChart.options.scales.x.grid.color  = gridColor;
+        existingChart.options.scales.y.grid.color  = gridColor;
+        existingChart.options.scales.x.ticks.color = textColor;
+        existingChart.options.scales.y.ticks.color = textColor;
+        existingChart.options.scales.x.title.color = textColor;
+        existingChart.options.scales.y.title.color = textColor;
+        existingChart.update('none');
+        return existingChart;
+      }
+
+      return new Chart(canvas, {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 300 },
+          interaction: { mode: 'nearest', axis: 'x', intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                boxWidth: 12,
+                padding: 8,
+                font: { size: 11 },
+                filter: (item) => {
+                  // Only show selected and error in legend; too many epsilon labels clutter
+                  const ds = item.chart?.data?.datasets?.[item.datasetIndex];
+                  return ds && (ds._isHighlight || ds._isError || item.datasetIndex < 3);
+                },
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const ds = ctx.dataset;
+                  const pt = ctx.raw;
+                  const label = ds.label || '';
+                  if (pt && pt._row) {
+                    const r = pt._row;
+                    return [
+                      label,
+                      `${xLabel}: ${fmt(pt.x, 4)}`,
+                      `${yLabel}: ${fmt(pt.y, 2)}`,
+                      `\u03B1 = ${fmt(r.alpha, 4)}`,
+                      `H\u2082 = ${fmt(r.m_H2_kghr, 1)} kg/hr`,
+                    ];
+                  }
+                  return `${label}: (${fmt(ctx.parsed.x, 3)}, ${fmt(ctx.parsed.y, 2)})`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: xLabel, color: textColor, font: { size: 11 } },
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 10 } },
+            },
+            y: {
+              title: { display: true, text: yLabel, color: textColor, font: { size: 11 } },
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 10 } },
+            },
+          },
+        },
+      });
+    },
+
+    /** Render all 4 charts for a line */
+    renderLine(lineId, computed, errorRows, columnMap, selectedEps, selectedMch, tempHi, tempLo) {
+      const lc = CONFIG.LINES[lineId].color;
+
+      // First 3 charts: epsilon-grouped line charts
+      const epsCharts = [
+        {
+          id: `chart-etotal-${lineId}`,
+          key: 'etotal',
+          xKey: 'mch_input', yKey: 'etotal',
+          xLabel: 'MCH Feed (tons/hr)', yLabel: 'E\u209C\u2092\u209C\u2090\u2097 (kW)',
+        },
+        {
+          id: `chart-h2-${lineId}`,
+          key: 'h2',
+          xKey: 'mch_input', yKey: 'm_H2_kghr',
+          xLabel: 'MCH Feed (tons/hr)', yLabel: 'H\u2082 (kg/hr)',
+        },
+        {
+          id: `chart-conv-${lineId}`,
+          key: 'conv',
+          xKey: 'mch_input', yKey: 'alpha',
+          xLabel: 'MCH Feed (tons/hr)', yLabel: 'MCH Conversion (-)',
+        },
+      ];
+
+      if (!AppState.charts[lineId]) AppState.charts[lineId] = {};
+
+      for (const cfg of epsCharts) {
+        const ds = this._buildDatasets(computed, cfg.xKey, cfg.yKey, selectedEps, selectedMch, lc, tempHi, tempLo);
+        const hl = this._buildHighlightDataset(computed, cfg.xKey, cfg.yKey, selectedEps, selectedMch, lc);
+        if (hl) ds.push(hl);
+        const errDs = this._buildErrorDataset(errorRows, cfg.xKey, cfg.yKey, columnMap);
+        if (errDs) ds.push(errDs);
+
+        AppState.charts[lineId][cfg.key] = this.createOrUpdate(
+          cfg.id,
+          AppState.charts[lineId][cfg.key],
+          ds, cfg.xLabel, cfg.yLabel, cfg.key, lc
+        );
+      }
+
+      // 4th chart: Power breakdown (AE1~4 + AETOT at selected ε)
+      this._renderPowerBreakdown(lineId, computed, selectedEps, selectedMch);
+
+      // 5th & 6th charts: Temperature profiles with danger zone
+      this._renderTempChart(lineId, 'altolh', 'T_altolh', 'ALTOLH (Reactor Outlet)', computed, selectedEps, selectedMch, tempHi, tempLo, lc);
+      this._renderTempChart(lineId, 'aclast', 'T_aclast', 'ACLAST (Stack Outlet)', computed, selectedEps, selectedMch, tempHi, tempLo, lc);
+    },
+
+    /** 4th chart: Power breakdown — AE1~4 + AETOT as separate series at selected ε */
+    _renderPowerBreakdown(lineId, computed, selectedEps, selectedMch) {
+      const canvasId = `chart-power-${lineId}`;
+      const isDark = document.documentElement.classList.contains('dark') ||
+        (!document.documentElement.classList.contains('light') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const tColors = isDark ? CONFIG.TURBINE_COLORS_DARK : CONFIG.TURBINE_COLORS;
+
+      // Filter to selected epsilon
+      const epsRows = computed
+        .filter(r => Math.abs(r.epsilon - selectedEps) < 0.001)
+        .sort((a, b) => a.mch_input - b.mch_input);
+
+      const turbines = [
+        { key: 'ae1',  label: 'AE1 (GT)', color: tColors.AE1, dash: [] },
+        { key: 'ae2',  label: 'AE2 (ST)', color: tColors.AE2, dash: [] },
+        { key: 'ae3',  label: 'AE3',      color: tColors.AE3, dash: [4, 2] },
+        { key: 'ae4',  label: 'AE4',      color: tColors.AE4, dash: [4, 2] },
+        { key: 'power_abs', label: 'AETOT', color: tColors.AETOT, dash: [6, 3] },
+      ];
+
+      const datasets = turbines
+        .filter(t => epsRows.some(r => !isNaN(r[t.key])))
+        .map(t => ({
+          label: t.label,
+          data: epsRows.map(r => ({ x: r.mch_input, y: isNaN(r[t.key]) ? null : r[t.key] })),
+          borderColor: t.color,
+          backgroundColor: t.color + '18',
+          borderWidth: t.key === 'power_abs' ? 2.5 : 1.8,
+          borderDash: t.dash,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          spanGaps: false,
+          fill: false,
+        }));
+
+      // Highlight selected MCH point on AETOT line
+      const hlPt = epsRows.find(r => {
+        const mchVals = epsRows.map(r2 => r2.mch_input);
+        const near = mchVals[nearestIdx(mchVals, selectedMch)];
+        return Math.abs(r.mch_input - near) < 1e-9;
+      });
+      if (hlPt) {
+        datasets.push({
+          label: 'Selected',
+          data: [{ x: hlPt.mch_input, y: hlPt.power_abs }],
+          borderColor: CONFIG.LINES[lineId].color,
+          backgroundColor: CONFIG.LINES[lineId].color,
+          pointRadius: 9, pointHoverRadius: 11,
+          pointStyle: 'circle', borderWidth: 2.5,
+          showLine: false, _isHighlight: true,
+        });
+      }
+
+      AppState.charts[lineId].power = this.createOrUpdate(
+        canvasId,
+        AppState.charts[lineId].power,
+        datasets,
+        'MCH Feed (tons/hr)', 'Power Output (kW)',
+        'power', CONFIG.LINES[lineId].color
+      );
+    },
+
+    /** Temperature chart with danger-zone background */
+    _renderTempChart(lineId, chartKey, dataKey, title, computed, selectedEps, selectedMch, threshold, lowThreshold, lineColor) {
+      const canvasId = `chart-temp-${chartKey}-${lineId}`;
+      const stateKey = `temp_${chartKey}`;
+
+      // Check if data exists
+      if (!computed.some(r => !isNaN(r[dataKey]))) return;
+
+      // Build epsilon-grouped datasets (same as main charts)
+      const ds = this._buildDatasets(computed, 'mch_input', dataKey, selectedEps, selectedMch, lineColor);
+      const hl = this._buildHighlightDataset(computed, 'mch_input', dataKey, selectedEps, selectedMch, lineColor);
+      if (hl) ds.push(hl);
+
+      const isDark = document.documentElement.classList.contains('dark') ||
+        (!document.documentElement.classList.contains('light') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      if (AppState.charts[lineId]?.[stateKey]) {
+        const chart = AppState.charts[lineId][stateKey];
+        chart.data.datasets = ds;
+        chart.options.plugins.tempZone.threshold = threshold;
+        chart.options.plugins.tempZone.lowThreshold = lowThreshold;
+        chart.update('none');
+        return;
+      }
+
+      AppState.charts[lineId][stateKey] = new Chart(canvas, {
+        type: 'scatter',
+        data: { datasets: ds },
+        plugins: [tempZonePlugin],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tempZone: { threshold, lowThreshold },
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const r = ctx.raw?._row;
+                  if (!r) return '';
+                  return `${r[dataKey]?.toFixed(1)}\u00B0C (\u03B5=${r.epsilon?.toFixed(1)}%)`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'MCH Feed (tons/hr)', color: textColor, font: { size: 11 } },
+              grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } },
+            },
+            y: {
+              title: { display: true, text: title + ' (\u00B0C)', color: textColor, font: { size: 11 } },
+              grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } },
+            },
+          },
+        },
+      });
+    },
+  };
+
+  /* ================================================================
+     COMPARE MODULE
+     ================================================================ */
+  const CompareModule = {
+    render() {
+      const panel = document.getElementById('compare-panel');
+      if (!panel) return;
+
+      const loadedLines = Object.keys(AppState.lines);
+      if (loadedLines.length < 2) {
+        panel.innerHTML = `<div class="empty-state"><span class="empty-icon">&#9878;</span><p>Load at least 2 lines to compare</p></div>`;
+        return;
+      }
+
+      // Get compare controls values
+      const epsInput = document.getElementById('compare-eps');
+      const mchInput = document.getElementById('compare-mch');
+      const selEps = epsInput ? parseFloat(epsInput.value) : 50;
+      const selMch = mchInput ? parseFloat(mchInput.value) : 0;
+
+      // Rebuild panel HTML if needed
+      if (!document.getElementById('chart-cmp-etotal')) {
+        // Destroy existing charts before rebuilding DOM
+        for (const key of Object.keys(AppState.compareCharts)) {
+          if (AppState.compareCharts[key]) {
+            AppState.compareCharts[key].destroy();
+            delete AppState.compareCharts[key];
+          }
+        }
+        panel.innerHTML = this._buildHTML();
+      }
+
+      // Grouped bar: metrics at operating point
+      this._renderBarChart(loadedLines, selEps, selMch);
+      // Radar chart: multi-axis comparison
+      this._renderRadarChart(loadedLines, selEps, selMch);
+    },
+
+    _buildHTML() {
+      // Derive actual ranges from loaded data
+      let allEps = [], allMch = [];
+      for (const lineId of Object.keys(AppState.lines)) {
+        const comp = AppState.lines[lineId].computed;
+        allEps.push(...comp.map(r => r.epsilon));
+        allMch.push(...comp.map(r => r.mch_input));
+      }
+      allEps = uniqueSorted(allEps);
+      allMch = uniqueSorted(allMch);
+      const epsMin = allEps[0] ?? 0, epsMax = allEps[allEps.length - 1] ?? 15;
+      const mchMin = allMch[0] ?? 0, mchMax = allMch[allMch.length - 1] ?? 30;
+      const epsMid = allEps[Math.floor(allEps.length / 2)] ?? epsMin;
+      const mchMid = allMch[Math.floor(allMch.length / 2)] ?? mchMin;
+
+      return `
+        <div class="compare-controls">
+          <div class="control-group" style="min-width:160px;">
+            <label>Reference \u03B5 (%)</label>
+            <div class="control-value" id="compare-eps-disp">${epsMid.toFixed(1)}%</div>
+            <input type="range" id="compare-eps" min="${epsMin}" max="${epsMax}" step="0.1" value="${epsMid}"
+              oninput="CompareModuleRef.onControlChange()" />
+          </div>
+          <div class="control-group" style="min-width:160px;">
+            <label>Reference MCH Feed (tons/hr)</label>
+            <div class="control-value" id="compare-mch-disp">${mchMid.toFixed(1)} tons/hr</div>
+            <input type="range" id="compare-mch" min="${mchMin}" max="${mchMax}" step="1" value="${mchMid}"
+              oninput="CompareModuleRef.onControlChange()" />
+          </div>
+          <div class="compare-note">Comparing metrics at the nearest matching operating point per line</div>
+        </div>
+        <div class="compare-grid compare-grid-3">
+          <div class="chart-card">
+            <h3>E\u209C\u2092\u209C\u2090\u2097 (kW)</h3>
+            <div class="chart-wrapper"><canvas id="chart-cmp-etotal"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Power Output (kW)</h3>
+            <div class="chart-wrapper"><canvas id="chart-cmp-power"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>H\u2082 Production (kg/hr)</h3>
+            <div class="chart-wrapper"><canvas id="chart-cmp-h2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>MCH Conversion (-)</h3>
+            <div class="chart-wrapper"><canvas id="chart-cmp-conv"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Ex H\u2082 (kW)</h3>
+            <div class="chart-wrapper"><canvas id="chart-cmp-exh2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Performance Radar</h3>
+            <div class="chart-wrapper"><canvas id="chart-compare-radar"></canvas></div>
+          </div>
+        </div>`;
+    },
+
+    onControlChange() {
+      const epsInput = document.getElementById('compare-eps');
+      const mchInput = document.getElementById('compare-mch');
+      if (epsInput) document.getElementById('compare-eps-disp').textContent = parseFloat(epsInput.value).toFixed(1) + '%';
+      if (mchInput) document.getElementById('compare-mch-disp').textContent = parseFloat(mchInput.value).toFixed(1) + ' tons/hr';
+      this.render();
+    },
+
+    _getOperatingPoint(lineId, targetEps, targetMch) {
+      const data = AppState.lines[lineId];
+      if (!data || !data.computed.length) return null;
+
+      const epsilons = uniqueSorted(data.computed.map(r => r.epsilon));
+      const nearestEps = epsilons[nearestIdx(epsilons, targetEps)];
+      const candidates = data.computed.filter(r => Math.abs(r.epsilon - nearestEps) < 0.001);
+      const mchKey = 'mch_input';
+      const mchVals = uniqueSorted(candidates.map(r => r[mchKey]));
+      const nearestMch = mchVals[nearestIdx(mchVals, targetMch)];
+      return candidates.find(r => Math.abs(r[mchKey] - nearestMch) < 1e-9) || null;
+    },
+
+    _renderBarChart(lineIds, selEps, selMch) {
+      const charts = [
+        { canvasId: 'chart-cmp-etotal', key: 'cmpEtotal', metrics: [{ key: 'etotal',    label: 'E_total' }] },
+        { canvasId: 'chart-cmp-power',  key: 'cmpPower',  metrics: [{ key: 'power_abs', label: 'Power' }] },
+        { canvasId: 'chart-cmp-h2',     key: 'cmpH2',     metrics: [{ key: 'm_H2_kghr', label: 'H\u2082' }] },
+        { canvasId: 'chart-cmp-conv',   key: 'cmpConv',   metrics: [{ key: 'alpha',     label: 'MCH Conv.' }] },
+        { canvasId: 'chart-cmp-exh2',   key: 'cmpExH2',   metrics: [{ key: 'ex_H2_LHV', label: 'Ex H\u2082' }] },
+      ];
+      for (const c of charts) {
+        this._renderSingleBar(c.canvasId, c.key, lineIds, selEps, selMch, c.metrics);
+      }
+    },
+
+    _renderSingleBar(canvasId, chartKey, lineIds, selEps, selMch, metrics) {
+      const datasets = lineIds.map(lineId => {
+        const pt = this._getOperatingPoint(lineId, selEps, selMch);
+        const color = CONFIG.LINES[lineId].color;
+        return {
+          label: CONFIG.LINES[lineId].label,
+          data: metrics.map(m => pt ? (isNaN(pt[m.key]) ? 0 : pt[m.key]) : 0),
+          backgroundColor: color + 'cc',
+          borderColor: color,
+          borderWidth: 1.5,
+          borderRadius: 4,
+        };
+      });
+
+      const isDark = document.documentElement.classList.contains('dark') ||
+        (!document.documentElement.classList.contains('light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      if (AppState.compareCharts[chartKey]) {
+        AppState.compareCharts[chartKey].data.datasets = datasets;
+        AppState.compareCharts[chartKey].data.labels = metrics.map(m => m.label);
+        AppState.compareCharts[chartKey].update('none');
+        return;
+      }
+
+      AppState.compareCharts[chartKey] = new Chart(canvas, {
+        type: 'bar',
+        data: { labels: metrics.map(m => m.label), datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: textColor, font: { size: 12 } } },
+            tooltip: { mode: 'index' },
+          },
+          scales: {
+            x: { ticks: { color: textColor, font: { size: 12 } }, grid: { color: gridColor } },
+            y: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } },
+          },
+        },
+      });
+    },
+
+    /** Radar chart: normalized multi-axis comparison at operating point */
+    _renderRadarChart(lineIds, selEps, selMch) {
+      const axes = [
+        { key: 'etotal',    label: 'E_total',       higher: 'better' },
+        { key: 'm_H2_kghr', label: 'H\u2082 Prod.', higher: 'better' },
+        { key: 'alpha',     label: '\u03B1 Conv.',   higher: 'better' },
+        { key: 'power_abs', label: 'Power Out',      higher: 'better' },
+        { key: 'ex_H2_LHV', label: 'Ex H\u2082',      higher: 'better' },
+      ];
+
+      // Collect operating points
+      const points = {};
+      const validPoints = [];
+      for (const lineId of lineIds) {
+        const pt = this._getOperatingPoint(lineId, selEps, selMch);
+        points[lineId] = pt;
+        if (pt) validPoints.push(pt);
+      }
+
+      // Normalize: compare operating points against each other
+      // Map to [0.15, 1.0] so no axis collapses to zero
+      const datasets = lineIds.filter(id => points[id]).map(lineId => {
+        const pt = points[lineId];
+        const color = CONFIG.LINES[lineId].color;
+        const data = axes.map((ax, i) => {
+          const vals = validPoints.map(p => p[ax.key]).filter(v => !isNaN(v) && v !== null);
+          if (!vals.length || isNaN(pt[ax.key])) return 0.15;
+          const mn = Math.min(...vals);
+          const mx = Math.max(...vals);
+          const range = mx - mn;
+          if (range < 1e-15) return 0.75; // all lines equal on this axis
+          return 0.15 + 0.85 * (pt[ax.key] - mn) / range;
+        });
+        return {
+          label: CONFIG.LINES[lineId].label,
+          data,
+          borderColor: color,
+          backgroundColor: color + '15',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: color,
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+        };
+      });
+
+      const isDark = document.documentElement.classList.contains('dark') ||
+        (!document.documentElement.classList.contains('light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)';
+
+      const canvas = document.getElementById('chart-compare-radar');
+      if (!canvas) return;
+
+      const chartData = {
+        labels: axes.map(a => a.label),
+        datasets,
+      };
+
+      if (AppState.compareCharts.radar) {
+        AppState.compareCharts.radar.data = chartData;
+        AppState.compareCharts.radar.update('none');
+        return;
+      }
+
+      AppState.compareCharts.radar = new Chart(canvas, {
+        type: 'radar',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: textColor, font: { size: 13 }, padding: 16 } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const lineId = lineIds[ctx.datasetIndex];
+                  const pt = points[lineId];
+                  const ax = axes[ctx.dataIndex];
+                  if (!pt) return '';
+                  const raw = pt[ax.key];
+                  return `${CONFIG.LINES[lineId].label}: ${isNaN(raw) ? 'N/A' : Number(raw).toFixed(2)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            r: {
+              min: 0, max: 1.05,
+              ticks: { display: false, stepSize: 0.25 },
+              grid: { color: gridColor, lineWidth: 1 },
+              angleLines: { color: gridColor, lineWidth: 1 },
+              pointLabels: { color: textColor, font: { size: 14, weight: '600' } },
+            },
+          },
+        },
+      });
+    },
+  };
+
+  // Expose CompareModule for inline event handlers
+  window.CompareModuleRef = CompareModule;
+
+  /* ================================================================
+     UI CONTROLLER
+     ================================================================ */
+  const UIController = {
+    init() {
+      this._buildUploadSlots();
+      this._renderEmptyState();
+      const demoBtn = document.getElementById('loadDemoBtn');
+      if (demoBtn) demoBtn.addEventListener('click', () => this.loadDemo());
+    },
+
+    _buildUploadSlots() {
+      const section = document.getElementById('upload');
+      for (const [lineId, cfg] of Object.entries(CONFIG.LINES)) {
+        const slot = document.createElement('div');
+        slot.className = 'upload-slot';
+        slot.id = `slot-${lineId}`;
+
+        const badge = document.createElement('span');
+        badge.className = 'line-badge';
+        badge.style.background = cfg.color;
+        badge.textContent = cfg.label.toUpperCase();
+
+        slot.innerHTML = `
+          <span class="slot-icon">&#128196;</span>
+          <span class="slot-label">${cfg.label}</span>
+          <span class="slot-hint">.xlsx / .xls &mdash; CLEAN_RESULT sheet</span>
+          <br/>
+          <span class="slot-status ready" id="status-${lineId}">Ready</span>
+          <input type="file" id="file-${lineId}" accept=".xlsx,.xls" data-line="${lineId}" />
+        `;
+        slot.insertBefore(badge, slot.firstChild);
+
+        // Drag-and-drop
+        slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('drag-over'); });
+        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+        slot.addEventListener('drop', (e) => {
+          e.preventDefault();
+          slot.classList.remove('drag-over');
+          const file = e.dataTransfer?.files?.[0];
+          if (file) this._processFile(parseInt(lineId), file);
+        });
+
+        const input = slot.querySelector('input[type="file"]');
+        input.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (file) this._processFile(parseInt(lineId), file);
+        });
+
+        section.appendChild(slot);
+      }
+    },
+
+    _setSlotStatus(lineId, type, text) {
+      const el = document.getElementById(`status-${lineId}`);
+      if (!el) return;
+      el.className = `slot-status ${type}`;
+      el.innerHTML = type === 'parsing' ? `<span class="spinner"></span> ${text}` : text;
+    },
+
+    _processFile(lineId, file) {
+      this._setSlotStatus(lineId, 'parsing', 'Parsing&hellip;');
+      const reader = new FileReader();
+      reader.onload = (e) => this._ingestBuffer(lineId, e.target.result, file.name);
+      reader.onerror = () => this._setSlotStatus(lineId, 'error', 'File read error');
+      reader.readAsArrayBuffer(file);
+    },
+
+    _ingestBuffer(lineId, arrayBuffer, fileName) {
+      try {
+        const result = DataParser.parse(arrayBuffer);
+        const computed = Calculator.computeAll(result.clean, result.columnMap, 0, 0);
+        AppState.lines[lineId] = {
+          ...result,
+          computed,
+          fileName,
+          h0: 0, s0: 0,
+        };
+
+        // Initialise selection to midpoint
+        const epsilons = uniqueSorted(computed.map(r => r.epsilon));
+        const mchVals = uniqueSorted(computed.map(r => r.mch_input));
+        AppState.selection[lineId] = {
+          epsilon: epsilons[Math.floor(epsilons.length / 2)] ?? 50,
+          mchFlow: mchVals[Math.floor(mchVals.length / 2)] ?? 0,
+        };
+
+        const nCases = result.clean.length;
+        const nErr   = result.error.length;
+        this._setSlotStatus(lineId, 'loaded', `Loaded (${nCases} cases${nErr ? `, ${nErr} errors` : ''})`);
+
+        if (CONFIG.DEBUG_MODE) {
+          console.group(`[DEBUG] Line ${lineId}`);
+          console.table(computed.slice(0, 5));
+          console.groupEnd();
+        }
+
+        this._buildOrUpdateTabs();
+        this._buildLinePanel(lineId);
+        this.renderLinePanel(lineId);
+        this._activateTab(AppState.activeTab ?? `line-${lineId}`);
+
+      } catch (err) {
+        console.error('[DataParser]', err);
+        this._setSlotStatus(lineId, 'error', `Error: ${err.message.slice(0, 60)}`);
+      }
+    },
+
+    /** Fetch the bundled demo workbooks (10-point subsets) and load them. */
+    async loadDemo() {
+      const DEMO_FILES = {
+        5: 'demo/lohc_demo_line5.xlsx',
+        6: 'demo/lohc_demo_line6.xlsx',
+        9: 'demo/lohc_demo_line9.xlsx',
+      };
+      const btn = document.getElementById('loadDemoBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+      for (const [lineId, url] of Object.entries(DEMO_FILES)) {
+        this._setSlotStatus(lineId, 'parsing', 'Loading demo&hellip;');
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const buf = await resp.arrayBuffer();
+          this._ingestBuffer(parseInt(lineId), buf, url.split('/').pop());
+        } catch (err) {
+          console.error('[Demo]', err);
+          this._setSlotStatus(lineId, 'error', `Demo load failed: ${String(err.message || err).slice(0, 40)}`);
+        }
+      }
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#9654; Load demo data'; }
+    },
+
+    _buildOrUpdateTabs() {
+      const nav = document.getElementById('tabs');
+      nav.innerHTML = '';
+
+      for (const [lineId, cfg] of Object.entries(CONFIG.LINES)) {
+        if (!AppState.lines[lineId]) continue;
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.dataset.tab = `line-${lineId}`;
+        btn.innerHTML = `<span class="tab-dot" style="background:${cfg.color}"></span>${cfg.label}`;
+        btn.addEventListener('click', () => this._activateTab(`line-${lineId}`));
+        nav.appendChild(btn);
+      }
+
+      // Compare tab (show when ≥2 lines loaded)
+      if (Object.keys(AppState.lines).length >= 2) {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.dataset.tab = 'compare';
+        btn.innerHTML = `<span class="tab-dot" style="background:#6366f1"></span>Compare`;
+        btn.addEventListener('click', () => this._activateTab('compare'));
+        nav.appendChild(btn);
+      }
+    },
+
+    _activateTab(tabId) {
+      AppState.activeTab = tabId;
+      // Update button styles
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
+      // Show/hide panels
+      document.querySelectorAll('.line-panel').forEach(p => p.classList.remove('active'));
+      const comparePanel = document.getElementById('compare-panel');
+      if (comparePanel) comparePanel.classList.remove('active');
+
+      if (tabId === 'compare') {
+        document.getElementById('emptyState').style.display = 'none';
+        if (comparePanel) {
+          comparePanel.classList.add('active');
+          CompareModule.render();
+        }
+      } else {
+        const panel = document.getElementById(`panel-${tabId}`);
+        if (panel) {
+          panel.classList.add('active');
+          document.getElementById('emptyState').style.display = 'none';
+        }
+      }
+    },
+
+    _buildLinePanel(lineId) {
+      const content = document.getElementById('content');
+      let panel = document.getElementById(`panel-line-${lineId}`);
+
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.className = 'line-panel';
+        panel.id = `panel-line-${lineId}`;
+        content.appendChild(panel);
+      }
+
+      const data = AppState.lines[lineId];
+      const sel = AppState.selection[lineId];
+      const mchKey = 'mch_input';
+      const epsilons = uniqueSorted(data.computed.map(r => r.epsilon));
+      const mchVals = uniqueSorted(data.computed.map(r => r[mchKey]));
+      const epsMin = epsilons[0] ?? 0, epsMax = epsilons[epsilons.length-1] ?? 100;
+      const mchMin = mchVals[0] ?? 0, mchMax = mchVals[mchVals.length-1] ?? 100;
+      const color = CONFIG.LINES[lineId].color;
+
+      panel.innerHTML = `
+        <div class="line-panel-layout">
+          <!-- LEFT: Charts + Cards + Summary -->
+          <div class="line-panel-main">
+            <!-- Metric cards -->
+            <div class="metric-cards" id="cards-${lineId}">
+              ${this._metricCardHTML('E_total', '--', 'kW', color, `card-etotal-${lineId}`)}
+              ${this._metricCardHTML('H\u2082 Prod.', '--', 'kg/hr', color, `card-h2-${lineId}`)}
+              ${this._metricCardHTML('MCH Conv.', '--', '-', color, `card-alpha-${lineId}`)}
+              ${this._metricCardHTML('Power', '--', 'kW', color, `card-power-${lineId}`)}
+              ${this._metricCardHTML('Ex H\u2082', '--', 'kW', color, `card-exh2-${lineId}`)}
+              ${this._metricCardHTML('\u03B5', '--', '%', color, `card-eps-${lineId}`)}
+            </div>
+
+            <!-- Chart grid (2x3) -->
+            <div class="chart-grid chart-grid-2x3">
+              <div class="chart-card">
+                <h3>Total Energy (E\u209C\u2092\u209C\u2090\u2097)</h3>
+                <div class="chart-wrapper"><canvas id="chart-etotal-${lineId}"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <h3>H\u2082 Production</h3>
+                <div class="chart-wrapper"><canvas id="chart-h2-${lineId}"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <h3>MCH Conversion</h3>
+                <div class="chart-wrapper"><canvas id="chart-conv-${lineId}"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <h3>Power Breakdown (AE1\u20134 + Total)</h3>
+                <div class="chart-wrapper"><canvas id="chart-power-${lineId}"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <h3>ALTOLH Reactor Outlet Temp</h3>
+                <div class="chart-wrapper"><canvas id="chart-temp-altolh-${lineId}"></canvas></div>
+              </div>
+              <div class="chart-card">
+                <h3>ACLAST Stack Outlet Temp</h3>
+                <div class="chart-wrapper"><canvas id="chart-temp-aclast-${lineId}"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="summary" id="summary-${lineId}">
+              <h3 style="color:${color}">&#9883; ${CONFIG.LINES[lineId].label} &mdash; Summary</h3>
+              <div class="summary-grid" id="summary-stats-${lineId}"></div>
+              <div class="findings"><h4>Auto Findings</h4><div id="findings-${lineId}"></div></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Controls sidebar (sticky) -->
+          <div class="line-panel-sidebar">
+            <div class="controls" id="controls-${lineId}">
+              <div class="control-group">
+                <label>Extraction Ratio \u03B5 (%)</label>
+                <div class="control-value" id="eps-disp-${lineId}">${fmt(sel.epsilon, 1)}%</div>
+                <input type="range" id="eps-slider-${lineId}"
+                  min="${epsMin}" max="${epsMax}" step="0.1" value="${sel.epsilon}" />
+              </div>
+              <div class="control-group">
+                <label>MCH Feed (tons/hr)</label>
+                <div class="control-value" id="mch-disp-${lineId}">${fmt(sel.mchFlow, 1)} tons/hr</div>
+                <input type="range" id="mch-slider-${lineId}"
+                  min="${mchMin}" max="${mchMax}" step="${((mchMax-mchMin)/200).toFixed(4)}"
+                  value="${sel.mchFlow}" />
+              </div>
+              <div class="control-group">
+                <label>Temp Upper (\u00B0C)</label>
+                <div class="control-value" id="temp-hi-disp-${lineId}">400\u00B0C</div>
+                <input type="range" id="temp-hi-${lineId}"
+                  min="100" max="500" step="10" value="400" />
+                <div class="info-note" style="margin-top:2px;font-size:10px;">Thermal decomposition</div>
+              </div>
+              <div class="control-group">
+                <label>Temp Lower (\u00B0C)</label>
+                <div class="control-value" id="temp-lo-disp-${lineId}">300\u00B0C</div>
+                <input type="range" id="temp-lo-${lineId}"
+                  min="100" max="500" step="10" value="300" />
+                <div class="info-note" style="margin-top:2px;font-size:10px;">Min. conversion temp</div>
+              </div>
+            </div>
+            <div class="controls">
+              <div class="control-group">
+                <label>h\u2080 (J/kg)</label>
+                <input type="number" id="h0-${lineId}" value="0" step="1000" placeholder="0"
+                  style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-input);color:var(--text-main);font-size:13px;" />
+              </div>
+              <div class="control-group">
+                <label>s\u2080 (J/kg\u00B7K)</label>
+                <input type="number" id="s0-${lineId}" value="0" step="10" placeholder="0"
+                  style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-input);color:var(--text-main);font-size:13px;" />
+              </div>
+              <div class="info-note">Aspen NBS: H\u2080=S\u2080=0 at 25\u00B0C</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Ensure compare panel exists
+      let comparePanel = document.getElementById('compare-panel');
+      if (!comparePanel) {
+        comparePanel = document.createElement('div');
+        comparePanel.id = 'compare-panel';
+        content.appendChild(comparePanel);
+      }
+
+      // Wire up event listeners
+      this._attachLineListeners(lineId);
+    },
+
+    _metricCardHTML(label, value, unit, color, id) {
+      return `
+        <div class="metric-card" id="${id}">
+          <div class="card-accent" style="background:${color}"></div>
+          <div class="card-label">${label}</div>
+          <div class="card-value">${value}</div>
+          <div class="card-unit">${unit}</div>
+        </div>`;
+    },
+
+    _attachLineListeners(lineId) {
+      const epsSlider = document.getElementById(`eps-slider-${lineId}`);
+      const mchSlider = document.getElementById(`mch-slider-${lineId}`);
+      const h0Input   = document.getElementById(`h0-${lineId}`);
+      const s0Input   = document.getElementById(`s0-${lineId}`);
+
+      const data = AppState.lines[lineId];
+      const mchKey = 'mch_input';
+
+      epsSlider?.addEventListener('input', () => {
+        const rawEps = parseFloat(epsSlider.value);
+        // Snap to nearest available epsilon
+        const epsilons = uniqueSorted(data.computed.map(r => r.epsilon));
+        const snapped = epsilons[nearestIdx(epsilons, rawEps)] ?? rawEps;
+        AppState.selection[lineId].epsilon = snapped;
+        document.getElementById(`eps-disp-${lineId}`).textContent = fmt(snapped, 1) + '%';
+        // Update MCH slider range for this epsilon
+        const candidates = data.computed.filter(r => Math.abs(r.epsilon - snapped) < 0.001);
+        const mchVals = uniqueSorted(candidates.map(r => r[mchKey]));
+        if (mchVals.length) {
+          mchSlider.min   = mchVals[0];
+          mchSlider.max   = mchVals[mchVals.length - 1];
+          mchSlider.step  = ((mchVals[mchVals.length-1] - mchVals[0]) / 200).toFixed(4);
+          // Clamp current MCH selection
+          const nearMch = mchVals[nearestIdx(mchVals, AppState.selection[lineId].mchFlow)] ?? mchVals[0];
+          AppState.selection[lineId].mchFlow = nearMch;
+          mchSlider.value = nearMch;
+          document.getElementById(`mch-disp-${lineId}`).textContent = fmt(nearMch, 1) + ' tons/hr';
+        }
+        this.renderLinePanel(lineId);
+      });
+
+      mchSlider?.addEventListener('input', () => {
+        const rawMch = parseFloat(mchSlider.value);
+        const selEps = AppState.selection[lineId].epsilon;
+        const candidates = data.computed.filter(r => Math.abs(r.epsilon - selEps) < 0.001);
+        const mchVals = uniqueSorted(candidates.map(r => r[mchKey]));
+        const snapped = mchVals[nearestIdx(mchVals, rawMch)] ?? rawMch;
+        AppState.selection[lineId].mchFlow = snapped;
+        document.getElementById(`mch-disp-${lineId}`).textContent = fmt(snapped, 1) + ' tons/hr';
+        this.renderLinePanel(lineId);
+      });
+
+      const recompute = () => {
+        const h0 = parseFloat(h0Input?.value) || 0;
+        const s0 = parseFloat(s0Input?.value) || 0;
+        AppState.lines[lineId].h0 = h0;
+        AppState.lines[lineId].s0 = s0;
+        AppState.lines[lineId].computed = Calculator.computeAll(data.clean, data.columnMap, h0, s0);
+        this.renderLinePanel(lineId);
+      };
+
+      h0Input?.addEventListener('change', recompute);
+      s0Input?.addEventListener('change', recompute);
+
+      // Temperature threshold sliders
+      const tempHiSlider = document.getElementById(`temp-hi-${lineId}`);
+      const tempLoSlider = document.getElementById(`temp-lo-${lineId}`);
+      const onTempChange = () => {
+        if (tempHiSlider) document.getElementById(`temp-hi-disp-${lineId}`).textContent = tempHiSlider.value + '\u00B0C';
+        if (tempLoSlider) document.getElementById(`temp-lo-disp-${lineId}`).textContent = tempLoSlider.value + '\u00B0C';
+        this.renderLinePanel(lineId);
+      };
+      tempHiSlider?.addEventListener('input', onTempChange);
+      tempLoSlider?.addEventListener('input', onTempChange);
+    },
+
+    renderLinePanel(lineId) {
+      const data = AppState.lines[lineId];
+      if (!data) return;
+
+      const sel = AppState.selection[lineId];
+      const mchKey = 'mch_input';
+
+      // Find operating point
+      const epsCandidates = data.computed.filter(r => Math.abs(r.epsilon - sel.epsilon) < 0.001);
+      const mchVals = uniqueSorted(epsCandidates.map(r => r[mchKey]));
+      const nearestMch = mchVals[nearestIdx(mchVals, sel.mchFlow)];
+      const pt = epsCandidates.find(r => Math.abs(r[mchKey] - nearestMch) < 1e-9);
+
+      // Update metric cards
+      this._updateCards(lineId, pt);
+      // Render charts
+      const tempHi = parseFloat(document.getElementById(`temp-hi-${lineId}`)?.value) || 400;
+      const tempLo = parseFloat(document.getElementById(`temp-lo-${lineId}`)?.value) || 300;
+      ChartRenderer.renderLine(lineId, data.computed, data.error, data.columnMap, sel.epsilon, sel.mchFlow, tempHi, tempLo);
+      // Update summary
+      this._updateSummary(lineId, data);
+    },
+
+    _updateCards(lineId, pt) {
+      const set = (id, val, decimals = 2) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const vEl = el.querySelector('.card-value');
+        if (!vEl) return;
+        if (pt && val !== null && val !== undefined && !isNaN(val)) {
+          vEl.textContent = Number(val).toFixed(decimals);
+          vEl.classList.remove('na');
+        } else {
+          vEl.textContent = 'N/A';
+          vEl.classList.add('na');
+        }
+      };
+      set(`card-etotal-${lineId}`, pt?.etotal, 1);
+      set(`card-h2-${lineId}`,     pt?.m_H2_kghr, 1);
+      set(`card-alpha-${lineId}`,  pt?.alpha, 4);
+      set(`card-power-${lineId}`,  pt?.power_abs, 1);
+      set(`card-exh2-${lineId}`,   pt?.ex_H2_LHV, 1);
+      set(`card-eps-${lineId}`,    pt?.epsilon, 1);
+    },
+
+    _updateSummary(lineId, data) {
+      const statsEl   = document.getElementById(`summary-stats-${lineId}`);
+      const findingsEl = document.getElementById(`findings-${lineId}`);
+      if (!statsEl || !findingsEl) return;
+
+      const comp = data.computed;
+      const nClean = data.clean.length;
+      const nErr   = data.error.length;
+      const successRate = safeDivide(nClean, nClean + nErr) * 100;
+      const mchKey = 'mch_input';
+      const mchVals = comp.map(r => r[mchKey]).filter(v => !isNaN(v) && v !== null);
+      const epsVals = comp.map(r => r.epsilon).filter(v => !isNaN(v));
+
+      statsEl.innerHTML = `
+        ${this._statHTML('Total Cases', nClean + nErr)}
+        ${this._statHTML('Success Rate', fmtPct(successRate, 1))}
+        ${this._statHTML('Error Cases', nErr)}
+        ${this._statHTML('\u03B5 Range', `${fmt(Math.min(...epsVals),1)}&ndash;${fmt(Math.max(...epsVals),1)}%`)}
+        ${this._statHTML('MCH Range', `${fmt(Math.min(...mchVals),3)}&ndash;${fmt(Math.max(...mchVals),3)} kg/s`)}
+        ${this._statHTML('File', data.fileName.slice(0, 30))}
+      `;
+
+      // Auto findings
+      const findings = this._autoFindings(comp, mchKey);
+      findingsEl.innerHTML = findings.map(f => `
+        <div class="finding-item">
+          <span class="finding-icon">${f.icon}</span>
+          <span>${f.text}</span>
+        </div>`).join('');
+    },
+
+    _statHTML(label, value) {
+      return `<div class="summary-stat">
+        <div class="stat-label">${label}</div>
+        <div class="stat-value">${value}</div>
+      </div>`;
+    },
+
+    _autoFindings(comp, mchKey) {
+      const findings = [];
+      const valid = comp.filter(r => !isNaN(r.etotal) && !isNaN(r.m_H2_kghr));
+      if (!valid.length) return [{ icon: '&#8203;', text: 'Insufficient data for analysis.' }];
+
+      // Max Etotal
+      const maxEtPt = valid.reduce((best, r) => r.etotal > best.etotal ? r : best, valid[0]);
+      findings.push({
+        icon: '&#9889;',
+        text: `Max E_total: <strong>${fmt(maxEtPt.etotal, 1)} kW</strong> at \u03B5 = ${fmt(maxEtPt.epsilon, 1)}%, MCH = ${fmt(maxEtPt[mchKey], 1)} tons/hr`,
+      });
+
+      // Max H2
+      const maxH2Pt = valid.reduce((best, r) => r.m_H2_kghr > best.m_H2_kghr ? r : best, valid[0]);
+      findings.push({
+        icon: '&#128167;',
+        text: `Max H\u2082: <strong>${fmt(maxH2Pt.m_H2_kghr, 1)} kg/hr</strong> at \u03B5 = ${fmt(maxH2Pt.epsilon, 1)}%, MCH = ${fmt(maxH2Pt[mchKey], 1)} tons/hr`,
+      });
+
+      // Max conversion
+      const maxAlphaPt = valid.reduce((best, r) => (r.alpha > best.alpha ? r : best), valid[0]);
+      findings.push({
+        icon: '&#128200;',
+        text: `Peak conversion \u03B1: <strong>${fmt(maxAlphaPt.alpha, 4)}</strong> at MCH = ${fmt(maxAlphaPt[mchKey], 1)} tons/hr`,
+      });
+
+      // Power range
+      const powerVals = valid.map(r => r.power_abs).filter(v => !isNaN(v));
+      if (powerVals.length) {
+        findings.push({
+          icon: '&#9881;',
+          text: `Power output range: <strong>${fmt(Math.min(...powerVals), 0)}&ndash;${fmt(Math.max(...powerVals), 0)} kW</strong>`,
+        });
+      }
+
+      return findings;
+    },
+
+    _renderEmptyState() {
+      // Already in HTML; just ensure it's visible when no data
+    },
+
+    refreshAllChartColors() {
+      // Re-render all charts with updated theme colors
+      for (const lineId of Object.keys(AppState.lines)) {
+        const data = AppState.lines[lineId];
+        const sel  = AppState.selection[lineId];
+        if (data && sel) {
+          const tempHi = parseFloat(document.getElementById(`temp-hi-${lineId}`)?.value) || 400;
+      const tempLo = parseFloat(document.getElementById(`temp-lo-${lineId}`)?.value) || 300;
+      ChartRenderer.renderLine(lineId, data.computed, data.error, data.columnMap, sel.epsilon, sel.mchFlow, tempHi, tempLo);
+        }
+      }
+      if (Object.keys(AppState.compareCharts).length) {
+        // Destroy and re-create compare charts
+        for (const chart of Object.values(AppState.compareCharts)) {
+          if (chart && typeof chart.destroy === 'function') chart.destroy();
+        }
+        AppState.compareCharts = {};
+        CompareModule.render();
+      }
+    },
+  };
+
+  /* ================================================================
+     BOOT
+     ================================================================ */
+  ThemeController.init();
+  UIController.init();
+
+})();
+</script>
+
+<!-- Presentation mode: activate with ?pres=1 -->
+<script>
+(function() {
+  // Support both ?pres=1 and #pres for file:// compatibility
+  const isPres = new URLSearchParams(window.location.search).has('pres')
+    || window.location.hash.includes('pres');
+  if (!isPres) return;
+
+  // Inject presentation-only CSS
+  const s = document.createElement('style');
+  s.textContent = `
+    header { display: none !important; }
+    #upload { display: none !important; }
+    .tab-bar { display: none !important; }
+    .summary { display: none !important; }
+
+    .page-body { padding: 8px 16px !important; }
+
+    /* Controls on top, horizontal */
+    .line-panel-layout {
+      grid-template-columns: 1fr !important;
+      gap: 10px !important;
+    }
+    .line-panel-sidebar {
+      position: static !important;
+      max-height: none !important;
+      order: -1 !important;
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      gap: 8px !important;
+    }
+    .line-panel-sidebar .controls {
+      flex: 1 !important;
+      min-width: 180px !important;
+      padding: 8px 12px !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      gap: 8px 14px !important;
+    }
+    .line-panel-sidebar .controls .control-group {
+      flex: 1 !important;
+      min-width: 120px !important;
+    }
+    .line-panel-main { order: 1 !important; }
+
+    /* One chart at a time */
+    .chart-grid .chart-card { display: none !important; }
+    .chart-grid .chart-card.pres-show { display: block !important; width: 100% !important; }
+    .chart-grid { display: block !important; }
+    .chart-grid .chart-card.pres-show .chart-wrapper { height: 340px !important; }
+
+    /* Switcher buttons */
+    .pres-switch { display: flex; gap: 6px; margin-bottom: 8px; }
+    .pres-switch button {
+      padding: 5px 14px; border: 1.5px solid #ccc; border-radius: 6px;
+      background: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .pres-switch button.on {
+      background: #1A1A1A; color: #fff; border-color: #1A1A1A;
+    }
+  `;
+  document.head.appendChild(s);
+
+  // Wait for dynamic content to render
+  const timer = setInterval(() => {
+    const grids = document.querySelectorAll('.chart-grid');
+    if (!grids.length) return;
+    clearInterval(timer);
+
+    grids.forEach(grid => {
+      const cards = [...grid.querySelectorAll('.chart-card')];
+      if (cards.length < 3) return;
+
+      // Charts to show: index 0=Etotal, 1=H2, 2=Conv
+      const show = [
+        { idx: 0, label: 'Total Energy' },
+        { idx: 1, label: 'H\u2082 Production' },
+        { idx: 2, label: 'MCH Conversion' }
+      ];
+
+      const bar = document.createElement('div');
+      bar.className = 'pres-switch';
+
+      show.forEach((item, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = item.label;
+        if (i === 0) btn.classList.add('on');
+        btn.addEventListener('click', () => {
+          cards.forEach(c => c.classList.remove('pres-show'));
+          cards[item.idx].classList.add('pres-show');
+          bar.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+          btn.classList.add('on');
+          window.dispatchEvent(new Event('resize'));
+        });
+        bar.appendChild(btn);
+      });
+
+      grid.parentElement.insertBefore(bar, grid);
+      cards.forEach(c => c.classList.remove('pres-show'));
+      cards[0].classList.add('pres-show');
+    });
+  }, 500);
+})();
+</script>
+
+</body>
+</html>
