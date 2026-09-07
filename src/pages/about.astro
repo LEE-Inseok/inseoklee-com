@@ -81,12 +81,24 @@ const timeline = [
     <!-- ============================================================
          Header
          ============================================================ -->
-    <header class="mb-12 border-b pb-8" style="border-color: var(--border);">
-      <span class="section-label">About</span>
-      <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Hi, I'm Inseok.</h1>
-      <p class="mt-4 text-xl max-w-2xl" style="color: var(--body); line-height: 1.5;">
-        I engineer process systems — hands-on hardware, thermal simulation, AI tooling, and ALD processes.
-      </p>
+    <header class="mb-12 border-b flex items-end justify-between gap-10 max-sm:flex-col max-sm:items-start max-sm:gap-6" style="border-color: var(--border);">
+      <div class="pb-8">
+        <span class="section-label">About</span>
+        <h1 class="text-section mt-3" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif;">Hi, I'm Inseok.</h1>
+        <p class="mt-4 text-xl max-w-2xl" style="color: var(--body); line-height: 1.5;">
+          I engineer process systems — hands-on hardware, thermal simulation, AI tooling, and ALD processes.
+        </p>
+      </div>
+      <!-- Portrait sits on the header rule; the cut-off shoulders read as intentional against the line. -->
+      <img
+        src="/images/about/portrait.png"
+        alt="Inseok Lee"
+        width="640"
+        height="663"
+        class="about-portrait shrink-0 w-52 max-sm:w-40 max-sm:-ml-4"
+        loading="eager"
+        decoding="async"
+      />
     </header>
 
     <!-- ============================================================
@@ -224,6 +236,16 @@ const timeline = [
 </BaseLayout>
 
 <style>
+  /* Header portrait — transparent cut-out standing on the header rule */
+  .about-portrait {
+    display: block;
+    height: auto;
+    margin-bottom: -1px;
+    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* Vertical timeline — left rail with dot markers */
   .timeline {
     list-style: none;
