@@ -32,21 +32,32 @@ const pillars = [
   },
 ];
 
+// Grouped by domain, mirroring the CV's Skills table. Items are tools and
+// methods only; a level is shown only where the CV states one.
 const skills = [
   {
-    tier: 'Core',
-    note: 'Daily, production-level',
-    items: ['Process Simulation — Aspen Plus', 'Python', 'Multi-objective Optimization — NSGA-II', 'Thermal-management modeling'],
+    area: 'Process Simulation',
+    items: ['Aspen Plus (Advanced)', 'Python COM automation of Aspen', 'ODE-based thermal system modelling'],
   },
   {
-    tier: 'Proficient',
-    note: 'Confident, applied in real projects',
-    items: ['ML surrogate modeling', 'Multi-agent AI orchestration', 'Integrated system operation — SBH / PEMFC', 'Data analysis & visualization'],
+    area: 'System Engineering',
+    items: ['H₂ generation / purification BoP', 'Gas–liquid separation', 'PEMFC operation', 'Hazardous-area & explosion-proof design (KGS GC205, Ex d IIC T6)'],
   },
   {
-    tier: 'Working',
-    note: 'Functional, actively growing',
-    items: ['ALD — catalyst synthesis', 'Life-cycle assessment (LCA)', 'R — statistical analysis', 'Web development — Astro / Tailwind'],
+    area: 'Electrochemical Testing',
+    items: ['IV polarisation', 'Electrochemical impedance spectroscopy (EIS)', 'CO-poisoning diagnostics'],
+  },
+  {
+    area: 'Optimisation & Data',
+    items: ['Surrogate modelling (RF, GB, NN, GP)', 'NSGA-II', 'Bayesian optimisation', 'Design of experiments', 'LCA (Brightway 2.5, ecoinvent 3.12)'],
+  },
+  {
+    area: 'CAD / Design',
+    items: ['Autodesk Inventor (Intermediate)'],
+  },
+  {
+    area: 'Programming & AI',
+    items: ['Python (Advanced)', 'JavaScript (Chart.js, SheetJS)', 'R', 'Claude Code multi-agent orchestration', 'MCP', 'RAG systems'],
   },
 ];
 
@@ -177,28 +188,22 @@ const timeline = [
     </section>
 
     <!-- ============================================================
-         Skills — tier grid
+         Skills — by domain (same grouping as the CV)
          ============================================================ -->
     <section class="mb-20">
       <p class="section-label mb-6">Skills</p>
-      <div class="grid md:grid-cols-3 gap-10 max-w-5xl">
+      <dl class="max-w-4xl border-t" style="border-color: var(--border);">
         {skills.map(group => (
-          <div>
-            <div class="flex items-baseline gap-3 mb-4 pb-2 border-b" style="border-color: var(--border);">
-              <h3 class="text-lg" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{group.tier}</h3>
-              <span class="text-xs" style="color: var(--muted);">{group.note}</span>
-            </div>
-            <ul class="flex flex-col gap-2">
-              {group.items.map(item => (
-                <li class="text-sm flex gap-2" style="color: var(--body);">
-                  <span style="color: var(--accent);" aria-hidden="true">—</span>
-                  <span>{item}</span>
-                </li>
+          <div class="grid md:grid-cols-[14rem_1fr] gap-x-8 gap-y-2 py-4 border-b" style="border-color: var(--border);">
+            <dt class="text-base" style="color: var(--ink); font-family: 'Fraunces', Georgia, serif; font-weight: 600;">{group.area}</dt>
+            <dd class="text-sm" style="color: var(--body); line-height: 1.8;">
+              {group.items.map((item, i) => (
+                <>{i > 0 && <span style="color: var(--accent);" aria-hidden="true"> · </span>}{item}</>
               ))}
-            </ul>
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
     </section>
 
     <!-- ============================================================

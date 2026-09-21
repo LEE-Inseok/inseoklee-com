@@ -136,6 +136,7 @@ const publications = defineCollection({
     summary:   z.string(),
     date:      z.string().optional(),
     coauthors: z.array(z.string()).optional(),
+    doi:       z.string().optional(),
   }),
 });
 

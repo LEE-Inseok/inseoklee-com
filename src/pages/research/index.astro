@@ -129,7 +129,8 @@ const navGroups = [
                     </div>
                     <h3 class="card-title">{pub.data.title}</h3>
                     <p class="text-base" style="color: var(--body);">{pub.data.summary}</p>
-                    {pub.data.target && <p class="text-sm" style="color: var(--muted);">Target: {pub.data.target}</p>}
+                    {pub.data.target && <p class="text-sm" style="color: var(--muted);">{pub.data.status === 'published' ? 'Published in' : 'Target'}: {pub.data.target}</p>}
+                    {pub.data.doi && <a href={`https://doi.org/${pub.data.doi}`} class="cta-link text-sm" target="_blank" rel="noopener">doi:{pub.data.doi} →</a>}
                   </div>
                 </div>
               );
