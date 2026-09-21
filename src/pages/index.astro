@@ -88,7 +88,7 @@ const activityItems: HelixItem[] = activities.map((a2) => ({ t: short(a2.data.ti
 // ── Home spiral = a CATEGORY navigator. Each strand shows its sub-categories;
 //    clicking a card jumps to that category (the items themselves live there).
 const strandResearch: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/01-researcher-card.png', alt: 'Research', href: '/research' },
+  { kind: 'photo', img: '/images/home/card-research.jpg', alt: 'Research', href: '/research' },
   { kind: 'text', tag: n(sysItems), label: 'System Engineering',        href: '/research#system-engineering', items: sysItems },
   { kind: 'text', tag: n(simItems), label: 'Simulation & Optimization', href: '/research#simulation',         items: simItems },
   { kind: 'text', tag: n(aldItems), label: 'ALD',                       href: '/research#ald',                items: aldItems },
@@ -97,14 +97,14 @@ const strandResearch: HelixCard[] = [
 
 // AI Engineering strand = its two sub-categories.
 const strandCode: HelixCard[] = [
-  { kind: 'photo', img: '/images/home/03-developer-card.png', alt: 'AI Engineering', href: '/development' },
+  { kind: 'photo', img: '/images/home/card-ai-engineering.jpg', alt: 'AI Engineering', href: '/development' },
   { kind: 'text', tag: 'Capability', label: 'AI Agent Engineering', href: '/development#agent',    items: [{ t: 'What I Built', href: '/development#agent' }, { t: 'How I run', href: '/development#agent' }] },
   { kind: 'text', tag: n(devItems),  label: 'Projects',             href: '/development#projects', items: devItems },
 ];
 
 // Achievements strand = its categories (Publications is cross-listed here too).
 const strandRecognition: HelixCard[] = [
-  { kind: 'photo', img: '/recognition/marathon/photo-certificate-card.jpg', alt: 'Achievements', href: '/recognition' },
+  { kind: 'photo', img: '/images/home/card-achievements.jpg', alt: 'Achievements', href: '/recognition' },
   { kind: 'text', tag: n(pubItems),      label: 'Publications',   href: '/research#publications',      items: pubItems },
   { kind: 'text', tag: n(awardItems),    label: 'Awards',         href: '/recognition#awards',         items: awardItems },
   { kind: 'text', tag: n(certs),         label: 'Certifications', href: '/recognition#certifications', items: certItems },
